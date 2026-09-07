@@ -47,7 +47,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
                 LogModel::addLog($user->get('id'), $plantId, 'add_gallery_photo', $label, url('/plants/details/' . $plantId . '#plant-gallery-photo-anchor'));
 
                 if (app('system_message_plant_log')) {
-                    PlantLogModel::addEntry($plantId, '[System] add_gallery_photo: ' . $label . ' = ' . $file_name . '.' . $file_ext);
+                    PlantLogModel::addEntry($plantId, 'add_gallery_photo: ' . $label . ' = ' . $file_name . '.' . $file_ext, '', '', false, true);
                 }
             }
 
@@ -86,7 +86,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
                 LogModel::addLog($user->get('id'), $plantId, 'add_gallery_photo', $label, url('/plants/details/' . $plantId . '#plant-gallery-photo-anchor'));
 
                 if (app('system_message_plant_log')) {
-                    PlantLogModel::addEntry($plantId, '[System] add_gallery_photo: ' . $label . ' = ' . $photo);
+                    PlantLogModel::addEntry($plantId, 'add_gallery_photo: ' . $label . ' = ' . $photo, '', '', false, true);
                 }
             }
 
@@ -147,7 +147,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
                 LogModel::addLog($user->get('id'), $plant->get('name'), 'remove_gallery_photo', $photo_data->get('label'), url('/plants/details/' . $plant->get('id') . '#plant-gallery-photo-anchor'));
 
                 if (app('system_message_plant_log')) {
-                    PlantLogModel::addEntry($plant->get('id'), '[System] remove_gallery_photo: ' . $photo_data->get('label'));
+                    PlantLogModel::addEntry($plant->get('id'), 'remove_gallery_photo: ' . $photo_data->get('label'), '', '', false, true);
                 }
             }
         } catch (\Exception $e) {
@@ -210,7 +210,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
             static::raw('UPDATE `@THIS` SET label = ? WHERE id = ?', [$label, $id]);
 
             if ((app('system_message_plant_log')) && (!$api)) {
-                PlantLogModel::addEntry($plant->get('id'), '[System] edit_gallery_photo: \'' . $photo_data->get('label') . '\' to \'' . $label . '\'');
+                PlantLogModel::addEntry($plant->get('id'), 'edit_gallery_photo: \'' . $photo_data->get('label') . '\' to \'' . $label . '\'', '', '', false, true);
             }
         } catch (\Exception $e) {
             throw $e;

@@ -38,7 +38,7 @@ class PlantAttachmentModel extends \Asatru\Database\Model {
                 LogModel::addLog($user->get('id'), $plantId, 'add_plant_attachment', $label, url('/plants/details/' . $plantId . '#plant-attachments-anchor'));
 
                 if (app('system_message_plant_log')) {
-                    PlantLogModel::addEntry($plantId, '[System] add_plant_attachment: ' . $label . ' = ' . $file_name . '.' . $file_ext);
+                    PlantLogModel::addEntry($plantId, 'add_plant_attachment: ' . $label . ' = ' . $file_name . '.' . $file_ext, '', '', false, true);
                 }
             }
 
@@ -69,7 +69,7 @@ class PlantAttachmentModel extends \Asatru\Database\Model {
             static::raw('UPDATE `@THIS` SET label = ? WHERE id = ?', [$label, $id]);
 
             if ((app('system_message_plant_log')) && (!$api)) {
-                PlantLogModel::addEntry($plant->get('id'), '[System] edit_plant_attachment: \'' . $item->get('label') . '\' to \'' . $label . '\'');
+                PlantLogModel::addEntry($plant->get('id'), 'edit_plant_attachment: \'' . $item->get('label') . '\' to \'' . $label . '\'', '', '', false, true);
             }
         } catch (\Exception $e) {
             throw $e;

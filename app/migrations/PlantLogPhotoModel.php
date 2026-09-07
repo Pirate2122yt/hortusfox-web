@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class PlantLogModel_Migration
+ * Class PlantLogPhotoModel_Migration
  */
-class PlantLogModel_Migration {
+class PlantLogPhotoModel_Migration {
     private $database = null;
     private $connection = null;
 
@@ -25,15 +25,12 @@ class PlantLogModel_Migration {
      */
     public function up()
     {
-        $this->database = new Asatru\Database\Migration('PlantLogModel', $this->connection);
+        $this->database = new Asatru\Database\Migration('PlantLogPhotoModel', $this->connection);
         $this->database->drop();
         $this->database->add('id INT NOT NULL AUTO_INCREMENT PRIMARY KEY');
-        $this->database->add('plant INT NOT NULL');
-        $this->database->add('title VARCHAR(255) NOT NULL DEFAULT \'\'');
-        $this->database->add('content TEXT NOT NULL');
-        $this->database->add('tags VARCHAR(512) NOT NULL DEFAULT \'\'');
-        $this->database->add('is_system TINYINT(1) NOT NULL DEFAULT 0');
-        $this->database->add('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+        $this->database->add('log_entry INT NOT NULL');
+        $this->database->add('thumb VARCHAR(255) NOT NULL');
+        $this->database->add('original VARCHAR(255) NOT NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

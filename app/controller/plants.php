@@ -216,6 +216,20 @@ class PlantsController extends BaseController {
 		$plant_attachments = PlantAttachmentModel::getForPlant($plant_id);
 		$plant_log_entries = PlantLogModel::getLogEntries($plant_id);
 
+		$plant_log_entry_photos = [];
+		if (is_countable($plant_log_entries)) {
+			foreach ($plant_log_entries as $plant_log_entry) {
+				$entry_photos = PlantLogPhotoModel::getForEntry($plant_log_entry->get('id'));
+				$entry_photos_arr = [];
+				if (is_countable($entry_photos)) {
+					foreach ($entry_photos as $entry_photo) {
+						$entry_photos_arr[] = ['id' => $entry_photo->get('id'), 'thumb' => $entry_photo->get('thumb'), 'original' => $entry_photo->get('original')];
+					}
+				}
+				$plant_log_entry_photos[$plant_log_entry->get('id')] = $entry_photos_arr;
+			}
+		}
+
 		$plant_tasks = [];
 		$plant_task_refs = PlantTasksRefModel::getForPlant($plant_id);
 		if (is_countable($plant_task_refs)) {
@@ -241,6 +255,7 @@ class PlantsController extends BaseController {
 			'plant_tasks' => $plant_tasks,
 			'plant_attachments' => $plant_attachments,
 			'plant_log_entries' => $plant_log_entries,
+			'plant_log_entry_photos' => $plant_log_entry_photos,
 			'offspring' => $offspring,
 			'edit_user_name' => $edit_user_name,
 			'edit_user_when' => $edit_user_when
@@ -1090,11 +1105,12 @@ class PlantsController extends BaseController {
 	{
 		try {
 			$plant = $request->params()->query('plant');
-			$content = $request->params()->query('content');
+			$title = $request->params()->query('title');
+			$content = $request->params()->query('content', '');
 			$tags = $request->params()->query('tags', '');
 			$anchor = $request->params()->query('anchor');
 
-			PlantLogModel::addEntry($plant, $content, $tags);
+			PlantLogModel::addEntry($plant, $title, $content, $tags);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1114,12 +1130,16 @@ class PlantsController extends BaseController {
 		try {
 			$item = $request->params()->query('item');
 			$plant = $request->params()->query('plant');
-			$content = $request->params()->query('content');
+			$title = $request->params()->query('title');
+			$content = $request->params()->query('content', '');
 			$tags = $request->params()->query('tags', '');
-			$remove_photo = $request->params()->query('remove_photo', '0') == '1';
+			$remove_photos_raw = $request->params()->query('remove_photos', '');
+			$remove_photos = array_values(array_filter(explode(',', $remove_photos_raw), function($v) {
+				return strlen(trim($v)) > 0;
+			}));
 			$anchor = $request->params()->query('anchor');
 			
-			PlantLogModel::editEntry($item, $content, $tags, $remove_photo);
+			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1169,6 +1189,7 @@ class PlantsController extends BaseController {
 				foreach ($data as &$item) {
 					$item['updated_at'] = date('Y-m-d', strtotime($item['updated_at']));
 					$item['created_at'] = date('Y-m-d', strtotime($item['created_at']));
+					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
 				}
 			}
 

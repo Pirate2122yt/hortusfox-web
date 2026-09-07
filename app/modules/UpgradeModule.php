@@ -9,6 +9,27 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot12()
+    {
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT \'\'');
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_system TINYINT(1) NOT NULL DEFAULT 0');
+        PlantLogModel::raw('UPDATE `@THIS` SET is_system = 1, title = TRIM(SUBSTRING(content, 10)), content = \'\' WHERE content LIKE \'[System]%\' AND title = \'\'');
+        PlantLogModel::raw('UPDATE `@THIS` SET title = content, content = \'\' WHERE title = \'\' AND is_system = 0 AND content <> \'\'');
+
+        PlantLogPhotoModel::raw('CREATE TABLE IF NOT EXISTS PlantLogPhotoModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            log_entry INT NOT NULL,
+            thumb VARCHAR(255) NOT NULL,
+            original VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        PlantLogPhotoModel::raw('INSERT INTO PlantLogPhotoModel (log_entry, thumb, original) SELECT id, photo_thumb, photo_original FROM PlantLogModel WHERE photo_thumb IS NOT NULL AND photo_original IS NOT NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot11()
     {
         PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS tags VARCHAR(512) NOT NULL DEFAULT \'\'');

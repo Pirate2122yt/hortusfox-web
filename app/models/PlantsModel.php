@@ -378,7 +378,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', true);
+                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', true, true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -411,10 +411,10 @@ class PlantsModel extends \Asatru\Database\Model {
             LogModel::addLog($user->get('id'), $plantId, 'scientific_name|knowledge_link', $text . '|' . ((strlen($link) > 0) ? $link : 'null'), url('/plants/details/' . $plantId));
         
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] scientific_name = ' . $text);
+                PlantLogModel::addEntry($plantId, 'scientific_name = ' . $text, '', '', false, true);
 
                 if (strlen($link) > 0) {
-                    PlantLogModel::addEntry($plantId, '[System] knowledge_link = ' . $link);
+                    PlantLogModel::addEntry($plantId, 'knowledge_link = ' . $link, '', '', false, true);
                 }
             }
         } catch (\Exception $e) {
@@ -469,7 +469,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $file_name . '.' . $file_ext, '', $api);
+                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $file_name . '.' . $file_ext, '', '', $api, true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -505,7 +505,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', $api);
+                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', $api, true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -544,7 +544,7 @@ class PlantsModel extends \Asatru\Database\Model {
             LogModel::addLog($user->get('id'), $plantId, 'photo', self::PLANT_PLACEHOLDER_FILE, url('/plants/details/' . $plantId));
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] photo = ' . self::PLANT_PLACEHOLDER_FILE);
+                PlantLogModel::addEntry($plantId, 'photo = ' . self::PLANT_PLACEHOLDER_FILE, '', '', false, true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -704,7 +704,7 @@ class PlantsModel extends \Asatru\Database\Model {
             TextBlockModule::plantToHistory($plant->get('name'), url('/plants/history'));
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] history = 1');
+                PlantLogModel::addEntry($plantId, 'history = 1', '', '', false, true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -732,7 +732,7 @@ class PlantsModel extends \Asatru\Database\Model {
             TextBlockModule::plantFromHistory($plant->get('name'), url('/plants/details/' . $plantId));
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] history = 0');
+                PlantLogModel::addEntry($plantId, 'history = 0', '', '', false, true);
             }
         } catch (\Exception $e) {
             throw $e;
