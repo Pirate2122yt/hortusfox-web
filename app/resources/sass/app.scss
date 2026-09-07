@@ -1833,6 +1833,15 @@ fieldset .field {
 
 .plant-journal-add {
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.plant-journal-system-toggle {
+    color: rgb(180, 180, 180);
+    font-size: 0.9em;
 }
 
 .plant-journal-entries {
@@ -1841,33 +1850,33 @@ fieldset .field {
     gap: 16px;
 }
 
+.plant-journal-entries.hide-system-entries .plant-journal-entry.is-system {
+    display: none;
+}
+
 .plant-journal-entry {
     position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     background-color: rgba(73, 79, 83);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     overflow: hidden;
-    @media screen and (max-width: 600px) {
-        flex-direction: column;
-    }
+}
+
+.plant-journal-entry-photos {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 2px;
 }
 
 .plant-journal-entry-photo {
-    position: relative;
-    flex: 0 0 160px;
-    @media screen and (max-width: 600px) {
-        flex: 0 0 auto;
-        width: 100%;
-        height: 180px;
-    }
-}
-
-.plant-journal-entry-photo a {
     display: block;
-    width: 100%;
-    height: 100%;
+    flex: 0 0 160px;
+    height: 160px;
 }
 
 .plant-journal-entry-photo img {
@@ -1882,6 +1891,32 @@ fieldset .field {
     flex: 1 1 auto;
     padding: 15px;
     min-width: 0;
+}
+
+.plant-journal-entry-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.plant-journal-entry-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: rgb(230, 230, 230);
+    word-wrap: break-word;
+}
+
+.plant-journal-entry-system-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: rgba(55, 145, 243, 0.25);
+    color: rgb(130, 180, 250);
+    border-radius: 10px;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .plant-journal-entry-content {
@@ -1946,6 +1981,54 @@ fieldset .field {
     max-height: 200px;
     border-radius: 4px;
     margin-bottom: 10px;
+}
+
+.plant-journal-modal-photo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.plant-journal-modal-photo-thumb {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.plant-journal-modal-photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.plant-journal-modal-photo-remove-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.7em;
+}
+
+.plant-journal-modal-photo-thumb.is-marked-for-removal {
+    border-color: rgba(220, 40, 40, 0.9);
+    opacity: 0.45;
+}
+
+.plant-journal-modal-photo-thumb.is-marked-for-removal .plant-journal-modal-photo-remove-badge {
+    background-color: rgba(220, 40, 40, 0.9);
 }
 
 .location-log {

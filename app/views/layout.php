@@ -1845,9 +1845,16 @@
 							<input type="hidden" name="anchor" id="inpAddPlantLogEntryAnchor"/>
 
 							<div class="field">
-								<label class="label">{{ __('app.plant_log_content') }}</label>
+								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
 								<div class="control">
-									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4" required></textarea>
+									<input type="text" class="input" name="title" id="inpAddPlantLogEntryTitle" required>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4"></textarea>
 								</div>
 							</div>
 
@@ -1860,9 +1867,9 @@
 							</div>
 
 							<div class="field">
-								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
+								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
 								<div class="control">
-									<input type="file" class="input" name="photo" accept="image/*">
+									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
 								</div>
 							</div>
 						</form>
@@ -1888,11 +1895,19 @@
 							<input type="hidden" name="item" id="inpEditPlantLogEntryItemId"/>
 							<input type="hidden" name="plant" id="inpEditPlantLogEntryPlantId"/>
 							<input type="hidden" name="anchor" id="inpEditPlantLogEntryAnchor"/>
+							<input type="hidden" name="remove_photos" id="inpEditPlantLogEntryRemovePhotos" value=""/>
 
 							<div class="field">
-								<label class="label">{{ __('app.plant_log_content') }}</label>
+								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
 								<div class="control">
-									<textarea class="input" name="content" id="inpEditPlantLogEntryContent" rows="4" required></textarea>
+									<input type="text" class="input" name="title" id="inpEditPlantLogEntryTitle" required>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="content" id="inpEditPlantLogEntryContent" rows="4"></textarea>
 								</div>
 							</div>
 
@@ -1904,20 +1919,16 @@
 								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
 							</div>
 
-							<div class="field is-hidden" id="edit-plant-log-entry-current-photo">
-								<label class="label">{{ __('app.plant_journal_current_photo_label') }}</label>
-								<div class="control">
-									<img id="edit-plant-log-entry-current-photo-img" src="" alt="photo" class="plant-journal-modal-preview"/>
-								</div>
-								<label class="checkbox">
-									<input type="checkbox" name="remove_photo" id="inpEditPlantLogEntryRemovePhoto" value="1">&nbsp;{{ __('app.plant_journal_remove_photo_label') }}
-								</label>
+							<div class="field is-hidden" id="edit-plant-log-entry-current-photos">
+								<label class="label">{{ __('app.plant_journal_current_photos_label') }}</label>
+								<div class="plant-journal-modal-photo-grid" id="edit-plant-log-entry-current-photos-grid"></div>
+								<p class="help">{{ __('app.plant_journal_remove_photo_hint') }}</p>
 							</div>
 
 							<div class="field">
-								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
+								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
 								<div class="control">
-									<input type="file" class="input" name="photo" accept="image/*">
+									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
 								</div>
 							</div>
 						</form>
@@ -2136,6 +2147,7 @@
 				window.vue.confirmInventoryItemRemoval = '{{ __('app.confirmInventoryItemRemoval') }}';
 				window.vue.confirmRemovePlantAttachment = '{{ __('app.confirm_remove_plant_attachment') }}';
 				window.vue.confirmRemovePlantLogEntry = '{{ __('app.confirm_remove_plant_log_entry') }}';
+				window.vue.plantJournalSystemBadge = '{{ __('app.plant_journal_system_badge') }}';
 				window.vue.confirmRemoveLocationLogEntry = '{{ __('app.confirm_remove_location_log_entry') }}';
 				window.vue.confirmRemoveSharedPlantPhoto = '{{ __('app.confirm_remove_shared_photo') }}';
 				window.vue.confirmSetGalleryPhotoAsMain = '{{ __('app.confirm_set_gallery_photo_as_main') }}';
@@ -2183,6 +2195,11 @@
 					window.vue.renderCalendarMonth();
 				}
 				@endif
+
+				let elPlantJournalToggleSystem = document.getElementById('plant-journal-toggle-system');
+				if (elPlantJournalToggleSystem) {
+					window.vue.initPlantJournalSystemToggle();
+				}
 
 				@if ((isset($user)) && ($user->get('show_calendar_view')) && (isset($calendar_sv_date_from)) && (isset($calendar_sv_date_till)))
 				let elCalendarSmallView = document.getElementById('calendar-small-view');

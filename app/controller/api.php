@@ -536,9 +536,16 @@ class ApiController extends BaseController {
     {
         try {
             $plantId = $request->params()->query('plant', null);
-            $content = $request->params()->query('content', null);
-            
-            $logid = PlantLogModel::addEntry($plantId, $content, '', true);
+            $title = $request->params()->query('title', null);
+            $content = $request->params()->query('content', '');
+            $tags = $request->params()->query('tags', '');
+
+            if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
+                $title = $content;
+                $content = '';
+            }
+
+            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true);
 
             return json([
                 'code' => 200,
@@ -562,9 +569,16 @@ class ApiController extends BaseController {
     {
         try {
             $logid = $request->params()->query('logid', null);
-            $content = $request->params()->query('content', null);
-            
-            PlantLogModel::editEntry($logid, $content, '', false, true);
+            $title = $request->params()->query('title', null);
+            $content = $request->params()->query('content', '');
+            $tags = $request->params()->query('tags', '');
+
+            if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
+                $title = $content;
+                $content = '';
+            }
+
+            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true);
 
             return json([
                 'code' => 200
@@ -614,11 +628,16 @@ class ApiController extends BaseController {
             $paginate = $request->params()->query('paginate', null);
             $limit = $request->params()->query('limit', 10);
 			
-			$data = PlantLogModel::getLogEntries($plantId, $paginate, $limit);
+			$data = PlantLogModel::getLogEntries($plantId, $paginate, $limit)?->asArray();
+			if (is_array($data)) {
+				foreach ($data as &$item) {
+					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
+				}
+			}
 
             return json([
                 'code' => 200,
-                'log' => $data?->asArray()
+                'log' => $data
             ]);
         } catch (\Exception $e) {
             return json([

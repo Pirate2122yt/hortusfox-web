@@ -171,6 +171,7 @@ window.createVueInstance = function(element) {
             confirmPlantRemoveHistory: 'Please confirm if you want to do this action.',
             confirmRemovePlantAttachment: 'Do you really want to remove this attachment?',
             confirmRemovePlantLogEntry: 'Do you really want to remove this entry?',
+            plantJournalSystemBadge: 'System',
             confirmRemoveLocationLogEntry: 'Do you really want to remove this entry?',
             confirmRemoveSharedPlantPhoto: 'Do you really want to remove this item?',
             confirmSetGalleryPhotoAsMain: 'Do you want to replace the main photo with this one?',
@@ -572,23 +573,62 @@ window.createVueInstance = function(element) {
                 window.vue.bShowAddPlantLogEntry = true;
             },
 
-            showEditPlantLogEntry: function(id, plant, content, tags = '', photoThumb = '', anchor = '') {
+            showEditPlantLogEntry: function(id, plant, title, content, tags = '', photos = [], anchor = '') {
                 document.getElementById('inpEditPlantLogEntryItemId').value = id;
                 document.getElementById('inpEditPlantLogEntryPlantId').value = plant;
-                document.getElementById('inpEditPlantLogEntryContent').value = content;
+                document.getElementById('inpEditPlantLogEntryTitle').value = title || '';
+                document.getElementById('inpEditPlantLogEntryContent').value = content || '';
                 document.getElementById('inpEditPlantLogEntryTags').value = tags || '';
                 document.getElementById('inpEditPlantLogEntryAnchor').value = anchor;
-                document.getElementById('inpEditPlantLogEntryRemovePhoto').checked = false;
+                document.getElementById('inpEditPlantLogEntryRemovePhotos').value = '';
 
-                let currentPhotoField = document.getElementById('edit-plant-log-entry-current-photo');
-                if (photoThumb && photoThumb.length > 0) {
-                    document.getElementById('edit-plant-log-entry-current-photo-img').src = window.location.origin + '/img/' + photoThumb;
-                    currentPhotoField.classList.remove('is-hidden');
+                let currentPhotosField = document.getElementById('edit-plant-log-entry-current-photos');
+                let grid = document.getElementById('edit-plant-log-entry-current-photos-grid');
+                grid.innerHTML = '';
+
+                if (photos && photos.length > 0) {
+                    photos.forEach(function(photo) {
+                        let thumb = document.createElement('div');
+                        thumb.className = 'plant-journal-modal-photo-thumb';
+                        thumb.dataset.photoId = photo.id;
+
+                        let img = document.createElement('img');
+                        img.src = window.location.origin + '/img/' + photo.thumb;
+                        img.alt = 'photo';
+                        thumb.appendChild(img);
+
+                        let removeBadge = document.createElement('span');
+                        removeBadge.className = 'plant-journal-modal-photo-remove-badge';
+                        removeBadge.innerHTML = '<i class="fas fa-times"></i>';
+                        thumb.appendChild(removeBadge);
+
+                        thumb.onclick = function() {
+                            thumb.classList.toggle('is-marked-for-removal');
+                            window.vue.syncRemovePhotosField();
+                        };
+
+                        grid.appendChild(thumb);
+                    });
+                    currentPhotosField.classList.remove('is-hidden');
                 } else {
-                    currentPhotoField.classList.add('is-hidden');
+                    currentPhotosField.classList.add('is-hidden');
                 }
 
                 window.vue.bShowEditPlantLogEntry = true;
+            },
+
+            syncRemovePhotosField: function() {
+                let grid = document.getElementById('edit-plant-log-entry-current-photos-grid');
+                if (!grid) {
+                    return;
+                }
+
+                let ids = [];
+                grid.querySelectorAll('.plant-journal-modal-photo-thumb.is-marked-for-removal').forEach(function(thumb) {
+                    ids.push(thumb.dataset.photoId);
+                });
+
+                document.getElementById('inpEditPlantLogEntryRemovePhotos').value = ids.join(',');
             },
 
             removePlantLogEntry: function(id, table_entry) {
@@ -601,41 +641,87 @@ window.createVueInstance = function(element) {
                 });
             },
 
+            togglePlantJournalSystemEntries: function(show) {
+                let container = document.getElementById('plant-journal-entries');
+                if (container) {
+                    if (show) {
+                        container.classList.remove('hide-system-entries');
+                    } else {
+                        container.classList.add('hide-system-entries');
+                    }
+                }
+
+                window.vue.setCookieValue('plant_journal_show_system', show ? '1' : '0');
+            },
+
+            initPlantJournalSystemToggle: function() {
+                let toggle = document.getElementById('plant-journal-toggle-system');
+                if (!toggle) {
+                    return;
+                }
+
+                let show = window.vue.getCookieValue('plant_journal_show_system', '0') == '1';
+                toggle.checked = show;
+                window.vue.togglePlantJournalSystemEntries(show);
+            },
+
             loadNextPlantLogEntries: function(obj, plant, container) {
                 window.vue.ajaxRequest('post', window.location.origin + '/plants/log/fetch', { plant: plant, paginate: obj.dataset.paginate }, function(response) {
                     if (response.code == 200) {
                         response.data.forEach(function(elem, index) {
                             let entry = document.createElement('div');
-                            entry.className = 'plant-journal-entry';
+                            entry.className = 'plant-journal-entry' + ((elem.is_system == 1) ? ' is-system' : '');
                             entry.id = 'plant-log-entry-table-row-' + elem.id;
 
-                            if (elem.photo_thumb) {
-                                let photoDiv = document.createElement('div');
-                                photoDiv.className = 'plant-journal-entry-photo';
+                            let photos = elem.photos || [];
+                            if (photos.length > 0) {
+                                let photosDiv = document.createElement('div');
+                                photosDiv.className = 'plant-journal-entry-photos';
 
-                                let photoLink = document.createElement('a');
-                                photoLink.href = window.location.origin + '/img/' + elem.photo_original;
-                                photoLink.target = '_blank';
+                                photos.forEach(function(photo) {
+                                    let photoLink = document.createElement('a');
+                                    photoLink.href = window.location.origin + '/img/' + photo.original;
+                                    photoLink.target = '_blank';
+                                    photoLink.className = 'plant-journal-entry-photo';
 
-                                let img = document.createElement('img');
-                                img.src = window.location.origin + '/img/' + elem.photo_thumb;
-                                img.alt = 'photo';
+                                    let img = document.createElement('img');
+                                    img.src = window.location.origin + '/img/' + photo.thumb;
+                                    img.alt = 'photo';
 
-                                photoLink.appendChild(img);
-                                photoDiv.appendChild(photoLink);
-                                entry.appendChild(photoDiv);
+                                    photoLink.appendChild(img);
+                                    photosDiv.appendChild(photoLink);
+                                });
+
+                                entry.appendChild(photosDiv);
                             }
 
                             let body = document.createElement('div');
                             body.className = 'plant-journal-entry-body';
 
-                            let contentDiv = document.createElement('div');
-                            contentDiv.className = 'plant-journal-entry-content';
-                            contentDiv.id = 'plant-log-entry-item-' + elem.id;
-                            contentDiv.textContent = elem.content;
-                            contentDiv.dataset.tags = elem.tags || '';
-                            contentDiv.dataset.photoThumb = elem.photo_thumb || '';
-                            body.appendChild(contentDiv);
+                            let header = document.createElement('div');
+                            header.className = 'plant-journal-entry-header';
+
+                            let titleSpan = document.createElement('span');
+                            titleSpan.className = 'plant-journal-entry-title';
+                            titleSpan.id = 'plant-log-entry-item-' + elem.id;
+                            titleSpan.textContent = elem.title;
+                            header.appendChild(titleSpan);
+
+                            if (elem.is_system == 1) {
+                                let badge = document.createElement('span');
+                                badge.className = 'plant-journal-entry-system-badge';
+                                badge.textContent = window.vue.plantJournalSystemBadge;
+                                header.appendChild(badge);
+                            }
+
+                            body.appendChild(header);
+
+                            if (elem.content && elem.content.trim().length > 0) {
+                                let contentDiv = document.createElement('div');
+                                contentDiv.className = 'plant-journal-entry-content';
+                                contentDiv.textContent = elem.content;
+                                body.appendChild(contentDiv);
+                            }
 
                             let tagWords = (elem.tags && elem.tags.trim().length > 0) ? elem.tags.trim().split(/\s+/) : [];
                             if (tagWords.length > 0) {
@@ -665,7 +751,7 @@ window.createVueInstance = function(element) {
                             editLink.href = 'javascript:void(0);';
                             editLink.innerHTML = '<i class="fas fa-edit is-color-darker"></i>';
                             editLink.onclick = function() {
-                                window.vue.showEditPlantLogEntry(elem.id, plant, contentDiv.innerText, contentDiv.dataset.tags, contentDiv.dataset.photoThumb, 'plant-journal-anchor');
+                                window.vue.showEditPlantLogEntry(elem.id, plant, elem.title, elem.content, elem.tags, photos, 'plant-journal-anchor');
                             };
 
                             let removeLink = document.createElement('a');

@@ -489,22 +489,38 @@
 
 			<div class="plant-journal-add">
 				<a class="button is-info" href="javascript:void(0);" onclick="window.vue.showAddPlantLogEntry('{{ $plant->get('id') }}', 'plant-journal-anchor');">{{ __('app.add_plant_log_entry') }}</a>
+
+				<label class="checkbox plant-journal-system-toggle">
+					<input type="checkbox" id="plant-journal-toggle-system" onchange="window.vue.togglePlantJournalSystemEntries(this.checked);">
+					{{ __('app.plant_journal_show_system_label') }}
+				</label>
 			</div>
 
 			@if ((is_countable($plant_log_entries)) && (count($plant_log_entries) > 0))
 			<div class="plant-journal-entries" id="plant-journal-entries">
 				@foreach ($plant_log_entries as $plant_log_entry)
-					<div class="plant-journal-entry" id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
-						@if ($plant_log_entry->get('photo_thumb'))
-							<div class="plant-journal-entry-photo">
-								<a href="{{ abs_photo($plant_log_entry->get('photo_original')) }}" target="_blank">
-									<img src="{{ abs_photo($plant_log_entry->get('photo_thumb')) }}" alt="photo"/>
-								</a>
+					<div class="plant-journal-entry{{ $plant_log_entry->get('is_system') ? ' is-system' : '' }}" id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
+						@if (isset($plant_log_entry_photos[$plant_log_entry->get('id')]) && count($plant_log_entry_photos[$plant_log_entry->get('id')]) > 0)
+							<div class="plant-journal-entry-photos">
+								@foreach ($plant_log_entry_photos[$plant_log_entry->get('id')] as $entry_photo)
+									<a href="{{ abs_photo($entry_photo['original']) }}" target="_blank" class="plant-journal-entry-photo">
+										<img src="{{ abs_photo($entry_photo['thumb']) }}" alt="photo"/>
+									</a>
+								@endforeach
 							</div>
 						@endif
 
 						<div class="plant-journal-entry-body">
-							<div class="plant-journal-entry-content" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photo-thumb="{{ $plant_log_entry->get('photo_thumb') }}">{{ $plant_log_entry->get('content') }}</div>
+							<div class="plant-journal-entry-header">
+								<span class="plant-journal-entry-title" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-title="{{ $plant_log_entry->get('title') }}" data-content="{{ $plant_log_entry->get('content') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photos="{{ json_encode($plant_log_entry_photos[$plant_log_entry->get('id')] ?? []) }}">{{ $plant_log_entry->get('title') }}</span>
+								@if ($plant_log_entry->get('is_system'))
+									<span class="plant-journal-entry-system-badge">{{ __('app.plant_journal_system_badge') }}</span>
+								@endif
+							</div>
+
+							@if (strlen(trim($plant_log_entry->get('content') ?? '')) > 0)
+								<div class="plant-journal-entry-content">{{ $plant_log_entry->get('content') }}</div>
+							@endif
 
 							@if (strlen(trim($plant_log_entry->get('tags') ?? '')) > 0)
 								<div class="plant-journal-entry-tags">
@@ -519,7 +535,7 @@
 							<div class="plant-journal-entry-footer">
 								<span class="plant-journal-entry-date">{{ date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($plant_log_entry->get('updated_at'))) }}</span>
 								<span class="plant-journal-entry-actions">
-									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.innerText, el.dataset.tags, el.dataset.photoThumb, 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.dataset.title, el.dataset.content, el.dataset.tags, JSON.parse(el.dataset.photos), 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
 								</span>
 							</div>
 						</div>
