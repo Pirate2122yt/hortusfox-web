@@ -115,7 +115,9 @@
 <div class="calendar-view">
 	<h3>{{ __('app.calendar_overview') }}</h3>
 
-	<canvas id="calendar-small-view"></canvas>
+	<div class="calendar-view-content">
+		<canvas id="calendar-small-view"></canvas>
+	</div>
 </div>
 @endif
 
