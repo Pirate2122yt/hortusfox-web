@@ -1091,9 +1091,10 @@ class PlantsController extends BaseController {
 		try {
 			$plant = $request->params()->query('plant');
 			$content = $request->params()->query('content');
+			$tags = $request->params()->query('tags', '');
 			$anchor = $request->params()->query('anchor');
 
-			PlantLogModel::addEntry($plant, $content);
+			PlantLogModel::addEntry($plant, $content, $tags);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1114,9 +1115,11 @@ class PlantsController extends BaseController {
 			$item = $request->params()->query('item');
 			$plant = $request->params()->query('plant');
 			$content = $request->params()->query('content');
+			$tags = $request->params()->query('tags', '');
+			$remove_photo = $request->params()->query('remove_photo', '0') == '1';
 			$anchor = $request->params()->query('anchor');
 			
-			PlantLogModel::editEntry($item, $content);
+			PlantLogModel::editEntry($item, $content, $tags, $remove_photo);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {

@@ -538,7 +538,7 @@ class ApiController extends BaseController {
             $plantId = $request->params()->query('plant', null);
             $content = $request->params()->query('content', null);
             
-            $logid = PlantLogModel::addEntry($plantId, $content, true);
+            $logid = PlantLogModel::addEntry($plantId, $content, '', true);
 
             return json([
                 'code' => 200,
@@ -564,7 +564,7 @@ class ApiController extends BaseController {
             $logid = $request->params()->query('logid', null);
             $content = $request->params()->query('content', null);
             
-            PlantLogModel::editEntry($logid, $content, true);
+            PlantLogModel::editEntry($logid, $content, '', false, true);
 
             return json([
                 'code' => 200

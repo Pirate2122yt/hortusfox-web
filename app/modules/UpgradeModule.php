@@ -9,6 +9,16 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot11()
+    {
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS tags VARCHAR(512) NOT NULL DEFAULT \'\'');
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS photo_thumb VARCHAR(255) NULL');
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS photo_original VARCHAR(255) NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot10()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS plantrec_provider VARCHAR(32) NOT NULL DEFAULT \'plantnet\'');

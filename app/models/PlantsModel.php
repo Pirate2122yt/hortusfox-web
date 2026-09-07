@@ -378,7 +378,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, true);
+                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', true);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -469,7 +469,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $file_name . '.' . $file_ext, $api);
+                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $file_name . '.' . $file_ext, '', $api);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -505,7 +505,7 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (app('system_message_plant_log')) {
-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, $api);
+                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', $api);
             }
         } catch (\Exception $e) {
             throw $e;

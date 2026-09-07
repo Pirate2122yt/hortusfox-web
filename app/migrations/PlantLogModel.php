@@ -30,6 +30,9 @@ class PlantLogModel_Migration {
         $this->database->add('id INT NOT NULL AUTO_INCREMENT PRIMARY KEY');
         $this->database->add('plant INT NOT NULL');
         $this->database->add('content TEXT NOT NULL');
+        $this->database->add('tags VARCHAR(512) NOT NULL DEFAULT \'\'');
+        $this->database->add('photo_thumb VARCHAR(255) NULL');
+        $this->database->add('photo_original VARCHAR(255) NULL');
         $this->database->add('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();

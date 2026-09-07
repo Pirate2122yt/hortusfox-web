@@ -566,16 +566,28 @@ window.createVueInstance = function(element) {
             },
 
             showAddPlantLogEntry: function(plant, anchor = '') {
+                document.getElementById('frmAddPlantLogEntry').reset();
                 document.getElementById('inpAddPlantLogEntryPlantId').value = plant;
                 document.getElementById('inpAddPlantLogEntryAnchor').value = anchor;
                 window.vue.bShowAddPlantLogEntry = true;
             },
 
-            showEditPlantLogEntry: function(id, plant, content, anchor = '') {
+            showEditPlantLogEntry: function(id, plant, content, tags = '', photoThumb = '', anchor = '') {
                 document.getElementById('inpEditPlantLogEntryItemId').value = id;
                 document.getElementById('inpEditPlantLogEntryPlantId').value = plant;
                 document.getElementById('inpEditPlantLogEntryContent').value = content;
+                document.getElementById('inpEditPlantLogEntryTags').value = tags || '';
                 document.getElementById('inpEditPlantLogEntryAnchor').value = anchor;
+                document.getElementById('inpEditPlantLogEntryRemovePhoto').checked = false;
+
+                let currentPhotoField = document.getElementById('edit-plant-log-entry-current-photo');
+                if (photoThumb && photoThumb.length > 0) {
+                    document.getElementById('edit-plant-log-entry-current-photo-img').src = window.location.origin + '/img/' + photoThumb;
+                    currentPhotoField.classList.remove('is-hidden');
+                } else {
+                    currentPhotoField.classList.add('is-hidden');
+                }
+
                 window.vue.bShowEditPlantLogEntry = true;
             },
 
@@ -589,34 +601,111 @@ window.createVueInstance = function(element) {
                 });
             },
 
-            loadNextPlantLogEntries: function(obj, plant, table) {
+            loadNextPlantLogEntries: function(obj, plant, container) {
                 window.vue.ajaxRequest('post', window.location.origin + '/plants/log/fetch', { plant: plant, paginate: obj.dataset.paginate }, function(response) {
                     if (response.code == 200) {
-                        let tbody = table.getElementsByTagName('tbody')[0];
-
                         response.data.forEach(function(elem, index) {
-                            let newRow = document.createElement('tr');
-                            newRow.id = 'plant-log-entry-table-row-' + elem.id;
-                            newRow.innerHTML = `
-                                <td id="plant-log-entry-item-` + elem.id + `">` + elem.content + `</td>
-                                <td>` + elem.created_at + ` / ` + elem.updated_at + `</td>
-                                <td>
-                                    <span class="float-right">
-                                        <span><a href="javascript:void(0);" onclick="window.vue.showEditPlantLogEntry('` + elem.id + `', '` + plant + `', document.getElementById('plant-log-entry-item-` + elem.id + `').innerText, 'plant-log-anchor');"><i class="fas fa-edit is-color-darker"></i></a></span>&nbsp;<span class="float-right"><a href="javascript:void(0);" onclick="if (confirm('` + window.vue.confirmRemovePlantLogEntry + `')) { window.vue.removePlantLogEntry('` + elem.id + `', 'plant-log-entry-table-row-` + elem.id + `'); }"><i class="fas fa-trash-alt is-color-darker"></i></a></span>
-                                    </span>
-                                </td>
-                            `;
+                            let entry = document.createElement('div');
+                            entry.className = 'plant-journal-entry';
+                            entry.id = 'plant-log-entry-table-row-' + elem.id;
 
-                            tbody.appendChild(newRow);
+                            if (elem.photo_thumb) {
+                                let photoDiv = document.createElement('div');
+                                photoDiv.className = 'plant-journal-entry-photo';
+
+                                let photoLink = document.createElement('a');
+                                photoLink.href = window.location.origin + '/img/' + elem.photo_original;
+                                photoLink.target = '_blank';
+
+                                let img = document.createElement('img');
+                                img.src = window.location.origin + '/img/' + elem.photo_thumb;
+                                img.alt = 'photo';
+
+                                photoLink.appendChild(img);
+                                photoDiv.appendChild(photoLink);
+                                entry.appendChild(photoDiv);
+                            }
+
+                            let body = document.createElement('div');
+                            body.className = 'plant-journal-entry-body';
+
+                            let contentDiv = document.createElement('div');
+                            contentDiv.className = 'plant-journal-entry-content';
+                            contentDiv.id = 'plant-log-entry-item-' + elem.id;
+                            contentDiv.textContent = elem.content;
+                            contentDiv.dataset.tags = elem.tags || '';
+                            contentDiv.dataset.photoThumb = elem.photo_thumb || '';
+                            body.appendChild(contentDiv);
+
+                            let tagWords = (elem.tags && elem.tags.trim().length > 0) ? elem.tags.trim().split(/\s+/) : [];
+                            if (tagWords.length > 0) {
+                                let tagsDiv = document.createElement('div');
+                                tagsDiv.className = 'plant-journal-entry-tags';
+                                tagWords.forEach(function(tag) {
+                                    let tagSpan = document.createElement('span');
+                                    tagSpan.className = 'plant-journal-entry-tag';
+                                    tagSpan.textContent = tag;
+                                    tagsDiv.appendChild(tagSpan);
+                                });
+                                body.appendChild(tagsDiv);
+                            }
+
+                            let footer = document.createElement('div');
+                            footer.className = 'plant-journal-entry-footer';
+
+                            let dateSpan = document.createElement('span');
+                            dateSpan.className = 'plant-journal-entry-date';
+                            dateSpan.textContent = elem.created_at + ' / ' + elem.updated_at;
+                            footer.appendChild(dateSpan);
+
+                            let actionsSpan = document.createElement('span');
+                            actionsSpan.className = 'plant-journal-entry-actions';
+
+                            let editLink = document.createElement('a');
+                            editLink.href = 'javascript:void(0);';
+                            editLink.innerHTML = '<i class="fas fa-edit is-color-darker"></i>';
+                            editLink.onclick = function() {
+                                window.vue.showEditPlantLogEntry(elem.id, plant, contentDiv.innerText, contentDiv.dataset.tags, contentDiv.dataset.photoThumb, 'plant-journal-anchor');
+                            };
+
+                            let removeLink = document.createElement('a');
+                            removeLink.href = 'javascript:void(0);';
+                            removeLink.style.marginLeft = '8px';
+                            removeLink.innerHTML = '<i class="fas fa-trash-alt is-color-darker"></i>';
+                            removeLink.onclick = function() {
+                                if (confirm(window.vue.confirmRemovePlantLogEntry)) {
+                                    window.vue.removePlantLogEntry(elem.id, entry.id);
+                                }
+                            };
+
+                            actionsSpan.appendChild(editLink);
+                            actionsSpan.appendChild(removeLink);
+                            footer.appendChild(actionsSpan);
+
+                            body.appendChild(footer);
+                            entry.appendChild(body);
+
+                            container.appendChild(entry);
                         });
 
-                        obj.parentNode.parentNode.remove();
+                        obj.parentNode.remove();
 
-                        let actionRow = document.createElement('tr');
-                        actionRow.id = 'plant-log-load-more';
-                        actionRow.classList.add('plant-log-paginate');
-                        actionRow.innerHTML = `<td colspan="3"><a href="javascript:void(0);" onclick="window.vue.loadNextPlantLogEntries(this, '` + plant + `', document.getElementById('plant-log-table'));" data-paginate="` + response.data[response.data.length - 1].id + `">` + window.vue.loadMore + `</a></td>`;
-                        tbody.appendChild(actionRow);
+                        if (response.data.length > 0) {
+                            let paginateDiv = document.createElement('div');
+                            paginateDiv.id = 'plant-log-load-more';
+                            paginateDiv.className = 'plant-journal-paginate';
+
+                            let loadMoreLink = document.createElement('a');
+                            loadMoreLink.href = 'javascript:void(0);';
+                            loadMoreLink.textContent = window.vue.loadMore;
+                            loadMoreLink.dataset.paginate = response.data[response.data.length - 1].id;
+                            loadMoreLink.onclick = function() {
+                                window.vue.loadNextPlantLogEntries(loadMoreLink, plant, document.getElementById('plant-journal-entries'));
+                            };
+
+                            paginateDiv.appendChild(loadMoreLink);
+                            container.appendChild(paginateDiv);
+                        }
                     } else {
                         alert(response.msg);
                     }

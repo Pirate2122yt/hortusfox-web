@@ -1838,7 +1838,7 @@
 						<button class="delete" aria-label="close" onclick="window.vue.bShowAddPlantLogEntry = false;"></button>
 					</header>
 					<section class="modal-card-body is-stretched">
-						<form id="frmAddPlantLogEntry" method="POST" action="{{ url('/plants/log/add') }}">
+						<form id="frmAddPlantLogEntry" method="POST" enctype="multipart/form-data" action="{{ url('/plants/log/add') }}">
 							@csrf
 
 							<input type="hidden" name="plant" id="inpAddPlantLogEntryPlantId"/>
@@ -1847,7 +1847,22 @@
 							<div class="field">
 								<label class="label">{{ __('app.plant_log_content') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="content" required>
+									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4" required></textarea>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_tags_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="tags" id="inpAddPlantLogEntryTags" placeholder="{{ __('app.plant_journal_tags_placeholder') }}">
+								</div>
+								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
+								<div class="control">
+									<input type="file" class="input" name="photo" accept="image/*">
 								</div>
 							</div>
 						</form>
@@ -1867,7 +1882,7 @@
 						<button class="delete" aria-label="close" onclick="window.vue.bShowEditPlantLogEntry = false;"></button>
 					</header>
 					<section class="modal-card-body is-stretched">
-						<form id="frmEditPlantLogEntry" method="POST" action="{{ url('/plants/log/edit') }}">
+						<form id="frmEditPlantLogEntry" method="POST" enctype="multipart/form-data" action="{{ url('/plants/log/edit') }}">
 							@csrf
 
 							<input type="hidden" name="item" id="inpEditPlantLogEntryItemId"/>
@@ -1877,7 +1892,32 @@
 							<div class="field">
 								<label class="label">{{ __('app.plant_log_content') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="content" id="inpEditPlantLogEntryContent" required>
+									<textarea class="input" name="content" id="inpEditPlantLogEntryContent" rows="4" required></textarea>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_tags_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="tags" id="inpEditPlantLogEntryTags" placeholder="{{ __('app.plant_journal_tags_placeholder') }}">
+								</div>
+								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
+							</div>
+
+							<div class="field is-hidden" id="edit-plant-log-entry-current-photo">
+								<label class="label">{{ __('app.plant_journal_current_photo_label') }}</label>
+								<div class="control">
+									<img id="edit-plant-log-entry-current-photo-img" src="" alt="photo" class="plant-journal-modal-preview"/>
+								</div>
+								<label class="checkbox">
+									<input type="checkbox" name="remove_photo" id="inpEditPlantLogEntryRemovePhoto" value="1">&nbsp;{{ __('app.plant_journal_remove_photo_label') }}
+								</label>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
+								<div class="control">
+									<input type="file" class="input" name="photo" accept="image/*">
 								</div>
 							</div>
 						</form>

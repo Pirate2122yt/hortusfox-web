@@ -482,50 +482,59 @@
 
 <div class="columns plant-column">
 	<div class="column is-full">
-		<div class="plant-log">
-			<div class="plant-log-title">{{ __('app.plant_log') }}</div>
+		<div class="plant-journal">
+			<div class="plant-journal-title">{{ __('app.plant_journal_title') }}</div>
 
-			<a name="plant-log-anchor"></a>
+			<a name="plant-journal-anchor"></a>
+
+			<div class="plant-journal-add">
+				<a class="button is-info" href="javascript:void(0);" onclick="window.vue.showAddPlantLogEntry('{{ $plant->get('id') }}', 'plant-journal-anchor');">{{ __('app.add_plant_log_entry') }}</a>
+			</div>
 
 			@if ((is_countable($plant_log_entries)) && (count($plant_log_entries) > 0))
-			<div class="table-scroll-horizontally">
-				<table id="plant-log-table">
-					<thead>
-						<tr>
-							<td>{{ __('app.plant_log_content') }}</td>
-							<td>{{ __('app.plant_log_date') }}</td>
-							<td><span class="float-right">{{ __('app.plant_log_actions') }}</span></td>
-						</tr>
-					</thead>
-
-					<tbody>
-						@foreach ($plant_log_entries as $plant_log_entry)
-						<tr id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
-							<td id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}">{{ $plant_log_entry->get('content') }}</td>
-							<td>{{ date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($plant_log_entry->get('updated_at'))) }}</td>
-							<td>
-								<span class="float-right">
-									<span><a href="javascript:void(0);" onclick="window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}').innerText, 'plant-log-anchor');"><i class="fas fa-edit is-color-darker"></i></a></span>&nbsp;<span class="float-right"><a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a></span>
-								</span>
-							</td>
-						</tr>
-						@endforeach
-
-						@if ($plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') > 1)
-							<tr id="plant-log-load-more" class="plant-log-paginate">
-								<td colspan="3"><a href="javascript:void(0);" onclick="window.vue.loadNextPlantLogEntries(this, '{{ $plant->get('id') }}', document.getElementById('plant-log-table'));" data-paginate="{{ $plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') }}">{{ __('app.load_more') }}</a></td>
-							</tr>
+			<div class="plant-journal-entries" id="plant-journal-entries">
+				@foreach ($plant_log_entries as $plant_log_entry)
+					<div class="plant-journal-entry" id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
+						@if ($plant_log_entry->get('photo_thumb'))
+							<div class="plant-journal-entry-photo">
+								<a href="{{ abs_photo($plant_log_entry->get('photo_original')) }}" target="_blank">
+									<img src="{{ abs_photo($plant_log_entry->get('photo_thumb')) }}" alt="photo"/>
+								</a>
+							</div>
 						@endif
-					</tbody>
-				</table>
+
+						<div class="plant-journal-entry-body">
+							<div class="plant-journal-entry-content" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photo-thumb="{{ $plant_log_entry->get('photo_thumb') }}">{{ $plant_log_entry->get('content') }}</div>
+
+							@if (strlen(trim($plant_log_entry->get('tags') ?? '')) > 0)
+								<div class="plant-journal-entry-tags">
+									@foreach (preg_split('/\s+/', trim($plant_log_entry->get('tags'))) as $entry_tag)
+										@if (strlen($entry_tag) > 0)
+											<span class="plant-journal-entry-tag">{{ $entry_tag }}</span>
+										@endif
+									@endforeach
+								</div>
+							@endif
+
+							<div class="plant-journal-entry-footer">
+								<span class="plant-journal-entry-date">{{ date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($plant_log_entry->get('updated_at'))) }}</span>
+								<span class="plant-journal-entry-actions">
+									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.innerText, el.dataset.tags, el.dataset.photoThumb, 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+								</span>
+							</div>
+						</div>
+					</div>
+				@endforeach
+
+				@if ($plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') > 1)
+					<div id="plant-log-load-more" class="plant-journal-paginate">
+						<a href="javascript:void(0);" onclick="window.vue.loadNextPlantLogEntries(this, '{{ $plant->get('id') }}', document.getElementById('plant-journal-entries'));" data-paginate="{{ $plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') }}">{{ __('app.load_more') }}</a>
+					</div>
+				@endif
 			</div>
 			@else
 				<strong>{{ __('app.no_plant_log_entries_yet') }}</strong>
 			@endif
-
-			<div class="plant-log-action">
-				<a class="button is-info" href="javascript:void(0);" onclick="window.vue.showAddPlantLogEntry('{{ $plant->get('id') }}', 'plant-log-anchor');">{{ __('app.add_plant_log_entry') }}</a>
-			</div>
 		</div>
 	</div>
 </div>
