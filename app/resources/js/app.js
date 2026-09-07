@@ -17,6 +17,85 @@ import '@fortawesome/fontawesome-free/js/brands.js';
 import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
+/**
+ * Chart.js plugin: shades weekend (Saturday/Sunday) columns on the
+ * calendar's day-based time scale so it is easier to tell which
+ * bars fall on a weekend at a glance.
+ */
+const calendarWeekendShadingPlugin = {
+    id: 'calendarWeekendShading',
+    beforeDatasetsDraw(chart) {
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        if (!xScale || !yScale) {
+            return;
+        }
+
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+
+        let cursor = new Date(xScale.min);
+        cursor.setHours(0, 0, 0, 0);
+        const end = new Date(xScale.max);
+
+        for (let i = 0; (cursor <= end) && (i < 400); i++) {
+            const day = cursor.getDay();
+
+            if (day === 0 || day === 6) {
+                const dayEnd = new Date(cursor);
+                dayEnd.setDate(dayEnd.getDate() + 1);
+
+                const xStart = xScale.getPixelForValue(cursor.getTime());
+                const xEnd = xScale.getPixelForValue(dayEnd.getTime());
+
+                ctx.fillRect(xStart, yScale.top, xEnd - xStart, yScale.bottom - yScale.top);
+            }
+
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
+        ctx.restore();
+    }
+};
+
+/**
+ * Chart.js plugin: draws a vertical line marking the current date on
+ * the calendar's day-based time scale.
+ */
+const calendarTodayLinePlugin = {
+    id: 'calendarTodayLine',
+    afterDatasetsDraw(chart) {
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        if (!xScale || !yScale) {
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const todayX = xScale.getPixelForValue(today.getTime());
+
+        if ((todayX < xScale.left) || (todayX > xScale.right)) {
+            return;
+        }
+
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = 'rgb(230, 90, 90)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(todayX, yScale.top);
+        ctx.lineTo(todayX, yScale.bottom);
+        ctx.stroke();
+        ctx.restore();
+    }
+};
+
 window.constChatMessageQueryRefreshRate = 1000 * 15;
 window.constChatUserListRefreshRate = 1000 * 15;
 window.constChatTypingRefreshRate = 2000;
@@ -1347,6 +1426,64 @@ window.createVueInstance = function(element) {
                         if (content) {
                             let data = response.data;
 
+                            let legendElem = document.getElementById('calendar-legend');
+                            let contentInner = document.getElementById('calendar-content-inner');
+
+                            if (!data.length) {
+                                if (window.calendarChart !== null) {
+                                    window.calendarChart.destroy();
+                                    window.calendarChart = null;
+                                }
+
+                                if (legendElem) {
+                                    legendElem.innerHTML = '';
+                                }
+
+                                if (contentInner) {
+                                    let emptyHint = contentInner.dataset.emptyHint || 'No entries in this timespan';
+                                    contentInner.style.height = '120px';
+                                    contentInner.innerHTML = '<div class="calendar-empty-hint"></div><canvas id="' + elem + '"></canvas>';
+                                    contentInner.querySelector('.calendar-empty-hint').textContent = emptyHint;
+                                }
+
+                                return;
+                            }
+
+                            if (contentInner && !document.getElementById(elem)) {
+                                contentInner.innerHTML = '<canvas id="' + elem + '"></canvas>';
+                                content = document.getElementById(elem);
+                            }
+
+                            if (contentInner) {
+                                contentInner.style.height = Math.max(320, 70 + (data.length * 42)) + 'px';
+                            }
+
+                            if (legendElem) {
+                                let seenClasses = {};
+                                let legendFragment = document.createDocumentFragment();
+
+                                data.forEach(function(item) {
+                                    if (!seenClasses[item.class_name]) {
+                                        seenClasses[item.class_name] = true;
+
+                                        let itemElem = document.createElement('span');
+                                        itemElem.className = 'calendar-legend-item';
+
+                                        let swatchElem = document.createElement('span');
+                                        swatchElem.className = 'calendar-legend-swatch';
+                                        swatchElem.style.backgroundColor = item.color_background;
+                                        swatchElem.style.borderColor = item.color_border;
+
+                                        itemElem.appendChild(swatchElem);
+                                        itemElem.appendChild(document.createTextNode(item.class_name));
+                                        legendFragment.appendChild(itemElem);
+                                    }
+                                });
+
+                                legendElem.innerHTML = '';
+                                legendElem.appendChild(legendFragment);
+                            }
+
                             data.sort(function (a, b) {
                                 return new Date(a.date_from) - new Date(b.date_from);
                             });
@@ -1380,24 +1517,55 @@ window.createVueInstance = function(element) {
                                             borderColor: colorsBorder,
                                             borderWidth: 1,
                                             fill: false,
-                                            barPercentage: 0.3
+                                            barPercentage: 0.6,
+                                            categoryPercentage: 0.7,
+                                            minBarLength: 4
                                         }
                                     ]
                                 },
+                                plugins: [calendarWeekendShadingPlugin, calendarTodayLinePlugin],
                                 options: {
                                     indexAxis: 'y',
                                     responsive: true,
+                                    maintainAspectRatio: false,
+                                    layout: {
+                                        padding: {
+                                            top: 6,
+                                            right: 16
+                                        }
+                                    },
                                     scales: {
                                         x: {
                                             min: response.date_from,
                                             max: response.date_till,
                                             type: 'time',
+                                            position: 'top',
                                             time: {
-                                                unit: 'day'
+                                                unit: 'day',
+                                                displayFormats: {
+                                                    day: 'EEE, MMM d'
+                                                }
+                                            },
+                                            ticks: {
+                                                color: 'rgb(190, 190, 190)',
+                                                maxRotation: 45,
+                                                minRotation: 0
+                                            },
+                                            grid: {
+                                                color: function(ctx) {
+                                                    let day = new Date(ctx.tick.value).getDay();
+                                                    return (day === 0 || day === 6) ? 'rgba(255, 255, 255, 0.14)' : 'rgba(255, 255, 255, 0.06)';
+                                                }
                                             }
                                         },
                                         y: {
-                                            beginAtZero: true
+                                            beginAtZero: true,
+                                            ticks: {
+                                                color: 'rgb(190, 190, 190)'
+                                            },
+                                            grid: {
+                                                display: false
+                                            }
                                         }
                                     },
                                     plugins: {
@@ -1451,6 +1619,235 @@ window.createVueInstance = function(element) {
                         alert(response.msg);
                     }
                 });
+            },
+
+            /**
+             * Renders the full month-grid calendar (used on the /calendar page).
+             * Reads/writes the currently displayed month from window.calendarViewYear
+             * and window.calendarViewMonth (0-indexed).
+             */
+            renderCalendarMonth: function() {
+                if (typeof window.calendarViewYear === 'undefined') {
+                    let now = new Date();
+                    window.calendarViewYear = now.getFullYear();
+                    window.calendarViewMonth = now.getMonth();
+                }
+
+                let gridElem = document.getElementById('calendar-month-grid');
+                let legendElem = document.getElementById('calendar-legend');
+                let titleElem = document.getElementById('calendar-month-title');
+
+                if (!gridElem) {
+                    return;
+                }
+
+                const year = window.calendarViewYear;
+                const month = window.calendarViewMonth;
+                const locale = document.documentElement.lang || 'en';
+
+                const fmtDate = function(d) {
+                    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                };
+
+                const firstOfMonth = new Date(year, month, 1);
+                const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday = 0 .. Sunday = 6
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+
+                const gridStart = new Date(year, month, 1 - firstWeekday);
+                const gridEnd = new Date(year, month, 1 - firstWeekday + totalCells);
+
+                if (titleElem) {
+                    titleElem.textContent = firstOfMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+                }
+
+                window.vue.ajaxRequest('post', window.location.origin + '/calendar/query', { date_from: fmtDate(gridStart), date_till: fmtDate(gridEnd) }, function(response) {
+                    if (response.code != 200) {
+                        alert(response.msg);
+                        return;
+                    }
+
+                    let data = response.data;
+
+                    data.sort(function(a, b) {
+                        return new Date(a.date_from) - new Date(b.date_from);
+                    });
+
+                    let today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const todayStr = fmtDate(today);
+
+                    if (legendElem) {
+                        let seenClasses = {};
+                        let legendFragment = document.createDocumentFragment();
+
+                        data.forEach(function(item) {
+                            if (!seenClasses[item.class_name]) {
+                                seenClasses[item.class_name] = true;
+
+                                let itemElem = document.createElement('span');
+                                itemElem.className = 'calendar-legend-item';
+
+                                let swatchElem = document.createElement('span');
+                                swatchElem.className = 'calendar-legend-swatch';
+                                swatchElem.style.backgroundColor = item.color_background;
+                                swatchElem.style.borderColor = item.color_border;
+
+                                itemElem.appendChild(swatchElem);
+                                itemElem.appendChild(document.createTextNode(item.class_name));
+                                legendFragment.appendChild(itemElem);
+                            }
+                        });
+
+                        legendElem.innerHTML = '';
+                        legendElem.appendChild(legendFragment);
+                    }
+
+                    const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+                    let headerFragment = document.createDocumentFragment();
+
+                    for (let i = 0; i < 7; i++) {
+                        let d = new Date(gridStart);
+                        d.setDate(gridStart.getDate() + i);
+
+                        let headerCell = document.createElement('div');
+                        headerCell.className = 'calendar-weekday-header' + ((i >= 5) ? ' is-weekend' : '');
+                        headerCell.textContent = weekdayFormatter.format(d);
+                        headerFragment.appendChild(headerCell);
+                    }
+
+                    const addHint = gridElem.dataset.addHint || '';
+                    let dayFragment = document.createDocumentFragment();
+
+                    for (let i = 0; i < totalCells; i++) {
+                        let cellDate = new Date(gridStart);
+                        cellDate.setDate(gridStart.getDate() + i);
+                        const cellDateStr = fmtDate(cellDate);
+
+                        let cellElem = document.createElement('div');
+                        cellElem.className = 'calendar-day-cell';
+
+                        if (cellDate.getMonth() !== month) {
+                            cellElem.classList.add('is-outside-month');
+                        }
+
+                        const dow = cellDate.getDay();
+                        if (dow === 0 || dow === 6) {
+                            cellElem.classList.add('is-weekend');
+                        }
+
+                        if (cellDateStr === todayStr) {
+                            cellElem.classList.add('is-today');
+                        }
+
+                        let numberElem = document.createElement('div');
+                        numberElem.className = 'calendar-day-number';
+                        numberElem.textContent = cellDate.getDate();
+                        cellElem.appendChild(numberElem);
+
+                        let eventsElem = document.createElement('div');
+                        eventsElem.className = 'calendar-day-events';
+
+                        data.forEach(function(item) {
+                            const itemFrom = item.date_from.split(' ')[0];
+                            const itemTill = item.date_till.split(' ')[0];
+
+                            if ((cellDateStr >= itemFrom) && (cellDateStr < itemTill)) {
+                                let chip = document.createElement('div');
+                                chip.className = 'calendar-event-chip';
+                                chip.style.backgroundColor = item.color_background;
+                                chip.style.borderColor = item.color_border;
+                                chip.title = item.name + ' (' + item.class_name + ')';
+                                chip.textContent = item.name;
+
+                                chip.addEventListener('click', function(ev) {
+                                    ev.stopPropagation();
+                                    window.vue.editCalendarItemFromData(item);
+                                });
+
+                                eventsElem.appendChild(chip);
+                            }
+                        });
+
+                        cellElem.appendChild(eventsElem);
+                        cellElem.title = addHint;
+
+                        cellElem.addEventListener('click', function() {
+                            window.vue.openAddCalendarItem(cellDateStr);
+                        });
+
+                        dayFragment.appendChild(cellElem);
+                    }
+
+                    gridElem.innerHTML = '';
+
+                    let headerRow = document.createElement('div');
+                    headerRow.className = 'calendar-weekday-header-row';
+                    headerRow.appendChild(headerFragment);
+                    gridElem.appendChild(headerRow);
+
+                    let daysGrid = document.createElement('div');
+                    daysGrid.className = 'calendar-days-grid';
+                    daysGrid.appendChild(dayFragment);
+                    gridElem.appendChild(daysGrid);
+                });
+            },
+
+            shiftCalendarMonth: function(delta) {
+                if (typeof window.calendarViewYear === 'undefined') {
+                    let now = new Date();
+                    window.calendarViewYear = now.getFullYear();
+                    window.calendarViewMonth = now.getMonth();
+                }
+
+                let d = new Date(window.calendarViewYear, window.calendarViewMonth + delta, 1);
+                window.calendarViewYear = d.getFullYear();
+                window.calendarViewMonth = d.getMonth();
+
+                window.vue.renderCalendarMonth();
+            },
+
+            goToCalendarToday: function() {
+                let now = new Date();
+                window.calendarViewYear = now.getFullYear();
+                window.calendarViewMonth = now.getMonth();
+
+                window.vue.renderCalendarMonth();
+            },
+
+            openAddCalendarItem: function(dateStr) {
+                let dateFromInput = document.getElementById('add-calendar-item-date-from');
+                let dateTillInput = document.getElementById('date-till');
+
+                if (dateStr) {
+                    if (dateFromInput) {
+                        dateFromInput.value = dateStr;
+                    }
+
+                    if (dateTillInput) {
+                        dateTillInput.value = dateStr;
+                    }
+                } else {
+                    if (dateFromInput) {
+                        dateFromInput.value = '';
+                    }
+
+                    if (dateTillInput) {
+                        dateTillInput.value = '';
+                    }
+                }
+
+                window.vue.bShowAddCalendarItem = true;
+            },
+
+            editCalendarItemFromData: function(item) {
+                document.getElementById('inpEditCalendarItemIdent').innerText = '#' + item.id + ' ' + item.name;
+                document.getElementById('inpEditCalendarItemId').value = item.id;
+                document.getElementById('inpEditCalendarItemName').value = item.name;
+                document.getElementById('inpEditCalendarItemDateFrom').value = item.date_from.split(' ')[0];
+                document.getElementById('inpEditCalendarItemDateTill').value = item.date_till.split(' ')[0];
+                document.getElementById('inpEditCalendarItemClass').value = item.class_descriptor;
+                window.vue.bShowEditCalendarItem = true;
             },
 
             removeCalendarItem: function(ident) {

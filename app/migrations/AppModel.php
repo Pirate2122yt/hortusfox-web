@@ -67,6 +67,8 @@ class AppModel_Migration {
         $this->database->add('plantrec_enable BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('plantrec_apikey VARCHAR(512) NULL');
         $this->database->add('plantrec_quickscan BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('plantrec_provider VARCHAR(32) NOT NULL DEFAULT \'plantnet\'');
+        $this->database->add('plantrec_apikey_plantid VARCHAR(512) NULL');
         $this->database->add('allow_custom_attributes BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('system_message_plant_log BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('auto_backup BOOLEAN NOT NULL DEFAULT 0');

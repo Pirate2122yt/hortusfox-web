@@ -1279,7 +1279,7 @@
 							<div class="field">
 								<label class="label">{{ __('app.date_from') }}</label>
 								<div class="control">
-									<input type="date" class="input" name="date_from" onchange="document.getElementById('date-till').value = this.value;" required>
+									<input type="date" class="input" name="date_from" id="add-calendar-item-date-from" onchange="document.getElementById('date-till').value = this.value;" required>
 								</div>
 							</div>
 
@@ -2138,9 +2138,9 @@
 
 				@if (app('calendar_enable'))
 				window.calendarChart = null;
-				let elCalendar = document.getElementById('calendar');
-				if (elCalendar) {
-					window.vue.renderCalendar(elCalendar.id, null, null);
+				let elCalendarMonthGrid = document.getElementById('calendar-month-grid');
+				if (elCalendarMonthGrid) {
+					window.vue.renderCalendarMonth();
 				}
 				@endif
 

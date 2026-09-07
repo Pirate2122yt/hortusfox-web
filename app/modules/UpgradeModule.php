@@ -9,6 +9,15 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot10()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS plantrec_provider VARCHAR(32) NOT NULL DEFAULT \'plantnet\'');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS plantrec_apikey_plantid VARCHAR(512) NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot9()
     {
         UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS remember_location_sorting BOOLEAN NOT NULL DEFAULT 0');

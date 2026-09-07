@@ -169,6 +169,26 @@
         </div>
 
         <div class="field">
+            <label class="label">{{ __('app.plantrec_apikey_plantid_label') }}</label>
+            <div class="control">
+                <input type="text" class="input" name="plantrec_apikey_plantid" value="{{ app('plantrec_apikey_plantid', '') }}">
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ __('app.plantrec_provider_label') }}</label>
+            <div class="control">
+                <div class="select">
+                    <select name="plantrec_provider" id="plantrec-provider-select">
+                        <option value="plantnet" {{ (app('plantrec_provider', 'plantnet') == 'plantnet') ? 'selected': '' }}>{{ __('app.plantrec_provider_plantnet') }}</option>
+                        <option value="plantid" {{ (app('plantrec_provider', 'plantnet') == 'plantid') ? 'selected': '' }}>{{ __('app.plantrec_provider_plantid') }}</option>
+                    </select>
+                </div>
+            </div>
+            <p class="help">{{ __('app.plantrec_provider_hint') }}</p>
+        </div>
+
+        <div class="field">
             <div class="control">
                 <input type="checkbox" class="checkbox" name="plantrec_quickscan" value="1" {{ (app('plantrec_quickscan')) ? 'checked': '' }}>&nbsp;<span>{{ __('app.plantrec_quickscan_label') }}</span>
             </div>

@@ -108,7 +108,9 @@ class AdminController extends BaseController {
 			$custom_head_code = $request->params()->query('custom_head_code', app('custom_head_code'));
 			$enablepwa = (bool)$request->params()->query('enablepwa', 0);
 			$plantrec_enable = (bool)$request->params()->query('plantrec_enable', 0);
+			$plantrec_provider = $request->params()->query('plantrec_provider', app('plantrec_provider', 'plantnet'));
 			$plantrec_apikey = $request->params()->query('plantrec_apikey', app('plantrec_apikey'));
+			$plantrec_apikey_plantid = $request->params()->query('plantrec_apikey_plantid', app('plantrec_apikey_plantid'));
 			$plantrec_quickscan = (bool)$request->params()->query('plantrec_quickscan', 0);
 
 			$set = [
@@ -134,7 +136,9 @@ class AdminController extends BaseController {
 				'custom_head_code' => $custom_head_code,
 				'pwa_enable' => $enablepwa,
 				'plantrec_enable' => $plantrec_enable,
+				'plantrec_provider' => $plantrec_provider,
 				'plantrec_apikey' => $plantrec_apikey,
+				'plantrec_apikey_plantid' => $plantrec_apikey_plantid,
 				'plantrec_quickscan' => $plantrec_quickscan
 			];
 
