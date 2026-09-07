@@ -1108,9 +1108,10 @@ class PlantsController extends BaseController {
 			$title = $request->params()->query('title');
 			$content = $request->params()->query('content', '');
 			$tags = $request->params()->query('tags', '');
+			$entry_date = $request->params()->query('entry_date', null);
 			$anchor = $request->params()->query('anchor');
 
-			PlantLogModel::addEntry($plant, $title, $content, $tags);
+			PlantLogModel::addEntry($plant, $title, $content, $tags, false, false, $entry_date);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1133,13 +1134,14 @@ class PlantsController extends BaseController {
 			$title = $request->params()->query('title');
 			$content = $request->params()->query('content', '');
 			$tags = $request->params()->query('tags', '');
+			$entry_date = $request->params()->query('entry_date', null);
 			$remove_photos_raw = $request->params()->query('remove_photos', '');
 			$remove_photos = array_values(array_filter(explode(',', $remove_photos_raw), function($v) {
 				return strlen(trim($v)) > 0;
 			}));
 			$anchor = $request->params()->query('anchor');
-			
-			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos);
+
+			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos, false, $entry_date);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1183,12 +1185,14 @@ class PlantsController extends BaseController {
 		try {
 			$plant = $request->params()->query('plant');
 			$paginate = $request->params()->query('paginate', null);
-			
-			$data = PlantLogModel::getLogEntries($plant, $paginate)?->asArray();
+			$paginate_date = $request->params()->query('paginate_date', null);
+
+			$data = PlantLogModel::getLogEntries($plant, $paginate, $paginate_date)?->asArray();
 			if (is_array($data)) {
 				foreach ($data as &$item) {
 					$item['updated_at'] = date('Y-m-d', strtotime($item['updated_at']));
 					$item['created_at'] = date('Y-m-d', strtotime($item['created_at']));
+					$item['entry_date'] = $item['entry_date'] ? date('Y-m-d', strtotime($item['entry_date'])) : $item['created_at'];
 					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
 				}
 			}

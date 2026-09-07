@@ -566,19 +566,28 @@ window.createVueInstance = function(element) {
                 });
             },
 
+            todayDateString: function() {
+                let now = new Date();
+                let month = String(now.getMonth() + 1).padStart(2, '0');
+                let day = String(now.getDate()).padStart(2, '0');
+                return now.getFullYear() + '-' + month + '-' + day;
+            },
+
             showAddPlantLogEntry: function(plant, anchor = '') {
                 document.getElementById('frmAddPlantLogEntry').reset();
                 document.getElementById('inpAddPlantLogEntryPlantId').value = plant;
                 document.getElementById('inpAddPlantLogEntryAnchor').value = anchor;
+                document.getElementById('inpAddPlantLogEntryDate').value = window.vue.todayDateString();
                 window.vue.bShowAddPlantLogEntry = true;
             },
 
-            showEditPlantLogEntry: function(id, plant, title, content, tags = '', photos = [], anchor = '') {
+            showEditPlantLogEntry: function(id, plant, title, content, tags = '', entryDate = '', photos = [], anchor = '') {
                 document.getElementById('inpEditPlantLogEntryItemId').value = id;
                 document.getElementById('inpEditPlantLogEntryPlantId').value = plant;
                 document.getElementById('inpEditPlantLogEntryTitle').value = title || '';
                 document.getElementById('inpEditPlantLogEntryContent').value = content || '';
                 document.getElementById('inpEditPlantLogEntryTags').value = tags || '';
+                document.getElementById('inpEditPlantLogEntryDate').value = entryDate || window.vue.todayDateString();
                 document.getElementById('inpEditPlantLogEntryAnchor').value = anchor;
                 document.getElementById('inpEditPlantLogEntryRemovePhotos').value = '';
 
@@ -666,7 +675,7 @@ window.createVueInstance = function(element) {
             },
 
             loadNextPlantLogEntries: function(obj, plant, container) {
-                window.vue.ajaxRequest('post', window.location.origin + '/plants/log/fetch', { plant: plant, paginate: obj.dataset.paginate }, function(response) {
+                window.vue.ajaxRequest('post', window.location.origin + '/plants/log/fetch', { plant: plant, paginate: obj.dataset.paginate, paginate_date: obj.dataset.paginateDate }, function(response) {
                     if (response.code == 200) {
                         response.data.forEach(function(elem, index) {
                             let entry = document.createElement('div');
@@ -741,7 +750,7 @@ window.createVueInstance = function(element) {
 
                             let dateSpan = document.createElement('span');
                             dateSpan.className = 'plant-journal-entry-date';
-                            dateSpan.textContent = elem.created_at + ' / ' + elem.updated_at;
+                            dateSpan.textContent = elem.entry_date || elem.created_at;
                             footer.appendChild(dateSpan);
 
                             let actionsSpan = document.createElement('span');
@@ -751,7 +760,7 @@ window.createVueInstance = function(element) {
                             editLink.href = 'javascript:void(0);';
                             editLink.innerHTML = '<i class="fas fa-edit is-color-darker"></i>';
                             editLink.onclick = function() {
-                                window.vue.showEditPlantLogEntry(elem.id, plant, elem.title, elem.content, elem.tags, photos, 'plant-journal-anchor');
+                                window.vue.showEditPlantLogEntry(elem.id, plant, elem.title, elem.content, elem.tags, elem.entry_date, photos, 'plant-journal-anchor');
                             };
 
                             let removeLink = document.createElement('a');
@@ -785,6 +794,7 @@ window.createVueInstance = function(element) {
                             loadMoreLink.href = 'javascript:void(0);';
                             loadMoreLink.textContent = window.vue.loadMore;
                             loadMoreLink.dataset.paginate = response.data[response.data.length - 1].id;
+                            loadMoreLink.dataset.paginateDate = response.data[response.data.length - 1].entry_date;
                             loadMoreLink.onclick = function() {
                                 window.vue.loadNextPlantLogEntries(loadMoreLink, plant, document.getElementById('plant-journal-entries'));
                             };

@@ -1852,6 +1852,14 @@
 							</div>
 
 							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_date_label') }}</label>
+								<div class="control">
+									<input type="date" class="input" name="entry_date" id="inpAddPlantLogEntryDate" required>
+								</div>
+								<p class="help">{{ __('app.plant_journal_entry_date_hint') }}</p>
+							</div>
+
+							<div class="field">
 								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
 								<div class="control">
 									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4"></textarea>
@@ -1902,6 +1910,14 @@
 								<div class="control">
 									<input type="text" class="input" name="title" id="inpEditPlantLogEntryTitle" required>
 								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_date_label') }}</label>
+								<div class="control">
+									<input type="date" class="input" name="entry_date" id="inpEditPlantLogEntryDate" required>
+								</div>
+								<p class="help">{{ __('app.plant_journal_entry_date_hint') }}</p>
 							</div>
 
 							<div class="field">

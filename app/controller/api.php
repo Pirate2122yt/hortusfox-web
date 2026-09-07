@@ -539,13 +539,14 @@ class ApiController extends BaseController {
             $title = $request->params()->query('title', null);
             $content = $request->params()->query('content', '');
             $tags = $request->params()->query('tags', '');
+            $entry_date = $request->params()->query('entry_date', null);
 
             if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
                 $title = $content;
                 $content = '';
             }
 
-            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true);
+            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true, false, $entry_date);
 
             return json([
                 'code' => 200,
@@ -572,13 +573,14 @@ class ApiController extends BaseController {
             $title = $request->params()->query('title', null);
             $content = $request->params()->query('content', '');
             $tags = $request->params()->query('tags', '');
+            $entry_date = $request->params()->query('entry_date', null);
 
             if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
                 $title = $content;
                 $content = '';
             }
 
-            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true);
+            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true, $entry_date);
 
             return json([
                 'code' => 200
@@ -626,9 +628,10 @@ class ApiController extends BaseController {
         try {
             $plantId = $request->params()->query('plant', null);
             $paginate = $request->params()->query('paginate', null);
+            $paginate_date = $request->params()->query('paginate_date', null);
             $limit = $request->params()->query('limit', 10);
-			
-			$data = PlantLogModel::getLogEntries($plantId, $paginate, $limit)?->asArray();
+
+			$data = PlantLogModel::getLogEntries($plantId, $paginate, $paginate_date, $limit)?->asArray();
 			if (is_array($data)) {
 				foreach ($data as &$item) {
 					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];

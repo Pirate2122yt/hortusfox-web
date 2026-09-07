@@ -512,7 +512,7 @@
 
 						<div class="plant-journal-entry-body">
 							<div class="plant-journal-entry-header">
-								<span class="plant-journal-entry-title" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-title="{{ $plant_log_entry->get('title') }}" data-content="{{ $plant_log_entry->get('content') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photos="{{ json_encode($plant_log_entry_photos[$plant_log_entry->get('id')] ?? []) }}">{{ $plant_log_entry->get('title') }}</span>
+								<span class="plant-journal-entry-title" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-title="{{ $plant_log_entry->get('title') }}" data-content="{{ $plant_log_entry->get('content') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-entry-date="{{ $plant_log_entry->get('entry_date') ? date('Y-m-d', strtotime($plant_log_entry->get('entry_date'))) : date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }}" data-photos="{{ json_encode($plant_log_entry_photos[$plant_log_entry->get('id')] ?? []) }}">{{ $plant_log_entry->get('title') }}</span>
 								@if ($plant_log_entry->get('is_system'))
 									<span class="plant-journal-entry-system-badge">{{ __('app.plant_journal_system_badge') }}</span>
 								@endif
@@ -533,9 +533,9 @@
 							@endif
 
 							<div class="plant-journal-entry-footer">
-								<span class="plant-journal-entry-date">{{ date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($plant_log_entry->get('updated_at'))) }}</span>
+								<span class="plant-journal-entry-date">{{ $plant_log_entry->get('entry_date') ? date('Y-m-d', strtotime($plant_log_entry->get('entry_date'))) : date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }}</span>
 								<span class="plant-journal-entry-actions">
-									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.dataset.title, el.dataset.content, el.dataset.tags, JSON.parse(el.dataset.photos), 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.dataset.title, el.dataset.content, el.dataset.tags, el.dataset.entryDate, JSON.parse(el.dataset.photos), 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
 								</span>
 							</div>
 						</div>
@@ -544,7 +544,7 @@
 
 				@if ($plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') > 1)
 					<div id="plant-log-load-more" class="plant-journal-paginate">
-						<a href="javascript:void(0);" onclick="window.vue.loadNextPlantLogEntries(this, '{{ $plant->get('id') }}', document.getElementById('plant-journal-entries'));" data-paginate="{{ $plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') }}">{{ __('app.load_more') }}</a>
+						<a href="javascript:void(0);" onclick="window.vue.loadNextPlantLogEntries(this, '{{ $plant->get('id') }}', document.getElementById('plant-journal-entries'));" data-paginate="{{ $plant_log_entries->get(count($plant_log_entries) - 1)?->get('id') }}" data-paginate-date="{{ $plant_log_entries->get(count($plant_log_entries) - 1)?->get('entry_date') ? date('Y-m-d', strtotime($plant_log_entries->get(count($plant_log_entries) - 1)?->get('entry_date'))) : date('Y-m-d', strtotime($plant_log_entries->get(count($plant_log_entries) - 1)?->get('created_at'))) }}">{{ __('app.load_more') }}</a>
 					</div>
 				@endif
 			</div>

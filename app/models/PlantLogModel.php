@@ -74,16 +74,36 @@ class PlantLogModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Normalizes a user-supplied entry date (expected as Y-m-d), falling
+     * back to today's date if empty or not a valid date.
+     *
+     * @param $entryDate
+     * @return string
+     */
+    private static function normalizeEntryDate($entryDate)
+    {
+        if (is_string($entryDate) && (strlen(trim($entryDate)) > 0)) {
+            $parsed = \DateTime::createFromFormat('Y-m-d', trim($entryDate));
+            if (($parsed !== false) && ($parsed->format('Y-m-d') === trim($entryDate))) {
+                return $parsed->format('Y-m-d');
+            }
+        }
+
+        return date('Y-m-d');
+    }
+
+    /**
      * @param $plant
      * @param $title
      * @param $content
      * @param $tags
      * @param $api
      * @param $isSystem
+     * @param $entryDate
      * @return int
      * @throws \Exception
      */
-    public static function addEntry($plant, $title, $content = '', $tags = '', $api = false, $isSystem = false)
+    public static function addEntry($plant, $title, $content = '', $tags = '', $api = false, $isSystem = false, $entryDate = null)
     {
         try {
             $user = null;
@@ -96,9 +116,10 @@ class PlantLogModel extends \Asatru\Database\Model {
             }
 
             $tags = static::normalizeTags($tags);
+            $entryDate = static::normalizeEntryDate($entryDate);
 
-            static::raw('INSERT INTO `@THIS` (plant, title, content, tags, is_system) VALUES(?, ?, ?, ?, ?)', [
-                $plant, $title, $content, $tags, ($isSystem ? 1 : 0)
+            static::raw('INSERT INTO `@THIS` (plant, title, content, tags, is_system, entry_date) VALUES(?, ?, ?, ?, ?, ?)', [
+                $plant, $title, $content, $tags, ($isSystem ? 1 : 0), $entryDate
             ]);
 
             $item = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
@@ -127,10 +148,11 @@ class PlantLogModel extends \Asatru\Database\Model {
      * @param $tags
      * @param $removePhotoIds
      * @param $api
+     * @param $entryDate
      * @return void
      * @throws \Exception
      */
-    public static function editEntry($id, $title, $content = '', $tags = '', $removePhotoIds = [], $api = false)
+    public static function editEntry($id, $title, $content = '', $tags = '', $removePhotoIds = [], $api = false, $entryDate = null)
     {
         try {
             $user = null;
@@ -148,9 +170,10 @@ class PlantLogModel extends \Asatru\Database\Model {
             }
 
             $tags = static::normalizeTags($tags);
+            $entryDate = static::normalizeEntryDate($entryDate ?? $item->get('entry_date'));
 
-            static::raw('UPDATE `@THIS` SET title = ?, content = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
-                $title, $content, $tags, $item->get('id')
+            static::raw('UPDATE `@THIS` SET title = ?, content = ?, tags = ?, entry_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
+                $title, $content, $tags, $entryDate, $item->get('id')
             ]);
 
             if (is_array($removePhotoIds) && count($removePhotoIds) > 0) {
@@ -217,19 +240,26 @@ class PlantLogModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Entries are ordered chronologically by entry_date (the date the
+     * event actually happened, which may be backdated), falling back to
+     * id as a tiebreaker for same-day entries.
+     *
      * @param $plant
-     * @param $paginate
+     * @param $paginate id of the last entry on the previous page (tiebreaker)
+     * @param $paginateDate entry_date of the last entry on the previous page
      * @param $limit
      * @return mixed
      * @throws \Exception
      */
-    public static function getLogEntries($plant, $paginate = null, $limit = 10)
+    public static function getLogEntries($plant, $paginate = null, $paginateDate = null, $limit = 10)
     {
         try {
-            if ($paginate) {
-                return static::raw('SELECT * FROM `@THIS` WHERE plant = ? AND id < ? ORDER BY id DESC LIMIT ' . $limit, [$plant, $paginate]);
+            if ($paginate && $paginateDate) {
+                return static::raw('SELECT * FROM `@THIS` WHERE plant = ? AND (entry_date < ? OR (entry_date = ? AND id < ?)) ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant, $paginateDate, $paginateDate, $paginate]);
+            } else if ($paginate) {
+                return static::raw('SELECT * FROM `@THIS` WHERE plant = ? AND id < ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant, $paginate]);
             } else {
-                return static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY id DESC LIMIT ' . $limit, [$plant]);
+                return static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant]);
             }
         } catch (\Exception $e) {
             throw $e;

@@ -9,6 +9,15 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot13()
+    {
+        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS entry_date DATE NULL');
+        PlantLogModel::raw('UPDATE `@THIS` SET entry_date = DATE(created_at) WHERE entry_date IS NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot12()
     {
         PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT \'\'');

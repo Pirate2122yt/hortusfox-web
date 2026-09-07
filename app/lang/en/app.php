@@ -429,6 +429,8 @@ return [
 	'plant_journal_current_photo_label' => 'Current photo',
 	'plant_journal_remove_photo_label' => 'Remove current photo',
 	'plant_journal_entry_title_label' => 'Title',
+	'plant_journal_entry_date_label' => 'Date',
+	'plant_journal_entry_date_hint' => 'Set this to when it actually happened to log past events.',
 	'plant_journal_entry_content_label' => 'Notes (optional)',
 	'plant_journal_photos_label' => 'Photos (optional)',
 	'plant_journal_current_photos_label' => 'Current photos',

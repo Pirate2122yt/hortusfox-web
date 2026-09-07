@@ -33,6 +33,7 @@ class PlantLogModel_Migration {
         $this->database->add('content TEXT NOT NULL');
         $this->database->add('tags VARCHAR(512) NOT NULL DEFAULT \'\'');
         $this->database->add('is_system TINYINT(1) NOT NULL DEFAULT 0');
+        $this->database->add('entry_date DATE NULL');
         $this->database->add('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
