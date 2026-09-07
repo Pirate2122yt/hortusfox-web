@@ -1880,6 +1880,28 @@
 									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
 								</div>
 							</div>
+
+							@if ((plant_attr('last_watered')) || (plant_attr('last_repotted')) || (plant_attr('last_fertilised')))
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_mark_attributes_label') }}</label>
+								@if (plant_attr('last_watered'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_watered" value="1">&nbsp;{{ __('app.plant_journal_mark_watered') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_repotted'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_repotted" value="1">&nbsp;{{ __('app.plant_journal_mark_repotted') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_fertilised'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_fertilised" value="1">&nbsp;{{ __('app.plant_journal_mark_fertilised') }}
+								</label><br/>
+								@endif
+								<p class="help">{{ __('app.plant_journal_mark_attributes_hint') }}</p>
+							</div>
+							@endif
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">
@@ -1947,6 +1969,28 @@
 									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
 								</div>
 							</div>
+
+							@if ((plant_attr('last_watered')) || (plant_attr('last_repotted')) || (plant_attr('last_fertilised')))
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_mark_attributes_label') }}</label>
+								@if (plant_attr('last_watered'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_watered" value="1">&nbsp;{{ __('app.plant_journal_mark_watered') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_repotted'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_repotted" value="1">&nbsp;{{ __('app.plant_journal_mark_repotted') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_fertilised'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_fertilised" value="1">&nbsp;{{ __('app.plant_journal_mark_fertilised') }}
+								</label><br/>
+								@endif
+								<p class="help">{{ __('app.plant_journal_mark_attributes_hint') }}</p>
+							</div>
+							@endif
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">
@@ -1964,22 +2008,80 @@
 						<button class="delete" aria-label="close" onclick="window.vue.bShowAddLocationLogEntry = false;"></button>
 					</header>
 					<section class="modal-card-body is-stretched">
-						<form id="frmAddLocationLogEntry" method="POST" action="{{ url('/plants/location/log/add') }}">
+						<form id="frmAddLocationLogEntry" method="POST" enctype="multipart/form-data" action="{{ url('/plants/location/log/add') }}">
 							@csrf
 
 							<input type="hidden" name="location" id="inpAddLocationLogEntryLocationId"/>
 							<input type="hidden" name="anchor" id="inpAddLocationLogEntryAnchor"/>
+							<input type="hidden" name="apply_plants" id="inpAddLocationLogEntryApplyPlants" value=""/>
 
 							<div class="field">
-								<label class="label">{{ __('app.location_log_content') }}</label>
+								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="content" required>
+									<input type="text" class="input" name="title" id="inpAddLocationLogEntryTitle" required>
 								</div>
 							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_date_label') }}</label>
+								<div class="control">
+									<input type="date" class="input" name="entry_date" id="inpAddLocationLogEntryDate" required>
+								</div>
+								<p class="help">{{ __('app.plant_journal_entry_date_hint') }}</p>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="content" id="inpAddLocationLogEntryContent" rows="4"></textarea>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_tags_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="tags" id="inpAddLocationLogEntryTags" placeholder="{{ __('app.plant_journal_tags_placeholder') }}">
+								</div>
+								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
+								<div class="control">
+									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label location-journal-plants-label">{{ __('app.location_journal_applies_to_label') }}</label>
+								<div class="location-journal-plants-checklist" id="add-location-log-entry-plants-checklist"></div>
+							</div>
+
+							@if ((plant_attr('last_watered')) || (plant_attr('last_repotted')) || (plant_attr('last_fertilised')))
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_mark_attributes_label') }}</label>
+								@if (plant_attr('last_watered'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_watered" value="1">&nbsp;{{ __('app.plant_journal_mark_watered') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_repotted'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_repotted" value="1">&nbsp;{{ __('app.plant_journal_mark_repotted') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_fertilised'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_fertilised" value="1">&nbsp;{{ __('app.plant_journal_mark_fertilised') }}
+								</label><br/>
+								@endif
+								<p class="help">{{ __('app.location_journal_mark_attributes_hint') }}</p>
+							</div>
+							@endif
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">
-						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmAddLocationLogEntry').submit();">{{ __('app.add') }}</button>
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; window.vue.syncLocationJournalPlantsField('add'); document.getElementById('frmAddLocationLogEntry').submit();">{{ __('app.add') }}</button>
 						<button class="button" onclick="window.vue.bShowAddLocationLogEntry = false;">{{ __('app.cancel') }}</button>
 					</footer>
 				</div>
@@ -1993,23 +2095,88 @@
 						<button class="delete" aria-label="close" onclick="window.vue.bShowEditLocationLogEntry = false;"></button>
 					</header>
 					<section class="modal-card-body is-stretched">
-						<form id="frmEditLocationLogEntry" method="POST" action="{{ url('/plants/location/log/edit') }}">
+						<form id="frmEditLocationLogEntry" method="POST" enctype="multipart/form-data" action="{{ url('/plants/location/log/edit') }}">
 							@csrf
 
 							<input type="hidden" name="item" id="inpEditLocationLogEntryItemId"/>
 							<input type="hidden" name="location" id="inpEditLocationLogEntryLocationId"/>
 							<input type="hidden" name="anchor" id="inpEditLocationLogEntryAnchor"/>
+							<input type="hidden" name="remove_photos" id="inpEditLocationLogEntryRemovePhotos" value=""/>
+							<input type="hidden" name="apply_plants" id="inpEditLocationLogEntryApplyPlants" value=""/>
 
 							<div class="field">
-								<label class="label">{{ __('app.location_log_content') }}</label>
+								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="content" id="inpEditLocationLogEntryContent" required>
+									<input type="text" class="input" name="title" id="inpEditLocationLogEntryTitle" required>
 								</div>
 							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_date_label') }}</label>
+								<div class="control">
+									<input type="date" class="input" name="entry_date" id="inpEditLocationLogEntryDate" required>
+								</div>
+								<p class="help">{{ __('app.plant_journal_entry_date_hint') }}</p>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="content" id="inpEditLocationLogEntryContent" rows="4"></textarea>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_tags_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="tags" id="inpEditLocationLogEntryTags" placeholder="{{ __('app.plant_journal_tags_placeholder') }}">
+								</div>
+								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
+							</div>
+
+							<div class="field is-hidden" id="edit-location-log-entry-current-photos">
+								<label class="label">{{ __('app.plant_journal_current_photos_label') }}</label>
+								<div class="plant-journal-modal-photo-grid" id="edit-location-log-entry-current-photos-grid"></div>
+								<p class="help">{{ __('app.plant_journal_remove_photo_hint') }}</p>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
+								<div class="control">
+									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label location-journal-plants-label">{{ __('app.location_journal_applies_to_label') }}</label>
+								<div class="location-journal-plants-checklist" id="edit-location-log-entry-plants-checklist"></div>
+							</div>
+
+							@if ((plant_attr('last_watered')) || (plant_attr('last_repotted')) || (plant_attr('last_fertilised')))
+							<div class="field">
+								<label class="label">{{ __('app.plant_journal_mark_attributes_label') }}</label>
+								@if (plant_attr('last_watered'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_watered" value="1">&nbsp;{{ __('app.plant_journal_mark_watered') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_repotted'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_repotted" value="1">&nbsp;{{ __('app.plant_journal_mark_repotted') }}
+								</label><br/>
+								@endif
+								@if (plant_attr('last_fertilised'))
+								<label class="checkbox">
+									<input type="checkbox" name="mark_fertilised" value="1">&nbsp;{{ __('app.plant_journal_mark_fertilised') }}
+								</label><br/>
+								@endif
+								<p class="help">{{ __('app.location_journal_mark_attributes_hint') }}</p>
+							</div>
+							@endif
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">
-						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmEditLocationLogEntry').submit();">{{ __('app.save') }}</button>
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; window.vue.syncLocationJournalPlantsField('edit'); document.getElementById('frmEditLocationLogEntry').submit();">{{ __('app.save') }}</button>
 						<button class="button" onclick="window.vue.bShowEditLocationLogEntry = false;">{{ __('app.cancel') }}</button>
 					</footer>
 				</div>
@@ -2215,6 +2382,11 @@
 				let elPlantJournalToggleSystem = document.getElementById('plant-journal-toggle-system');
 				if (elPlantJournalToggleSystem) {
 					window.vue.initPlantJournalSystemToggle();
+				}
+
+				let elLocationJournalToggleSystem = document.getElementById('location-journal-toggle-system');
+				if (elLocationJournalToggleSystem) {
+					window.vue.initLocationJournalSystemToggle();
 				}
 
 				@if ((isset($user)) && ($user->get('show_calendar_view')) && (isset($calendar_sv_date_from)) && (isset($calendar_sv_date_till)))

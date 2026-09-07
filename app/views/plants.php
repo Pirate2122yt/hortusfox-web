@@ -139,46 +139,83 @@
 
 <div class="is-dark-delimiter"><hr/></div>
 
-<div class="location-log">
-	<div class="location-log-title">{{ __('app.location_log') }}</div>
+<div class="plant-journal location-log">
+	<div class="plant-journal-title location-log-title">{{ __('app.location_log') }}</div>
 
 	<a name="location-log-anchor" id="location-log-anchor"></a>
 
+	<div class="plant-journal-add">
+		<a class="button is-info" id="location-journal-add-btn" data-plants="{{ $location_plants_json }}" href="javascript:void(0);" onclick="window.vue.showAddLocationLogEntry('{{ $location }}', 'location-journal-anchor');">{{ __('app.add_location_log_entry') }}</a>
+
+		<label class="checkbox plant-journal-system-toggle">
+			<input type="checkbox" id="location-journal-toggle-system" onchange="window.vue.toggleLocationJournalSystemEntries(this.checked);">
+			{{ __('app.plant_journal_show_system_label') }}
+		</label>
+	</div>
+
 	@if ((is_countable($location_log_entries)) && (count($location_log_entries) > 0))
-	<table id="location-log-table">
-		<thead>
-			<tr>
-				<td>{{ __('app.location_log_content') }}</td>
-				<td>{{ __('app.location_log_date') }}</td>
-				<td><span class="float-right">{{ __('app.location_log_actions') }}</span></td>
-			</tr>
-		</thead>
+	<div class="plant-journal-entries" id="location-journal-entries">
+		@foreach ($location_log_entries as $location_log_entry)
+			<div class="plant-journal-entry{{ $location_log_entry->get('is_system') ? ' is-system' : '' }}" id="location-log-entry-table-row-{{ $location_log_entry->get('id') }}">
+				@if (isset($location_log_entry_photos[$location_log_entry->get('id')]) && count($location_log_entry_photos[$location_log_entry->get('id')]) > 0)
+					<div class="plant-journal-entry-photos">
+						@foreach ($location_log_entry_photos[$location_log_entry->get('id')] as $entry_photo)
+							<a href="{{ abs_photo($entry_photo['original']) }}" target="_blank" class="plant-journal-entry-photo">
+								<img src="{{ abs_photo($entry_photo['thumb']) }}" alt="photo"/>
+							</a>
+						@endforeach
+					</div>
+				@endif
 
-		<tbody>
-			@foreach ($location_log_entries as $location_log_entry)
-			<tr id="location-log-entry-table-row-{{ $location_log_entry->get('id') }}">
-				<td id="location-log-entry-item-{{ $location_log_entry->get('id') }}">{{ $location_log_entry->get('content') }}</td>
-				<td>{{ date('Y-m-d', strtotime($location_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($location_log_entry->get('updated_at'))) }}</td>
-				<td>
-					<span class="float-right">
-						<span><a href="javascript:void(0);" onclick="window.vue.showEditLocationLogEntry('{{ $location_log_entry->get('id') }}', '{{ $location_log_entry->get('location') }}', document.getElementById('location-log-entry-item-{{ $location_log_entry->get('id') }}').innerText, 'location-log-anchor');"><i class="fas fa-edit is-color-darker"></i></a></span>&nbsp;<span class="float-right"><a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_location_log_entry') }}')) { window.vue.removeLocationLogEntry('{{ $location_log_entry->get('id') }}', 'location-log-entry-table-row-{{ $location_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a></span>
-					</span>
-				</td>
-			</tr>
-			@endforeach
+				<div class="plant-journal-entry-body">
+					<div class="plant-journal-entry-header">
+						<span class="plant-journal-entry-title" id="location-log-entry-item-{{ $location_log_entry->get('id') }}" data-title="{{ $location_log_entry->get('title') }}" data-content="{{ $location_log_entry->get('content') }}" data-tags="{{ $location_log_entry->get('tags') }}" data-entry-date="{{ $location_log_entry->get('entry_date') ? date('Y-m-d', strtotime($location_log_entry->get('entry_date'))) : date('Y-m-d', strtotime($location_log_entry->get('created_at'))) }}" data-photos="{{ json_encode($location_log_entry_photos[$location_log_entry->get('id')] ?? []) }}" data-plants="{{ json_encode($location_log_entry_plants[$location_log_entry->get('id')] ?? []) }}">{{ $location_log_entry->get('title') }}</span>
+						@if ($location_log_entry->get('is_system'))
+							<span class="plant-journal-entry-system-badge">{{ __('app.plant_journal_system_badge') }}</span>
+						@endif
+					</div>
 
-			@if ($location_log_entries->asArray()[count($location_log_entries) - 1]['id'] > 1)
-				<tr id="location-log-load-more" class="location-log-paginate">
-					<td colspan="3"><a href="javascript:void(0);" onclick="window.vue.loadNextLocationLogEntries(this, '{{ $location }}', document.getElementById('location-log-table'));" data-paginate="{{ $location_log_entries->asArray()[count($location_log_entries) - 1]['id'] }}">{{ __('app.load_more') }}</a></td>
-				</tr>
-			@endif
-		</tbody>
-	</table>
+					@if (strlen(trim($location_log_entry->get('content') ?? '')) > 0)
+						<div class="plant-journal-entry-content">{{ $location_log_entry->get('content') }}</div>
+					@endif
+
+					@if (strlen(trim($location_log_entry->get('tags') ?? '')) > 0)
+						<div class="plant-journal-entry-tags">
+							@foreach (preg_split('/\s+/', trim($location_log_entry->get('tags'))) as $entry_tag)
+								@if (strlen($entry_tag) > 0)
+									<span class="plant-journal-entry-tag">{{ $entry_tag }}</span>
+								@endif
+							@endforeach
+						</div>
+					@endif
+
+					@if (isset($location_log_entry_plant_names[$location_log_entry->get('id')]) && count($location_log_entry_plant_names[$location_log_entry->get('id')]) > 0)
+						<div class="plant-journal-entry-tags">
+							@foreach ($location_log_entry_plant_names[$location_log_entry->get('id')] as $entry_plant_name)
+								<span class="plant-journal-entry-plant-chip"><i class="fas fa-seedling"></i>&nbsp;{{ $entry_plant_name }}</span>
+							@endforeach
+						</div>
+					@endif
+
+					<div class="plant-journal-entry-footer">
+						<span class="plant-journal-entry-date">{{ $location_log_entry->get('entry_date') ? date('Y-m-d', strtotime($location_log_entry->get('entry_date'))) : date('Y-m-d', strtotime($location_log_entry->get('created_at'))) }}</span>
+						<span class="plant-journal-entry-actions">
+							<a href="javascript:void(0);" onclick="let el = document.getElementById('location-log-entry-item-{{ $location_log_entry->get('id') }}'); window.vue.showEditLocationLogEntry('{{ $location_log_entry->get('id') }}', '{{ $location_log_entry->get('location') }}', el.dataset.title, el.dataset.content, el.dataset.tags, el.dataset.entryDate, JSON.parse(el.dataset.photos), JSON.parse(el.dataset.plants), 'location-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_location_log_entry') }}')) { window.vue.removeLocationLogEntry('{{ $location_log_entry->get('id') }}', 'location-log-entry-table-row-{{ $location_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+						</span>
+					</div>
+				</div>
+			</div>
+		@endforeach
+
+		@if ($location_log_entries->get(count($location_log_entries) - 1)?->get('id') > 1)
+			<div id="location-log-load-more" class="plant-journal-paginate">
+				<a href="javascript:void(0);" onclick="window.vue.loadNextLocationLogEntries(this, '{{ $location }}', document.getElementById('location-journal-entries'));" data-paginate="{{ $location_log_entries->get(count($location_log_entries) - 1)?->get('id') }}" data-paginate-date="{{ $location_log_entries->get(count($location_log_entries) - 1)?->get('entry_date') ? date('Y-m-d', strtotime($location_log_entries->get(count($location_log_entries) - 1)?->get('entry_date'))) : date('Y-m-d', strtotime($location_log_entries->get(count($location_log_entries) - 1)?->get('created_at'))) }}">{{ __('app.load_more') }}</a>
+			</div>
+		@endif
+	</div>
 	@else
 		<strong>{{ __('app.no_location_log_entries_yet') }}</strong>
 	@endif
-
-	<div class="location-log-action">
-		<a class="button is-info" href="javascript:void(0);" onclick="window.vue.showAddLocationLogEntry('{{ $location }}', 'location-log-anchor');">{{ __('app.add_location_log_entry') }}</a>
-	</div>
 </div>
+
+<a name="location-journal-anchor" id="location-journal-anchor"></a>

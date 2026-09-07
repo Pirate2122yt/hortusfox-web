@@ -323,7 +323,11 @@ class PlantsModel extends \Asatru\Database\Model {
 
                 move_uploaded_file($_FILES['photo']['tmp_name'], public_path('/img/' . $file_name . '.' . $file_ext));
 
-                if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
+                $img_type = UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name));
+
+                UtilsModule::optimizeImage(public_path('/img/' . $file_name . '.' . $file_ext), $img_type);
+
+                if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), $img_type, public_path('/img/' . $file_name), $file_ext)) {
                     throw new \Exception('createThumbFile failed');
                 }
 
@@ -379,6 +383,44 @@ class PlantsModel extends \Asatru\Database\Model {
 
             if (app('system_message_plant_log')) {
                 PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', true, true);
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Updates one of the plant's tracked care-date attributes
+     * (last_watered / last_repotted / last_fertilised) from a journal
+     * entry, e.g. via a "mark as watered" checkbox on the entry form.
+     * Only ever moves the date forward: if the plant already has a
+     * newer date on file, an older/backfilled journal entry won't
+     * regress it. Does not write a log entry or a system journal entry
+     * of its own, since the journal entry that triggered this already
+     * documents the change.
+     *
+     * @param $plantId
+     * @param $attribute one of 'last_watered', 'last_repotted', 'last_fertilised'
+     * @param $date a Y-m-d or Y-m-d H:i:s datetime string
+     * @return void
+     * @throws \Exception
+     */
+    public static function updateDateAttributeIfNewer($plantId, $attribute, $date)
+    {
+        try {
+            if (!in_array($attribute, ['last_watered', 'last_repotted', 'last_fertilised'])) {
+                throw new \Exception('Invalid attribute: ' . $attribute);
+            }
+
+            $plant = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$plantId])->first();
+            if (!$plant) {
+                throw new \Exception('Invalid plant: ' . $plantId);
+            }
+
+            $current = $plant->get($attribute);
+
+            if ((!$current) || (strtotime($date) >= strtotime($current))) {
+                static::raw('UPDATE `@THIS` SET ' . $attribute . ' = ? WHERE id = ?', [$date, $plantId]);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -458,7 +500,11 @@ class PlantsModel extends \Asatru\Database\Model {
 
             move_uploaded_file($_FILES[$value]['tmp_name'], public_path('/img/' . $file_name . '.' . $file_ext));
 
-            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
+            $img_type = UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name));
+
+            UtilsModule::optimizeImage(public_path('/img/' . $file_name . '.' . $file_ext), $img_type);
+
+            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), $img_type, public_path('/img/' . $file_name), $file_ext)) {
                 throw new \Exception('createThumbFile failed');
             }
 

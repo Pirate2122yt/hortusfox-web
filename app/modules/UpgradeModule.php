@@ -9,6 +9,34 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot15()
+    {
+        LocationLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT \'\'');
+        LocationLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS tags VARCHAR(512) NOT NULL DEFAULT \'\'');
+        LocationLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_system TINYINT(1) NOT NULL DEFAULT 0');
+        LocationLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS entry_date DATE NULL');
+        LocationLogModel::raw('UPDATE `@THIS` SET is_system = 1, title = TRIM(SUBSTRING(content, 10)), content = \'\' WHERE content LIKE \'[System]%\' AND title = \'\'');
+        LocationLogModel::raw('UPDATE `@THIS` SET title = content, content = \'\' WHERE title = \'\' AND is_system = 0 AND content <> \'\'');
+        LocationLogModel::raw('UPDATE `@THIS` SET entry_date = DATE(created_at) WHERE entry_date IS NULL');
+
+        LocationLogPhotoModel::raw('CREATE TABLE IF NOT EXISTS LocationLogPhotoModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            log_entry INT NOT NULL,
+            thumb VARCHAR(255) NOT NULL,
+            original VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        LocationLogPlantModel::raw('CREATE TABLE IF NOT EXISTS LocationLogPlantModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            log_entry INT NOT NULL,
+            plant INT NOT NULL
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot13()
     {
         PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS entry_date DATE NULL');

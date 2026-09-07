@@ -45,7 +45,11 @@ class PlantLogModel extends \Asatru\Database\Model {
 
             move_uploaded_file($_FILES['photos']['tmp_name'][$i], public_path('/img/' . $file_name . '.' . $file_ext));
 
-            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
+            $img_type = UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name));
+
+            UtilsModule::optimizeImage(public_path('/img/' . $file_name . '.' . $file_ext), $img_type);
+
+            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), $img_type, public_path('/img/' . $file_name), $file_ext)) {
                 throw new \Exception('createThumbFile failed');
             }
 
@@ -93,6 +97,64 @@ class PlantLogModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Photos attached to a journal entry are mirrored into the plant's
+     * own gallery/Photos section, so they show up in both places. This
+     * is a one-way, add-only sync: removing a journal entry or its
+     * photos later does NOT remove the mirrored gallery copies. Uses
+     * PlantPhotoModel::addCustom() directly (not uploadPhoto()) since
+     * the files are already saved/optimized on disk, and passing $api =
+     * true avoids re-requiring an authenticated user and avoids firing
+     * a duplicate "add_gallery_photo" system journal entry.
+     *
+     * @param $plant
+     * @param $photos array of [thumb, original] filename pairs
+     * @param $label
+     * @param $entryDate
+     * @return void
+     */
+    private static function mirrorPhotosToGallery($plant, $photos, $label, $entryDate)
+    {
+        if (empty($photos)) {
+            return;
+        }
+
+        $date = (($entryDate === date('Y-m-d')) ? null : ($entryDate . ' 00:00:00'));
+
+        foreach ($photos as $photo) {
+            PlantPhotoModel::addCustom($plant, $photo[0], $photo[1], $label, $date, true);
+        }
+    }
+
+    /**
+     * Lets a journal entry also update the plant's tracked care dates
+     * (last_watered / last_repotted / last_fertilised), e.g. via a
+     * "mark as watered" checkbox on the entry form. Delegates to
+     * PlantsModel::updateDateAttributeIfNewer() so backfilling an old
+     * entry can never regress a more recent date already on file.
+     *
+     * @param $plant
+     * @param $markAttributes array of attribute names to update
+     * @param $entryDate
+     * @return void
+     * @throws \Exception
+     */
+    private static function applyMarkAttributes($plant, $markAttributes, $entryDate)
+    {
+        if (!is_array($markAttributes) || empty($markAttributes)) {
+            return;
+        }
+
+        $allowed = ['last_watered', 'last_repotted', 'last_fertilised'];
+        $date = (($entryDate === date('Y-m-d')) ? date('Y-m-d H:i:s') : ($entryDate . ' 00:00:00'));
+
+        foreach ($markAttributes as $attribute) {
+            if (in_array($attribute, $allowed)) {
+                PlantsModel::updateDateAttributeIfNewer($plant, $attribute, $date);
+            }
+        }
+    }
+
+    /**
      * @param $plant
      * @param $title
      * @param $content
@@ -100,10 +162,11 @@ class PlantLogModel extends \Asatru\Database\Model {
      * @param $api
      * @param $isSystem
      * @param $entryDate
+     * @param $markAttributes array of 'last_watered'/'last_repotted'/'last_fertilised' to also update
      * @return int
      * @throws \Exception
      */
-    public static function addEntry($plant, $title, $content = '', $tags = '', $api = false, $isSystem = false, $entryDate = null)
+    public static function addEntry($plant, $title, $content = '', $tags = '', $api = false, $isSystem = false, $entryDate = null, $markAttributes = [])
     {
         try {
             $user = null;
@@ -126,9 +189,17 @@ class PlantLogModel extends \Asatru\Database\Model {
             $entryId = ($item) ? $item->get('id') : 0;
 
             if ($entryId > 0) {
-                foreach (static::handlePhotoUploads() as $photo) {
+                $photos = static::handlePhotoUploads();
+
+                foreach ($photos as $photo) {
                     PlantLogPhotoModel::addPhoto($entryId, $photo[0], $photo[1]);
                 }
+
+                static::mirrorPhotosToGallery($plant, $photos, $title, $entryDate);
+            }
+
+            if (!$isSystem) {
+                static::applyMarkAttributes($plant, $markAttributes, $entryDate);
             }
 
             if (!$api) {
@@ -149,10 +220,11 @@ class PlantLogModel extends \Asatru\Database\Model {
      * @param $removePhotoIds
      * @param $api
      * @param $entryDate
+     * @param $markAttributes array of 'last_watered'/'last_repotted'/'last_fertilised' to also update
      * @return void
      * @throws \Exception
      */
-    public static function editEntry($id, $title, $content = '', $tags = '', $removePhotoIds = [], $api = false, $entryDate = null)
+    public static function editEntry($id, $title, $content = '', $tags = '', $removePhotoIds = [], $api = false, $entryDate = null, $markAttributes = [])
     {
         try {
             $user = null;
@@ -190,8 +262,16 @@ class PlantLogModel extends \Asatru\Database\Model {
                 }
             }
 
-            foreach (static::handlePhotoUploads() as $photo) {
+            $photos = static::handlePhotoUploads();
+
+            foreach ($photos as $photo) {
                 PlantLogPhotoModel::addPhoto($item->get('id'), $photo[0], $photo[1]);
+            }
+
+            static::mirrorPhotosToGallery($item->get('plant'), $photos, $title, $entryDate);
+
+            if (!$item->get('is_system')) {
+                static::applyMarkAttributes($item->get('plant'), $markAttributes, $entryDate);
             }
 
             if (!$api) {

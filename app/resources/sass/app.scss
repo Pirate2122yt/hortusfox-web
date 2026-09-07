@@ -2090,6 +2090,45 @@ fieldset .field {
     text-decoration: underline;
 }
 
+.plant-journal-entry-plant-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    background-color: rgba(76, 175, 80, 0.25);
+    color: rgb(160, 220, 160);
+    border-radius: 10px;
+    font-size: 0.85em;
+}
+
+.location-journal-plants-label {
+    display: block;
+    color: rgb(150, 150, 150);
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.location-journal-plants-checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    max-height: 160px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.location-journal-plants-checklist label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    color: rgb(210, 210, 210);
+    white-space: nowrap;
+}
+
 .share-log-action {
     margin-top: 20px;
 }

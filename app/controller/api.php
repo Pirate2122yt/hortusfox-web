@@ -540,13 +540,23 @@ class ApiController extends BaseController {
             $content = $request->params()->query('content', '');
             $tags = $request->params()->query('tags', '');
             $entry_date = $request->params()->query('entry_date', null);
+            $mark_attributes = [];
+            if ((bool)$request->params()->query('mark_watered', false)) {
+                $mark_attributes[] = 'last_watered';
+            }
+            if ((bool)$request->params()->query('mark_repotted', false)) {
+                $mark_attributes[] = 'last_repotted';
+            }
+            if ((bool)$request->params()->query('mark_fertilised', false)) {
+                $mark_attributes[] = 'last_fertilised';
+            }
 
             if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
                 $title = $content;
                 $content = '';
             }
 
-            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true, false, $entry_date);
+            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true, false, $entry_date, $mark_attributes);
 
             return json([
                 'code' => 200,
@@ -574,13 +584,23 @@ class ApiController extends BaseController {
             $content = $request->params()->query('content', '');
             $tags = $request->params()->query('tags', '');
             $entry_date = $request->params()->query('entry_date', null);
+            $mark_attributes = [];
+            if ((bool)$request->params()->query('mark_watered', false)) {
+                $mark_attributes[] = 'last_watered';
+            }
+            if ((bool)$request->params()->query('mark_repotted', false)) {
+                $mark_attributes[] = 'last_repotted';
+            }
+            if ((bool)$request->params()->query('mark_fertilised', false)) {
+                $mark_attributes[] = 'last_fertilised';
+            }
 
             if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
                 $title = $content;
                 $content = '';
             }
 
-            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true, $entry_date);
+            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true, $entry_date, $mark_attributes);
 
             return json([
                 'code' => 200

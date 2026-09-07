@@ -40,7 +40,42 @@ class PlantsController extends BaseController {
 
 		$plants = PlantsModel::getAll($location, $sorting, $direction);
 
+		$location_plants_list = [];
+		if (is_countable($plants)) {
+			foreach ($plants as $location_plant) {
+				$location_plants_list[] = ['id' => $location_plant->get('id'), 'name' => $location_plant->get('name')];
+			}
+		}
+
 		$location_log_entries = LocationLogModel::getLogEntries($location);
+
+		$location_log_entry_photos = [];
+		$location_log_entry_plants = [];
+		$location_log_entry_plant_names = [];
+		if (is_countable($location_log_entries)) {
+			foreach ($location_log_entries as $location_log_entry) {
+				$entry_photos = LocationLogPhotoModel::getForEntry($location_log_entry->get('id'));
+				$entry_photos_arr = [];
+				if (is_countable($entry_photos)) {
+					foreach ($entry_photos as $entry_photo) {
+						$entry_photos_arr[] = ['id' => $entry_photo->get('id'), 'thumb' => $entry_photo->get('thumb'), 'original' => $entry_photo->get('original')];
+					}
+				}
+				$location_log_entry_photos[$location_log_entry->get('id')] = $entry_photos_arr;
+
+				$applied_plant_ids = LocationLogPlantModel::getPlantIdsForEntry($location_log_entry->get('id'));
+				$location_log_entry_plants[$location_log_entry->get('id')] = $applied_plant_ids;
+
+				$applied_plant_names = [];
+				foreach ($applied_plant_ids as $applied_plant_id) {
+					$applied_plant = PlantsModel::getDetails($applied_plant_id);
+					if ($applied_plant) {
+						$applied_plant_names[] = $applied_plant->get('name');
+					}
+				}
+				$location_log_entry_plant_names[$location_log_entry->get('id')] = $applied_plant_names;
+			}
+		}
 
 		if ((is_string($show)) && ((isset($_COOKIE['list_show_style'])) && ($_COOKIE['list_show_style'] !== $show))) {
 			setcookie('list_show_style', $show, time() + 31536000, '/');
@@ -65,6 +100,10 @@ class PlantsController extends BaseController {
 			'location' => $location,
 			'location_data' => LocationsModel::getLocationById($location),
 			'location_log_entries' => $location_log_entries,
+			'location_log_entry_photos' => $location_log_entry_photos,
+			'location_log_entry_plants' => $location_log_entry_plants,
+			'location_log_entry_plant_names' => $location_log_entry_plant_names,
+			'location_plants_json' => json_encode($location_plants_list),
 			'list_sorting_style' => $sorting,
 			'list_order_style' => $direction
 		]);
@@ -158,7 +197,7 @@ class PlantsController extends BaseController {
 
 			LocationsModel::saveNotes($location, $notes);
 
-			LocationLogModel::addEntry($location, '[System] save_notes: ' . $notes);
+			LocationLogModel::addEntry($location, 'save_notes: ' . $notes, '', '', true, true);
 
 			return json([
 				'code' => 200
@@ -921,7 +960,7 @@ class PlantsController extends BaseController {
 				}
 			}
 
-			LocationLogModel::addEntry($location, '[System] bulk_action ' . $attribute . '@' . count($plants));
+			LocationLogModel::addEntry($location, 'bulk_action ' . $attribute . '@' . count($plants), '', '', true, true);
 
 			return json([
 				'code' => 200
@@ -1110,8 +1149,18 @@ class PlantsController extends BaseController {
 			$tags = $request->params()->query('tags', '');
 			$entry_date = $request->params()->query('entry_date', null);
 			$anchor = $request->params()->query('anchor');
+			$mark_attributes = [];
+			if ((bool)$request->params()->query('mark_watered', false)) {
+				$mark_attributes[] = 'last_watered';
+			}
+			if ((bool)$request->params()->query('mark_repotted', false)) {
+				$mark_attributes[] = 'last_repotted';
+			}
+			if ((bool)$request->params()->query('mark_fertilised', false)) {
+				$mark_attributes[] = 'last_fertilised';
+			}
 
-			PlantLogModel::addEntry($plant, $title, $content, $tags, false, false, $entry_date);
+			PlantLogModel::addEntry($plant, $title, $content, $tags, false, false, $entry_date, $mark_attributes);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1140,8 +1189,18 @@ class PlantsController extends BaseController {
 				return strlen(trim($v)) > 0;
 			}));
 			$anchor = $request->params()->query('anchor');
+			$mark_attributes = [];
+			if ((bool)$request->params()->query('mark_watered', false)) {
+				$mark_attributes[] = 'last_watered';
+			}
+			if ((bool)$request->params()->query('mark_repotted', false)) {
+				$mark_attributes[] = 'last_repotted';
+			}
+			if ((bool)$request->params()->query('mark_fertilised', false)) {
+				$mark_attributes[] = 'last_fertilised';
+			}
 
-			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos, false, $entry_date);
+			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos, false, $entry_date, $mark_attributes);
 
 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1219,10 +1278,26 @@ class PlantsController extends BaseController {
 	{
 		try {
 			$location = $request->params()->query('location');
-			$content = $request->params()->query('content');
+			$title = $request->params()->query('title');
+			$content = $request->params()->query('content', '');
+			$tags = $request->params()->query('tags', '');
+			$entry_date = $request->params()->query('entry_date', null);
 			$anchor = $request->params()->query('anchor');
+			$apply_plants = array_values(array_filter(explode(',', $request->params()->query('apply_plants', '')), function($v) {
+				return strlen(trim($v)) > 0;
+			}));
+			$mark_attributes = [];
+			if ((bool)$request->params()->query('mark_watered', false)) {
+				$mark_attributes[] = 'last_watered';
+			}
+			if ((bool)$request->params()->query('mark_repotted', false)) {
+				$mark_attributes[] = 'last_repotted';
+			}
+			if ((bool)$request->params()->query('mark_fertilised', false)) {
+				$mark_attributes[] = 'last_fertilised';
+			}
 
-			LocationLogModel::addEntry($location, $content);
+			LocationLogModel::addEntry($location, $title, $content, $tags, false, false, $entry_date, $apply_plants, $mark_attributes);
 
 			return redirect('/plants/location/' . $location . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1233,7 +1308,7 @@ class PlantsController extends BaseController {
 
 	/**
 	 * Handles URL: /plants/location/log/edit
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\RedirectHandler
 	 */
@@ -1242,10 +1317,30 @@ class PlantsController extends BaseController {
 		try {
 			$item = $request->params()->query('item');
 			$location = $request->params()->query('location');
-			$content = $request->params()->query('content');
+			$title = $request->params()->query('title');
+			$content = $request->params()->query('content', '');
+			$tags = $request->params()->query('tags', '');
+			$entry_date = $request->params()->query('entry_date', null);
+			$remove_photos_raw = $request->params()->query('remove_photos', '');
+			$remove_photos = array_values(array_filter(explode(',', $remove_photos_raw), function($v) {
+				return strlen(trim($v)) > 0;
+			}));
 			$anchor = $request->params()->query('anchor');
-			
-			LocationLogModel::editEntry($item, $content);
+			$apply_plants = array_values(array_filter(explode(',', $request->params()->query('apply_plants', '')), function($v) {
+				return strlen(trim($v)) > 0;
+			}));
+			$mark_attributes = [];
+			if ((bool)$request->params()->query('mark_watered', false)) {
+				$mark_attributes[] = 'last_watered';
+			}
+			if ((bool)$request->params()->query('mark_repotted', false)) {
+				$mark_attributes[] = 'last_repotted';
+			}
+			if ((bool)$request->params()->query('mark_fertilised', false)) {
+				$mark_attributes[] = 'last_fertilised';
+			}
+
+			LocationLogModel::editEntry($item, $title, $content, $tags, $remove_photos, false, $entry_date, $apply_plants, $mark_attributes);
 
 			return redirect('/plants/location/' . $location . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 		} catch (\Exception $e) {
@@ -1256,7 +1351,7 @@ class PlantsController extends BaseController {
 
 	/**
 	 * Handles URL: /plants/location/log/remove
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\JsonHandler
 	 */
@@ -1264,7 +1359,7 @@ class PlantsController extends BaseController {
 	{
 		try {
 			$item = $request->params()->query('item');
-			
+
 			LocationLogModel::removeEntry($item);
 
 			return json([
@@ -1280,7 +1375,7 @@ class PlantsController extends BaseController {
 
 	/**
 	 * Handles URL: /plants/location/log/fetch
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\JsonHandler
 	 */
@@ -1289,12 +1384,16 @@ class PlantsController extends BaseController {
 		try {
 			$location = $request->params()->query('location');
 			$paginate = $request->params()->query('paginate', null);
-			
-			$data = LocationLogModel::getLogEntries($location, $paginate)?->asArray();
+			$paginate_date = $request->params()->query('paginate_date', null);
+
+			$data = LocationLogModel::getLogEntries($location, $paginate, $paginate_date)?->asArray();
 			if (is_array($data)) {
 				foreach ($data as &$item) {
 					$item['updated_at'] = date('Y-m-d', strtotime($item['updated_at']));
 					$item['created_at'] = date('Y-m-d', strtotime($item['created_at']));
+					$item['entry_date'] = $item['entry_date'] ? date('Y-m-d', strtotime($item['entry_date'])) : $item['created_at'];
+					$item['photos'] = LocationLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
+					$item['plants'] = LocationLogPlantModel::getPlantIdsForEntry($item['id']);
 				}
 			}
 

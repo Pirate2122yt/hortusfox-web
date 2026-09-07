@@ -221,6 +221,64 @@ class UtilsModule {
     }
 
     /**
+     * Re-encodes an already-saved image file in place through GD, which
+     * strips all metadata (EXIF/GPS/camera info etc., since GD only ever
+     * reconstructs pixel data) and recompresses it to save disk space.
+     * The EXIF orientation is baked into the pixels first so photos don't
+     * end up sideways once the orientation tag is gone. Animated GIFs are
+     * left untouched since a GD round-trip would destroy the animation.
+     *
+     * @param $path
+     * @param $imgtype one of the IMAGETYPE_* constants
+     * @param $quality JPEG quality (0-100); ignored for PNG
+     * @return bool
+     */
+    public static function optimizeImage($path, $imgtype, $quality = 82)
+    {
+        if ($imgtype === IMAGETYPE_GIF) {
+            return true;
+        }
+
+        ini_set('memory_limit', '512M');
+
+        $image = null;
+
+        switch ($imgtype) {
+            case IMAGETYPE_JPEG:
+                $image = @imagecreatefromjpeg($path);
+                break;
+            case IMAGETYPE_PNG:
+                $image = @imagecreatefrompng($path);
+                break;
+            default:
+                return false;
+        }
+
+        if (!$image) {
+            return false;
+        }
+
+        static::correctImageRotation($path, $image);
+
+        $result = false;
+
+        switch ($imgtype) {
+            case IMAGETYPE_JPEG:
+                $result = imagejpeg($image, $path, $quality);
+                break;
+            case IMAGETYPE_PNG:
+                imagealphablending($image, false);
+                imagesavealpha($image, true);
+                $result = imagepng($image, $path, 8);
+                break;
+        }
+
+        imagedestroy($image);
+
+        return $result;
+    }
+
+    /**
      * @return array
      * @throws \Exception
      */
@@ -526,9 +584,13 @@ class UtilsModule {
 
         $file_name = md5(random_bytes(55) . date('Y-m-d H:i:s'));
 
-        move_uploaded_file($_FILES[$ident]['tmp_name'], $dest . $file_name . '.' . $file_ext);
+        $full_path = $dest . $file_name . '.' . $file_ext;
 
-        return $dest . $file_name . '.' . $file_ext;
+        move_uploaded_file($_FILES[$ident]['tmp_name'], $full_path);
+
+        static::optimizeImage($full_path, static::getImageType($file_ext, $dest . $file_name));
+
+        return $full_path;
     }
 
     /**

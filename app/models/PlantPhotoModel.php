@@ -35,7 +35,11 @@ class PlantPhotoModel extends \Asatru\Database\Model {
 
             move_uploaded_file($_FILES['photo']['tmp_name'], public_path('/img/' . $file_name . '.' . $file_ext));
 
-            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
+            $img_type = UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name));
+
+            UtilsModule::optimizeImage(public_path('/img/' . $file_name . '.' . $file_ext), $img_type);
+
+            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), $img_type, public_path('/img/' . $file_name), $file_ext)) {
                 throw new \Exception('createThumbFile failed');
             }
 
