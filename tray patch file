@@ -1,0 +1,23 @@
+[33mcommit 5f92d8084caf4123014749523da1fb871d17de4f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Claude <noreply@anthropic.com>
+Date:   Mon Sep 7 22:24:58 2026 +0000
+
+    Plant journal: finish front-end for title/multi-photo/system-toggle
+    
+    Completes the journal feature on top of the already-pushed model/controller
+    layer: fixes the API controller to use the new title/content/tags signature,
+    adds the required language keys, rewrites the Add/Edit modals for a title
+    field, optional notes, and multiple photo uploads with per-photo removal,
+    rebuilds the journal feed to show titles, photo strips, and a system-entry
+    badge, and adds the show/hide system entries toggle (persisted via cookie).
+    
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01RX3nSGz3wkwjEseGuUdKtR
+
+ app/controller/api.php      |  35 [32m++++++++[m[31m---[m
+ app/lang/en/app.php         |   7 [32m+++[m
+ app/resources/js/app.js     | 146 [32m+++++++++++++++++++++++++++++++++++[m[31m---------[m
+ app/resources/sass/app.scss | 111 [32m++++++++++++++++++++++++++++[m[31m-----[m
+ app/views/details.php       |  32 [32m+++++++[m[31m---[m
+ app/views/layout.php        |  49 [32m++++++++++[m[31m-----[m
+ 6 files changed, 304 insertions(+), 76 deletions(-)
