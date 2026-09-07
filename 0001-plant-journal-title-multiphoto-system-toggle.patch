@@ -1,0 +1,1276 @@
+From 12b0e249e706099d79310cc95a2695e9924c706b Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 7 Sep 2026 21:53:19 +0000
+Subject: [PATCH] Plant journal: title/content split, multi-photo entries,
+ system-entry toggle
+
+Split journal entries into a required title plus an optional notes/content
+field, replaced the single-photo upload with a proper multi-photo table
+(PlantLogPhotoModel) supporting add/remove per entry, and added an is_system
+flag with a client-side toggle so automatically generated log entries can be
+hidden from user-authored journal entries. Includes a 5.11 -> 5.12 upgrade
+path that backfills title/is_system from existing content and migrates
+existing single photos into the new photo table.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01RX3nSGz3wkwjEseGuUdKtR
+---
+ app/config/version.php                |   2 +-
+ app/controller/api.php                |  35 ++++--
+ app/controller/plants.php             |  33 +++++-
+ app/lang/en/app.php                   |   7 ++
+ app/migrations/PlantLogModel.php      |   4 +-
+ app/migrations/PlantLogPhotoModel.php |  48 ++++++++
+ app/models/PlantAttachmentModel.php   |   4 +-
+ app/models/PlantLogModel.php          | 163 +++++++++-----------------
+ app/models/PlantLogPhotoModel.php     |  57 +++++++++
+ app/models/PlantPhotoModel.php        |   8 +-
+ app/models/PlantsModel.php            |  16 +--
+ app/modules/UpgradeModule.php         |  21 ++++
+ app/resources/js/app.js               | 146 ++++++++++++++++++-----
+ app/resources/sass/app.scss           | 111 +++++++++++++++---
+ app/views/details.php                 |  32 +++--
+ app/views/layout.php                  |  49 +++++---
+ 16 files changed, 532 insertions(+), 204 deletions(-)
+ create mode 100644 app/migrations/PlantLogPhotoModel.php
+ create mode 100644 app/models/PlantLogPhotoModel.php
+
+diff --git a/app/config/version.php b/app/config/version.php
+index d07a94b..b144f73 100644
+--- a/app/config/version.php
++++ b/app/config/version.php
+@@ -1,3 +1,3 @@
+ <?php
+ 
+-return '5.11';
+\ No newline at end of file
++return '5.12';
+\ No newline at end of file
+diff --git a/app/controller/api.php b/app/controller/api.php
+index 4a67706..752c481 100644
+--- a/app/controller/api.php
++++ b/app/controller/api.php
+@@ -536,9 +536,16 @@ class ApiController extends BaseController {
+     {
+         try {
+             $plantId = $request->params()->query('plant', null);
+-            $content = $request->params()->query('content', null);
+-            
+-            $logid = PlantLogModel::addEntry($plantId, $content, '', true);
++            $title = $request->params()->query('title', null);
++            $content = $request->params()->query('content', '');
++            $tags = $request->params()->query('tags', '');
++
++            if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
++                $title = $content;
++                $content = '';
++            }
++
++            $logid = PlantLogModel::addEntry($plantId, $title, $content, $tags, true);
+ 
+             return json([
+                 'code' => 200,
+@@ -562,9 +569,16 @@ class ApiController extends BaseController {
+     {
+         try {
+             $logid = $request->params()->query('logid', null);
+-            $content = $request->params()->query('content', null);
+-            
+-            PlantLogModel::editEntry($logid, $content, '', false, true);
++            $title = $request->params()->query('title', null);
++            $content = $request->params()->query('content', '');
++            $tags = $request->params()->query('tags', '');
++
++            if ((strlen((string)$title) === 0) && (strlen((string)$content) > 0)) {
++                $title = $content;
++                $content = '';
++            }
++
++            PlantLogModel::editEntry($logid, $title, $content, $tags, [], true);
+ 
+             return json([
+                 'code' => 200
+@@ -614,11 +628,16 @@ class ApiController extends BaseController {
+             $paginate = $request->params()->query('paginate', null);
+             $limit = $request->params()->query('limit', 10);
+ 			
+-			$data = PlantLogModel::getLogEntries($plantId, $paginate, $limit);
++			$data = PlantLogModel::getLogEntries($plantId, $paginate, $limit)?->asArray();
++			if (is_array($data)) {
++				foreach ($data as &$item) {
++					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
++				}
++			}
+ 
+             return json([
+                 'code' => 200,
+-                'log' => $data?->asArray()
++                'log' => $data
+             ]);
+         } catch (\Exception $e) {
+             return json([
+diff --git a/app/controller/plants.php b/app/controller/plants.php
+index 8e1dd83..1037972 100644
+--- a/app/controller/plants.php
++++ b/app/controller/plants.php
+@@ -216,6 +216,20 @@ class PlantsController extends BaseController {
+ 		$plant_attachments = PlantAttachmentModel::getForPlant($plant_id);
+ 		$plant_log_entries = PlantLogModel::getLogEntries($plant_id);
+ 
++		$plant_log_entry_photos = [];
++		if (is_countable($plant_log_entries)) {
++			foreach ($plant_log_entries as $plant_log_entry) {
++				$entry_photos = PlantLogPhotoModel::getForEntry($plant_log_entry->get('id'));
++				$entry_photos_arr = [];
++				if (is_countable($entry_photos)) {
++					foreach ($entry_photos as $entry_photo) {
++						$entry_photos_arr[] = ['id' => $entry_photo->get('id'), 'thumb' => $entry_photo->get('thumb'), 'original' => $entry_photo->get('original')];
++					}
++				}
++				$plant_log_entry_photos[$plant_log_entry->get('id')] = $entry_photos_arr;
++			}
++		}
++
+ 		$plant_tasks = [];
+ 		$plant_task_refs = PlantTasksRefModel::getForPlant($plant_id);
+ 		if (is_countable($plant_task_refs)) {
+@@ -241,6 +255,7 @@ class PlantsController extends BaseController {
+ 			'plant_tasks' => $plant_tasks,
+ 			'plant_attachments' => $plant_attachments,
+ 			'plant_log_entries' => $plant_log_entries,
++			'plant_log_entry_photos' => $plant_log_entry_photos,
+ 			'offspring' => $offspring,
+ 			'edit_user_name' => $edit_user_name,
+ 			'edit_user_when' => $edit_user_when
+@@ -1090,11 +1105,12 @@ class PlantsController extends BaseController {
+ 	{
+ 		try {
+ 			$plant = $request->params()->query('plant');
+-			$content = $request->params()->query('content');
++			$title = $request->params()->query('title');
++			$content = $request->params()->query('content', '');
+ 			$tags = $request->params()->query('tags', '');
+ 			$anchor = $request->params()->query('anchor');
+ 
+-			PlantLogModel::addEntry($plant, $content, $tags);
++			PlantLogModel::addEntry($plant, $title, $content, $tags);
+ 
+ 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
+ 		} catch (\Exception $e) {
+@@ -1114,12 +1130,16 @@ class PlantsController extends BaseController {
+ 		try {
+ 			$item = $request->params()->query('item');
+ 			$plant = $request->params()->query('plant');
+-			$content = $request->params()->query('content');
++			$title = $request->params()->query('title');
++			$content = $request->params()->query('content', '');
+ 			$tags = $request->params()->query('tags', '');
+-			$remove_photo = $request->params()->query('remove_photo', '0') == '1';
++			$remove_photos_raw = $request->params()->query('remove_photos', '');
++			$remove_photos = array_values(array_filter(explode(',', $remove_photos_raw), function($v) {
++				return strlen(trim($v)) > 0;
++			}));
+ 			$anchor = $request->params()->query('anchor');
+-			
+-			PlantLogModel::editEntry($item, $content, $tags, $remove_photo);
++
++			PlantLogModel::editEntry($item, $title, $content, $tags, $remove_photos);
+ 
+ 			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
+ 		} catch (\Exception $e) {
+@@ -1169,6 +1189,7 @@ class PlantsController extends BaseController {
+ 				foreach ($data as &$item) {
+ 					$item['updated_at'] = date('Y-m-d', strtotime($item['updated_at']));
+ 					$item['created_at'] = date('Y-m-d', strtotime($item['created_at']));
++					$item['photos'] = PlantLogPhotoModel::getForEntry($item['id'])?->asArray() ?? [];
+ 				}
+ 			}
+ 
+diff --git a/app/lang/en/app.php b/app/lang/en/app.php
+index 5e9cd17..5a05a66 100644
+--- a/app/lang/en/app.php
++++ b/app/lang/en/app.php
+@@ -428,6 +428,13 @@ return [
+ 	'plant_journal_photo_label' => 'Photo (optional)',
+ 	'plant_journal_current_photo_label' => 'Current photo',
+ 	'plant_journal_remove_photo_label' => 'Remove current photo',
++	'plant_journal_entry_title_label' => 'Title',
++	'plant_journal_entry_content_label' => 'Notes (optional)',
++	'plant_journal_photos_label' => 'Photos (optional)',
++	'plant_journal_current_photos_label' => 'Current photos',
++	'plant_journal_remove_photo_hint' => 'Click a photo to mark it for removal.',
++	'plant_journal_show_system_label' => 'Show system entries',
++	'plant_journal_system_badge' => 'System',
+ 	'system_message_plant_log' => 'Add system messages of plants to log',
+ 	'load_more' => 'Load more',
+ 	'operationSucceeded' => 'Operation succeeded',
+diff --git a/app/migrations/PlantLogModel.php b/app/migrations/PlantLogModel.php
+index de6893e..f89324c 100644
+--- a/app/migrations/PlantLogModel.php
++++ b/app/migrations/PlantLogModel.php
+@@ -29,10 +29,10 @@ class PlantLogModel_Migration {
+         $this->database->drop();
+         $this->database->add('id INT NOT NULL AUTO_INCREMENT PRIMARY KEY');
+         $this->database->add('plant INT NOT NULL');
++        $this->database->add('title VARCHAR(255) NOT NULL DEFAULT \'\'');
+         $this->database->add('content TEXT NOT NULL');
+         $this->database->add('tags VARCHAR(512) NOT NULL DEFAULT \'\'');
+-        $this->database->add('photo_thumb VARCHAR(255) NULL');
+-        $this->database->add('photo_original VARCHAR(255) NULL');
++        $this->database->add('is_system TINYINT(1) NOT NULL DEFAULT 0');
+         $this->database->add('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+         $this->database->create();
+diff --git a/app/migrations/PlantLogPhotoModel.php b/app/migrations/PlantLogPhotoModel.php
+new file mode 100644
+index 0000000..492e610
+--- /dev/null
++++ b/app/migrations/PlantLogPhotoModel.php
+@@ -0,0 +1,48 @@
++<?php
++
++/**
++ * Class PlantLogPhotoModel_Migration
++ */
++class PlantLogPhotoModel_Migration {
++    private $database = null;
++    private $connection = null;
++
++    /**
++     * Store the PDO connection handle
++     *
++     * @param \PDO $pdo The PDO connection handle
++     * @return void
++     */
++    public function __construct($pdo)
++    {
++        $this->connection = $pdo;
++    }
++
++    /**
++     * Called when the table shall be created or modified
++     *
++     * @return void
++     */
++    public function up()
++    {
++        $this->database = new Asatru\Database\Migration('PlantLogPhotoModel', $this->connection);
++        $this->database->drop();
++        $this->database->add('id INT NOT NULL AUTO_INCREMENT PRIMARY KEY');
++        $this->database->add('log_entry INT NOT NULL');
++        $this->database->add('thumb VARCHAR(255) NOT NULL');
++        $this->database->add('original VARCHAR(255) NOT NULL');
++        $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
++        $this->database->create();
++    }
++
++    /**
++     * Called when the table shall be dropped
++     *
++     * @return void
++     */
++    public function down()
++    {
++        if ($this->database)
++            $this->database->drop();
++    }
++}
+diff --git a/app/models/PlantAttachmentModel.php b/app/models/PlantAttachmentModel.php
+index c17172e..d4b341b 100644
+--- a/app/models/PlantAttachmentModel.php
++++ b/app/models/PlantAttachmentModel.php
+@@ -38,7 +38,7 @@ class PlantAttachmentModel extends \Asatru\Database\Model {
+                 LogModel::addLog($user->get('id'), $plantId, 'add_plant_attachment', $label, url('/plants/details/' . $plantId . '#plant-attachments-anchor'));
+ 
+                 if (app('system_message_plant_log')) {
+-                    PlantLogModel::addEntry($plantId, '[System] add_plant_attachment: ' . $label . ' = ' . $file_name . '.' . $file_ext);
++                    PlantLogModel::addEntry($plantId, 'add_plant_attachment: ' . $label . ' = ' . $file_name . '.' . $file_ext, '', '', false, true);
+                 }
+             }
+ 
+@@ -69,7 +69,7 @@ class PlantAttachmentModel extends \Asatru\Database\Model {
+             static::raw('UPDATE `@THIS` SET label = ? WHERE id = ?', [$label, $id]);
+ 
+             if ((app('system_message_plant_log')) && (!$api)) {
+-                PlantLogModel::addEntry($plant->get('id'), '[System] edit_plant_attachment: \'' . $item->get('label') . '\' to \'' . $label . '\'');
++                PlantLogModel::addEntry($plant->get('id'), 'edit_plant_attachment: \'' . $item->get('label') . '\' to \'' . $label . '\'', '', '', false, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+diff --git a/app/models/PlantLogModel.php b/app/models/PlantLogModel.php
+index 5241330..8d18f43 100644
+--- a/app/models/PlantLogModel.php
++++ b/app/models/PlantLogModel.php
+@@ -1,67 +1,44 @@
+ <?php
+-
+-/**
+- * Class PlantLogModel
+- * 
+- * Management of plant specific journal/log entries made by users.
+- * Each entry may optionally carry an uploaded photo and a set of
+- * space-separated tags, similar to the plant-level tags field.
+- */ 
+ class PlantLogModel extends \Asatru\Database\Model {
+-    /**
+-     * Handles an optional 'photo' file upload for a journal entry.
+-     * Mirrors PlantPhotoModel::uploadPhoto but the photo is optional.
+-     *
+-     * @return array [thumb, original] filenames, both null if no photo was uploaded
+-     * @throws \Exception
+-     */
+-    private static function handleOptionalPhotoUpload()
++    private static function handlePhotoUploads()
+     {
+-        if ((!isset($_FILES['photo'])) || (!isset($_FILES['photo']['tmp_name'])) || (strlen($_FILES['photo']['tmp_name']) === 0) || ($_FILES['photo']['error'] === UPLOAD_ERR_NO_FILE)) {
+-            return [null, null];
+-        }
++        $results = [];
+ 
+-        if ($_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
+-            throw new \Exception('Errorneous file');
++        if ((!isset($_FILES['photos'])) || (!isset($_FILES['photos']['tmp_name'])) || (!is_array($_FILES['photos']['tmp_name']))) {
++            return $results;
+         }
+ 
+-        $file_ext = UtilsModule::getImageExt($_FILES['photo']['tmp_name']);
++        $count = count($_FILES['photos']['tmp_name']);
+ 
+-        if ($file_ext === null) {
+-            throw new \Exception('File is not a valid image');
+-        }
++        for ($i = 0; $i < $count; $i++) {
++            if ((!isset($_FILES['photos']['tmp_name'][$i])) || (strlen($_FILES['photos']['tmp_name'][$i]) === 0) || ($_FILES['photos']['error'][$i] === UPLOAD_ERR_NO_FILE)) {
++                continue;
++            }
+ 
+-        $file_name = md5(random_bytes(55) . date('Y-m-d H:i:s'));
++            if ($_FILES['photos']['error'][$i] !== UPLOAD_ERR_OK) {
++                throw new \Exception('Errorneous file');
++            }
+ 
+-        move_uploaded_file($_FILES['photo']['tmp_name'], public_path('/img/' . $file_name . '.' . $file_ext));
++            $file_ext = UtilsModule::getImageExt($_FILES['photos']['tmp_name'][$i]);
+ 
+-        if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
+-            throw new \Exception('createThumbFile failed');
+-        }
++            if ($file_ext === null) {
++                throw new \Exception('File is not a valid image');
++            }
+ 
+-        return [$file_name . '_thumb.' . $file_ext, $file_name . '.' . $file_ext];
+-    }
++            $file_name = md5(random_bytes(55) . date('Y-m-d H:i:s') . $i);
+ 
+-    /**
+-     * @param $thumb
+-     * @param $original
+-     * @return void
+-     */
+-    private static function deletePhotoFiles($thumb, $original)
+-    {
+-        if ((is_string($thumb)) && (strlen($thumb) > 0) && (file_exists(public_path('/img/' . $thumb)))) {
+-            unlink(public_path('/img/' . $thumb));
+-        }
++            move_uploaded_file($_FILES['photos']['tmp_name'][$i], public_path('/img/' . $file_name . '.' . $file_ext));
++
++            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name)), public_path('/img/' . $file_name), $file_ext)) {
++                throw new \Exception('createThumbFile failed');
++            }
+ 
+-        if ((is_string($original)) && (strlen($original) > 0) && (file_exists(public_path('/img/' . $original)))) {
+-            unlink(public_path('/img/' . $original));
++            $results[] = [$file_name . '_thumb.' . $file_ext, $file_name . '.' . $file_ext];
+         }
++
++        return $results;
+     }
+ 
+-    /**
+-     * @param $tags
+-     * @return string
+-     */
+     private static function normalizeTags($tags)
+     {
+         if (!is_string($tags)) {
+@@ -76,15 +53,7 @@ class PlantLogModel extends \Asatru\Database\Model {
+         return implode(' ', $parts);
+     }
+ 
+-    /**
+-     * @param $plant
+-     * @param $content
+-     * @param $tags
+-     * @param $api
+-     * @return int
+-     * @throws \Exception
+-     */
+-    public static function addEntry($plant, $content, $tags = '', $api = false)
++    public static function addEntry($plant, $title, $content = '', $tags = '', $api = false, $isSystem = false)
+     {
+         try {
+             $user = null;
+@@ -97,37 +66,31 @@ class PlantLogModel extends \Asatru\Database\Model {
+             }
+ 
+             $tags = static::normalizeTags($tags);
+-            [$photo_thumb, $photo_original] = static::handleOptionalPhotoUpload();
+ 
+-            static::raw('INSERT INTO `@THIS` (plant, content, tags, photo_thumb, photo_original) VALUES(?, ?, ?, ?, ?)', [
+-                $plant, $content, $tags, $photo_thumb, $photo_original
++            static::raw('INSERT INTO `@THIS` (plant, title, content, tags, is_system) VALUES(?, ?, ?, ?, ?)', [
++                $plant, $title, $content, $tags, ($isSystem ? 1 : 0)
+             ]);
+ 
+-            if (!$api) {
+-                LogModel::addLog($user->get('id'), $plant, 'add_plant_log', $content, url('/plants/details/' . $plant));
++            $item = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
++            $entryId = ($item) ? $item->get('id') : 0;
++
++            if ($entryId > 0) {
++                foreach (static::handlePhotoUploads() as $photo) {
++                    PlantLogPhotoModel::addPhoto($entryId, $photo[0], $photo[1]);
++                }
+             }
+ 
+-            $item = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
+-            if ($item) {
+-                return $item->get('id');
++            if (!$api) {
++                LogModel::addLog($user->get('id'), $plant, 'add_plant_log', $title, url('/plants/details/' . $plant));
+             }
+ 
+-            return 0;
++            return $entryId;
+         } catch (\Exception $e) {
+             throw $e;
+         }
+     }
+ 
+-    /**
+-     * @param $id
+-     * @param $content
+-     * @param $tags
+-     * @param $removePhoto
+-     * @param $api
+-     * @return void
+-     * @throws \Exception
+-     */
+-    public static function editEntry($id, $content, $tags = '', $removePhoto = false, $api = false)
++    public static function editEntry($id, $title, $content = '', $tags = '', $removePhotoIds = [], $api = false)
+     {
+         try {
+             $user = null;
+@@ -146,39 +109,36 @@ class PlantLogModel extends \Asatru\Database\Model {
+ 
+             $tags = static::normalizeTags($tags);
+ 
+-            [$new_thumb, $new_original] = static::handleOptionalPhotoUpload();
++            static::raw('UPDATE `@THIS` SET title = ?, content = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
++                $title, $content, $tags, $item->get('id')
++            ]);
+ 
+-            $photo_thumb = $item->get('photo_thumb');
+-            $photo_original = $item->get('photo_original');
++            if (is_array($removePhotoIds) && count($removePhotoIds) > 0) {
++                $existingPhotos = PlantLogPhotoModel::getForEntry($item->get('id'));
++                $existingIds = [];
++                foreach ($existingPhotos as $existingPhoto) {
++                    $existingIds[] = (string)$existingPhoto->get('id');
++                }
+ 
+-            if ($new_thumb !== null) {
+-                static::deletePhotoFiles($photo_thumb, $photo_original);
+-                $photo_thumb = $new_thumb;
+-                $photo_original = $new_original;
+-            } else if ($removePhoto) {
+-                static::deletePhotoFiles($photo_thumb, $photo_original);
+-                $photo_thumb = null;
+-                $photo_original = null;
++                foreach ($removePhotoIds as $photoId) {
++                    if (in_array((string)$photoId, $existingIds)) {
++                        PlantLogPhotoModel::removePhoto($photoId);
++                    }
++                }
+             }
+ 
+-            static::raw('UPDATE `@THIS` SET content = ?, tags = ?, photo_thumb = ?, photo_original = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
+-                $content, $tags, $photo_thumb, $photo_original, $item->get('id')
+-            ]);
++            foreach (static::handlePhotoUploads() as $photo) {
++                PlantLogPhotoModel::addPhoto($item->get('id'), $photo[0], $photo[1]);
++            }
+ 
+             if (!$api) {
+-                LogModel::addLog($user->get('id'), $item->get('id'), 'edit_plant_log', $content, url('/plants/details/' . $item->get('plant')));
++                LogModel::addLog($user->get('id'), $item->get('id'), 'edit_plant_log', $title, url('/plants/details/' . $item->get('plant')));
+             }
+         } catch (\Exception $e) {
+             throw $e;
+         }
+     }
+ 
+-    /**
+-     * @param $id
+-     * @param $api
+-     * @return void
+-     * @throws \Exception
+-     */
+     public static function removeEntry($id, $api = false)
+     {
+         try {
+@@ -196,7 +156,7 @@ class PlantLogModel extends \Asatru\Database\Model {
+                 throw new \Exception('Invalid entry: ' . $id);
+             }
+ 
+-            static::deletePhotoFiles($item->get('photo_thumb'), $item->get('photo_original'));
++            PlantLogPhotoModel::clearForEntry($item->get('id'));
+ 
+             static::raw('DELETE FROM `@THIS` WHERE id = ?', [
+                 $item->get('id')
+@@ -210,13 +170,6 @@ class PlantLogModel extends \Asatru\Database\Model {
+         }
+     }
+ 
+-    /**
+-     * @param $plant
+-     * @param $paginate
+-     * @param $limit
+-     * @return mixed
+-     * @throws \Exception
+-     */
+     public static function getLogEntries($plant, $paginate = null, $limit = 10)
+     {
+         try {
+diff --git a/app/models/PlantLogPhotoModel.php b/app/models/PlantLogPhotoModel.php
+new file mode 100644
+index 0000000..ec3a5bd
+--- /dev/null
++++ b/app/models/PlantLogPhotoModel.php
+@@ -0,0 +1,57 @@
++<?php
++
++class PlantLogPhotoModel extends \Asatru\Database\Model {
++    public static function addPhoto($logEntry, $thumb, $original)
++    {
++        try {
++            static::raw('INSERT INTO `@THIS` (log_entry, thumb, original) VALUES(?, ?, ?)', [
++                $logEntry, $thumb, $original
++            ]);
++        } catch (\Exception $e) {
++            throw $e;
++        }
++    }
++
++    public static function getForEntry($logEntry)
++    {
++        try {
++            return static::raw('SELECT * FROM `@THIS` WHERE log_entry = ? ORDER BY id ASC', [$logEntry]);
++        } catch (\Exception $e) {
++            throw $e;
++        }
++    }
++
++    public static function removePhoto($id)
++    {
++        try {
++            $item = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
++            if (!$item) {
++                return;
++            }
++
++            if ((strlen($item->get('thumb')) > 0) && (file_exists(public_path('/img/' . $item->get('thumb'))))) {
++                unlink(public_path('/img/' . $item->get('thumb')));
++            }
++
++            if ((strlen($item->get('original')) > 0) && (file_exists(public_path('/img/' . $item->get('original'))))) {
++                unlink(public_path('/img/' . $item->get('original')));
++            }
++
++            static::raw('DELETE FROM `@THIS` WHERE id = ?', [$id]);
++        } catch (\Exception $e) {
++            throw $e;
++        }
++    }
++
++    public static function clearForEntry($logEntry)
++    {
++        try {
++            $rows = static::raw('SELECT * FROM `@THIS` WHERE log_entry = ?', [$logEntry]);
++            foreach ($rows as $row) {
++                static::removePhoto($row->get('id'));
++            }
++        } catch (\Exception $e) {
++            throw $e;
++        }
++    }
++}
+diff --git a/app/models/PlantPhotoModel.php b/app/models/PlantPhotoModel.php
+index 89213a1..b574392 100644
+--- a/app/models/PlantPhotoModel.php
++++ b/app/models/PlantPhotoModel.php
+@@ -47,7 +47,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
+                 LogModel::addLog($user->get('id'), $plantId, 'add_gallery_photo', $label, url('/plants/details/' . $plantId . '#plant-gallery-photo-anchor'));
+ 
+                 if (app('system_message_plant_log')) {
+-                    PlantLogModel::addEntry($plantId, '[System] add_gallery_photo: ' . $label . ' = ' . $file_name . '.' . $file_ext);
++                    PlantLogModel::addEntry($plantId, 'add_gallery_photo: ' . $label . ' = ' . $file_name . '.' . $file_ext, '', '', false, true);
+                 }
+             }
+ 
+@@ -86,7 +86,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
+                 LogModel::addLog($user->get('id'), $plantId, 'add_gallery_photo', $label, url('/plants/details/' . $plantId . '#plant-gallery-photo-anchor'));
+ 
+                 if (app('system_message_plant_log')) {
+-                    PlantLogModel::addEntry($plantId, '[System] add_gallery_photo: ' . $label . ' = ' . $photo);
++                    PlantLogModel::addEntry($plantId, 'add_gallery_photo: ' . $label . ' = ' . $photo, '', '', false, true);
+                 }
+             }
+ 
+@@ -147,7 +147,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
+                 LogModel::addLog($user->get('id'), $plant->get('name'), 'remove_gallery_photo', $photo_data->get('label'), url('/plants/details/' . $plant->get('id') . '#plant-gallery-photo-anchor'));
+ 
+                 if (app('system_message_plant_log')) {
+-                    PlantLogModel::addEntry($plant->get('id'), '[System] remove_gallery_photo: ' . $photo_data->get('label'));
++                    PlantLogModel::addEntry($plant->get('id'), 'remove_gallery_photo: ' . $photo_data->get('label'), '', '', false, true);
+                 }
+             }
+         } catch (\Exception $e) {
+@@ -210,7 +210,7 @@ class PlantPhotoModel extends \Asatru\Database\Model {
+             static::raw('UPDATE `@THIS` SET label = ? WHERE id = ?', [$label, $id]);
+ 
+             if ((app('system_message_plant_log')) && (!$api)) {
+-                PlantLogModel::addEntry($plant->get('id'), '[System] edit_gallery_photo: \'' . $photo_data->get('label') . '\' to \'' . $label . '\'');
++                PlantLogModel::addEntry($plant->get('id'), 'edit_gallery_photo: \'' . $photo_data->get('label') . '\' to \'' . $label . '\'', '', '', false, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+diff --git a/app/models/PlantsModel.php b/app/models/PlantsModel.php
+index aa062c7..3eb0330 100644
+--- a/app/models/PlantsModel.php
++++ b/app/models/PlantsModel.php
+@@ -378,7 +378,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             }
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', true);
++                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', true, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+@@ -411,10 +411,10 @@ class PlantsModel extends \Asatru\Database\Model {
+             LogModel::addLog($user->get('id'), $plantId, 'scientific_name|knowledge_link', $text . '|' . ((strlen($link) > 0) ? $link : 'null'), url('/plants/details/' . $plantId));
+         
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] scientific_name = ' . $text);
++                PlantLogModel::addEntry($plantId, 'scientific_name = ' . $text, '', '', false, true);
+ 
+                 if (strlen($link) > 0) {
+-                    PlantLogModel::addEntry($plantId, '[System] knowledge_link = ' . $link);
++                    PlantLogModel::addEntry($plantId, 'knowledge_link = ' . $link, '', '', false, true);
+                 }
+             }
+         } catch (\Exception $e) {
+@@ -469,7 +469,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             }
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $file_name . '.' . $file_ext, '', $api);
++                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $file_name . '.' . $file_ext, '', '', $api, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+@@ -505,7 +505,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             }
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] ' . $attribute . ' = ' . $value, '', $api);
++                PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', $api, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+@@ -544,7 +544,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             LogModel::addLog($user->get('id'), $plantId, 'photo', self::PLANT_PLACEHOLDER_FILE, url('/plants/details/' . $plantId));
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] photo = ' . self::PLANT_PLACEHOLDER_FILE);
++                PlantLogModel::addEntry($plantId, 'photo = ' . self::PLANT_PLACEHOLDER_FILE, '', '', false, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+@@ -704,7 +704,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             TextBlockModule::plantToHistory($plant->get('name'), url('/plants/history'));
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] history = 1');
++                PlantLogModel::addEntry($plantId, 'history = 1', '', '', false, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+@@ -732,7 +732,7 @@ class PlantsModel extends \Asatru\Database\Model {
+             TextBlockModule::plantFromHistory($plant->get('name'), url('/plants/details/' . $plantId));
+ 
+             if (app('system_message_plant_log')) {
+-                PlantLogModel::addEntry($plantId, '[System] history = 0');
++                PlantLogModel::addEntry($plantId, 'history = 0', '', '', false, true);
+             }
+         } catch (\Exception $e) {
+             throw $e;
+diff --git a/app/modules/UpgradeModule.php b/app/modules/UpgradeModule.php
+index fa2e6c3..818f389 100644
+--- a/app/modules/UpgradeModule.php
++++ b/app/modules/UpgradeModule.php
+@@ -6,6 +6,27 @@
+  * Perform migration upgrades
+  */
+ class UpgradeModule {
++    /**
++     * @return void
++     */
++    private static function upgradeTo5dot12()
++    {
++        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT \'\'');
++        PlantLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_system TINYINT(1) NOT NULL DEFAULT 0');
++        PlantLogModel::raw('UPDATE `@THIS` SET is_system = 1, title = TRIM(SUBSTRING(content, 10)), content = \'\' WHERE content LIKE \'[System]%\' AND title = \'\'');
++        PlantLogModel::raw('UPDATE `@THIS` SET title = content, content = \'\' WHERE title = \'\' AND is_system = 0 AND content <> \'\'');
++
++        PlantLogPhotoModel::raw('CREATE TABLE IF NOT EXISTS PlantLogPhotoModel (
++            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
++            log_entry INT NOT NULL,
++            thumb VARCHAR(255) NOT NULL,
++            original VARCHAR(255) NOT NULL,
++            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
++        )');
++
++        PlantLogPhotoModel::raw('INSERT INTO PlantLogPhotoModel (log_entry, thumb, original) SELECT id, photo_thumb, photo_original FROM PlantLogModel WHERE photo_thumb IS NOT NULL AND photo_original IS NOT NULL');
++    }
++
+     /**
+      * @return void
+      */
+diff --git a/app/resources/js/app.js b/app/resources/js/app.js
+index f8b07d0..e32d533 100644
+--- a/app/resources/js/app.js
++++ b/app/resources/js/app.js
+@@ -171,6 +171,7 @@ window.createVueInstance = function(element) {
+             confirmPlantRemoveHistory: 'Please confirm if you want to do this action.',
+             confirmRemovePlantAttachment: 'Do you really want to remove this attachment?',
+             confirmRemovePlantLogEntry: 'Do you really want to remove this entry?',
++            plantJournalSystemBadge: 'System',
+             confirmRemoveLocationLogEntry: 'Do you really want to remove this entry?',
+             confirmRemoveSharedPlantPhoto: 'Do you really want to remove this item?',
+             confirmSetGalleryPhotoAsMain: 'Do you want to replace the main photo with this one?',
+@@ -572,25 +573,64 @@ window.createVueInstance = function(element) {
+                 window.vue.bShowAddPlantLogEntry = true;
+             },
+ 
+-            showEditPlantLogEntry: function(id, plant, content, tags = '', photoThumb = '', anchor = '') {
++            showEditPlantLogEntry: function(id, plant, title, content, tags = '', photos = [], anchor = '') {
+                 document.getElementById('inpEditPlantLogEntryItemId').value = id;
+                 document.getElementById('inpEditPlantLogEntryPlantId').value = plant;
+-                document.getElementById('inpEditPlantLogEntryContent').value = content;
++                document.getElementById('inpEditPlantLogEntryTitle').value = title || '';
++                document.getElementById('inpEditPlantLogEntryContent').value = content || '';
+                 document.getElementById('inpEditPlantLogEntryTags').value = tags || '';
+                 document.getElementById('inpEditPlantLogEntryAnchor').value = anchor;
+-                document.getElementById('inpEditPlantLogEntryRemovePhoto').checked = false;
+-
+-                let currentPhotoField = document.getElementById('edit-plant-log-entry-current-photo');
+-                if (photoThumb && photoThumb.length > 0) {
+-                    document.getElementById('edit-plant-log-entry-current-photo-img').src = window.location.origin + '/img/' + photoThumb;
+-                    currentPhotoField.classList.remove('is-hidden');
++                document.getElementById('inpEditPlantLogEntryRemovePhotos').value = '';
++
++                let currentPhotosField = document.getElementById('edit-plant-log-entry-current-photos');
++                let grid = document.getElementById('edit-plant-log-entry-current-photos-grid');
++                grid.innerHTML = '';
++
++                if (photos && photos.length > 0) {
++                    photos.forEach(function(photo) {
++                        let thumb = document.createElement('div');
++                        thumb.className = 'plant-journal-modal-photo-thumb';
++                        thumb.dataset.photoId = photo.id;
++
++                        let img = document.createElement('img');
++                        img.src = window.location.origin + '/img/' + photo.thumb;
++                        img.alt = 'photo';
++                        thumb.appendChild(img);
++
++                        let removeBadge = document.createElement('span');
++                        removeBadge.className = 'plant-journal-modal-photo-remove-badge';
++                        removeBadge.innerHTML = '<i class="fas fa-times"></i>';
++                        thumb.appendChild(removeBadge);
++
++                        thumb.onclick = function() {
++                            thumb.classList.toggle('is-marked-for-removal');
++                            window.vue.syncRemovePhotosField();
++                        };
++
++                        grid.appendChild(thumb);
++                    });
++                    currentPhotosField.classList.remove('is-hidden');
+                 } else {
+-                    currentPhotoField.classList.add('is-hidden');
++                    currentPhotosField.classList.add('is-hidden');
+                 }
+ 
+                 window.vue.bShowEditPlantLogEntry = true;
+             },
+ 
++            syncRemovePhotosField: function() {
++                let grid = document.getElementById('edit-plant-log-entry-current-photos-grid');
++                if (!grid) {
++                    return;
++                }
++
++                let ids = [];
++                grid.querySelectorAll('.plant-journal-modal-photo-thumb.is-marked-for-removal').forEach(function(thumb) {
++                    ids.push(thumb.dataset.photoId);
++                });
++
++                document.getElementById('inpEditPlantLogEntryRemovePhotos').value = ids.join(',');
++            },
++
+             removePlantLogEntry: function(id, table_entry) {
+                 window.vue.ajaxRequest('post', window.location.origin + '/plants/log/remove', { item: id }, function(response) {
+                     if (response.code == 200) {
+@@ -601,41 +641,87 @@ window.createVueInstance = function(element) {
+                 });
+             },
+ 
++            togglePlantJournalSystemEntries: function(show) {
++                let container = document.getElementById('plant-journal-entries');
++                if (container) {
++                    if (show) {
++                        container.classList.remove('hide-system-entries');
++                    } else {
++                        container.classList.add('hide-system-entries');
++                    }
++                }
++
++                window.vue.setCookieValue('plant_journal_show_system', show ? '1' : '0');
++            },
++
++            initPlantJournalSystemToggle: function() {
++                let toggle = document.getElementById('plant-journal-toggle-system');
++                if (!toggle) {
++                    return;
++                }
++
++                let show = window.vue.getCookieValue('plant_journal_show_system', '0') == '1';
++                toggle.checked = show;
++                window.vue.togglePlantJournalSystemEntries(show);
++            },
++
+             loadNextPlantLogEntries: function(obj, plant, container) {
+                 window.vue.ajaxRequest('post', window.location.origin + '/plants/log/fetch', { plant: plant, paginate: obj.dataset.paginate }, function(response) {
+                     if (response.code == 200) {
+                         response.data.forEach(function(elem, index) {
+                             let entry = document.createElement('div');
+-                            entry.className = 'plant-journal-entry';
++                            entry.className = 'plant-journal-entry' + ((elem.is_system == 1) ? ' is-system' : '');
+                             entry.id = 'plant-log-entry-table-row-' + elem.id;
+ 
+-                            if (elem.photo_thumb) {
+-                                let photoDiv = document.createElement('div');
+-                                photoDiv.className = 'plant-journal-entry-photo';
++                            let photos = elem.photos || [];
++                            if (photos.length > 0) {
++                                let photosDiv = document.createElement('div');
++                                photosDiv.className = 'plant-journal-entry-photos';
++
++                                photos.forEach(function(photo) {
++                                    let photoLink = document.createElement('a');
++                                    photoLink.href = window.location.origin + '/img/' + photo.original;
++                                    photoLink.target = '_blank';
++                                    photoLink.className = 'plant-journal-entry-photo';
+ 
+-                                let photoLink = document.createElement('a');
+-                                photoLink.href = window.location.origin + '/img/' + elem.photo_original;
+-                                photoLink.target = '_blank';
++                                    let img = document.createElement('img');
++                                    img.src = window.location.origin + '/img/' + photo.thumb;
++                                    img.alt = 'photo';
+ 
+-                                let img = document.createElement('img');
+-                                img.src = window.location.origin + '/img/' + elem.photo_thumb;
+-                                img.alt = 'photo';
++                                    photoLink.appendChild(img);
++                                    photosDiv.appendChild(photoLink);
++                                });
+ 
+-                                photoLink.appendChild(img);
+-                                photoDiv.appendChild(photoLink);
+-                                entry.appendChild(photoDiv);
++                                entry.appendChild(photosDiv);
+                             }
+ 
+                             let body = document.createElement('div');
+                             body.className = 'plant-journal-entry-body';
+ 
+-                            let contentDiv = document.createElement('div');
+-                            contentDiv.className = 'plant-journal-entry-content';
+-                            contentDiv.id = 'plant-log-entry-item-' + elem.id;
+-                            contentDiv.textContent = elem.content;
+-                            contentDiv.dataset.tags = elem.tags || '';
+-                            contentDiv.dataset.photoThumb = elem.photo_thumb || '';
+-                            body.appendChild(contentDiv);
++                            let header = document.createElement('div');
++                            header.className = 'plant-journal-entry-header';
++
++                            let titleSpan = document.createElement('span');
++                            titleSpan.className = 'plant-journal-entry-title';
++                            titleSpan.id = 'plant-log-entry-item-' + elem.id;
++                            titleSpan.textContent = elem.title;
++                            header.appendChild(titleSpan);
++
++                            if (elem.is_system == 1) {
++                                let badge = document.createElement('span');
++                                badge.className = 'plant-journal-entry-system-badge';
++                                badge.textContent = window.vue.plantJournalSystemBadge;
++                                header.appendChild(badge);
++                            }
++
++                            body.appendChild(header);
++
++                            if (elem.content && elem.content.trim().length > 0) {
++                                let contentDiv = document.createElement('div');
++                                contentDiv.className = 'plant-journal-entry-content';
++                                contentDiv.textContent = elem.content;
++                                body.appendChild(contentDiv);
++                            }
+ 
+                             let tagWords = (elem.tags && elem.tags.trim().length > 0) ? elem.tags.trim().split(/\s+/) : [];
+                             if (tagWords.length > 0) {
+@@ -665,7 +751,7 @@ window.createVueInstance = function(element) {
+                             editLink.href = 'javascript:void(0);';
+                             editLink.innerHTML = '<i class="fas fa-edit is-color-darker"></i>';
+                             editLink.onclick = function() {
+-                                window.vue.showEditPlantLogEntry(elem.id, plant, contentDiv.innerText, contentDiv.dataset.tags, contentDiv.dataset.photoThumb, 'plant-journal-anchor');
++                                window.vue.showEditPlantLogEntry(elem.id, plant, elem.title, elem.content, elem.tags, photos, 'plant-journal-anchor');
+                             };
+ 
+                             let removeLink = document.createElement('a');
+diff --git a/app/resources/sass/app.scss b/app/resources/sass/app.scss
+index 1ba213d..3a9bf2f 100644
+--- a/app/resources/sass/app.scss
++++ b/app/resources/sass/app.scss
+@@ -1833,6 +1833,15 @@ fieldset .field {
+ 
+ .plant-journal-add {
+     margin-bottom: 20px;
++    display: flex;
++    align-items: center;
++    flex-wrap: wrap;
++    gap: 16px;
++}
++
++.plant-journal-system-toggle {
++    color: rgb(180, 180, 180);
++    font-size: 0.9em;
+ }
+ 
+ .plant-journal-entries {
+@@ -1841,33 +1850,33 @@ fieldset .field {
+     gap: 16px;
+ }
+ 
++.plant-journal-entries.hide-system-entries .plant-journal-entry.is-system {
++    display: none;
++}
++
+ .plant-journal-entry {
+     position: relative;
+     display: flex;
+-    flex-direction: row;
++    flex-direction: column;
+     background-color: rgba(73, 79, 83);
+     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+     border-radius: 4px;
+     overflow: hidden;
+-    @media screen and (max-width: 600px) {
+-        flex-direction: column;
+-    }
+ }
+ 
+-.plant-journal-entry-photo {
++.plant-journal-entry-photos {
+     position: relative;
+-    flex: 0 0 160px;
+-    @media screen and (max-width: 600px) {
+-        flex: 0 0 auto;
+-        width: 100%;
+-        height: 180px;
+-    }
++    display: flex;
++    flex-direction: row;
++    flex-wrap: nowrap;
++    overflow-x: auto;
++    gap: 2px;
+ }
+ 
+-.plant-journal-entry-photo a {
++.plant-journal-entry-photo {
+     display: block;
+-    width: 100%;
+-    height: 100%;
++    flex: 0 0 160px;
++    height: 160px;
+ }
+ 
+ .plant-journal-entry-photo img {
+@@ -1884,6 +1893,32 @@ fieldset .field {
+     min-width: 0;
+ }
+ 
++.plant-journal-entry-header {
++    display: flex;
++    align-items: center;
++    flex-wrap: wrap;
++    gap: 8px;
++    margin-bottom: 8px;
++}
++
++.plant-journal-entry-title {
++    font-size: 1.1em;
++    font-weight: 600;
++    color: rgb(230, 230, 230);
++    word-wrap: break-word;
++}
++
++.plant-journal-entry-system-badge {
++    display: inline-block;
++    padding: 2px 8px;
++    background-color: rgba(55, 145, 243, 0.25);
++    color: rgb(130, 180, 250);
++    border-radius: 10px;
++    font-size: 0.75em;
++    text-transform: uppercase;
++    letter-spacing: 0.03em;
++}
++
+ .plant-journal-entry-content {
+     color: rgb(220, 220, 220);
+     white-space: pre-wrap;
+@@ -1948,6 +1983,54 @@ fieldset .field {
+     margin-bottom: 10px;
+ }
+ 
++.plant-journal-modal-photo-grid {
++    display: flex;
++    flex-wrap: wrap;
++    gap: 8px;
++    margin-bottom: 10px;
++}
++
++.plant-journal-modal-photo-thumb {
++    position: relative;
++    width: 80px;
++    height: 80px;
++    border-radius: 4px;
++    overflow: hidden;
++    cursor: pointer;
++    border: 2px solid transparent;
++}
++
++.plant-journal-modal-photo-thumb img {
++    width: 100%;
++    height: 100%;
++    object-fit: cover;
++    display: block;
++}
++
++.plant-journal-modal-photo-remove-badge {
++    position: absolute;
++    top: 2px;
++    right: 2px;
++    width: 20px;
++    height: 20px;
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    background-color: rgba(0, 0, 0, 0.6);
++    color: #fff;
++    border-radius: 50%;
++    font-size: 0.7em;
++}
++
++.plant-journal-modal-photo-thumb.is-marked-for-removal {
++    border-color: rgba(220, 40, 40, 0.9);
++    opacity: 0.45;
++}
++
++.plant-journal-modal-photo-thumb.is-marked-for-removal .plant-journal-modal-photo-remove-badge {
++    background-color: rgba(220, 40, 40, 0.9);
++}
++
+ .location-log {
+     position: relative;
+     margin-top: 10px;
+diff --git a/app/views/details.php b/app/views/details.php
+index eeda90f..3a83d0b 100644
+--- a/app/views/details.php
++++ b/app/views/details.php
+@@ -489,22 +489,38 @@
+ 
+ 			<div class="plant-journal-add">
+ 				<a class="button is-info" href="javascript:void(0);" onclick="window.vue.showAddPlantLogEntry('{{ $plant->get('id') }}', 'plant-journal-anchor');">{{ __('app.add_plant_log_entry') }}</a>
++
++				<label class="checkbox plant-journal-system-toggle">
++					<input type="checkbox" id="plant-journal-toggle-system" onchange="window.vue.togglePlantJournalSystemEntries(this.checked);">
++					{{ __('app.plant_journal_show_system_label') }}
++				</label>
+ 			</div>
+ 
+ 			@if ((is_countable($plant_log_entries)) && (count($plant_log_entries) > 0))
+ 			<div class="plant-journal-entries" id="plant-journal-entries">
+ 				@foreach ($plant_log_entries as $plant_log_entry)
+-					<div class="plant-journal-entry" id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
+-						@if ($plant_log_entry->get('photo_thumb'))
+-							<div class="plant-journal-entry-photo">
+-								<a href="{{ abs_photo($plant_log_entry->get('photo_original')) }}" target="_blank">
+-									<img src="{{ abs_photo($plant_log_entry->get('photo_thumb')) }}" alt="photo"/>
+-								</a>
++					<div class="plant-journal-entry{{ $plant_log_entry->get('is_system') ? ' is-system' : '' }}" id="plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}">
++						@if (isset($plant_log_entry_photos[$plant_log_entry->get('id')]) && count($plant_log_entry_photos[$plant_log_entry->get('id')]) > 0)
++							<div class="plant-journal-entry-photos">
++								@foreach ($plant_log_entry_photos[$plant_log_entry->get('id')] as $entry_photo)
++									<a href="{{ abs_photo($entry_photo['original']) }}" target="_blank" class="plant-journal-entry-photo">
++										<img src="{{ abs_photo($entry_photo['thumb']) }}" alt="photo"/>
++									</a>
++								@endforeach
+ 							</div>
+ 						@endif
+ 
+ 						<div class="plant-journal-entry-body">
+-							<div class="plant-journal-entry-content" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photo-thumb="{{ $plant_log_entry->get('photo_thumb') }}">{{ $plant_log_entry->get('content') }}</div>
++							<div class="plant-journal-entry-header">
++								<span class="plant-journal-entry-title" id="plant-log-entry-item-{{ $plant_log_entry->get('id') }}" data-title="{{ $plant_log_entry->get('title') }}" data-content="{{ $plant_log_entry->get('content') }}" data-tags="{{ $plant_log_entry->get('tags') }}" data-photos="{{ json_encode($plant_log_entry_photos[$plant_log_entry->get('id')] ?? []) }}">{{ $plant_log_entry->get('title') }}</span>
++								@if ($plant_log_entry->get('is_system'))
++									<span class="plant-journal-entry-system-badge">{{ __('app.plant_journal_system_badge') }}</span>
++								@endif
++							</div>
++
++							@if (strlen(trim($plant_log_entry->get('content') ?? '')) > 0)
++								<div class="plant-journal-entry-content">{{ $plant_log_entry->get('content') }}</div>
++							@endif
+ 
+ 							@if (strlen(trim($plant_log_entry->get('tags') ?? '')) > 0)
+ 								<div class="plant-journal-entry-tags">
+@@ -519,7 +535,7 @@
+ 							<div class="plant-journal-entry-footer">
+ 								<span class="plant-journal-entry-date">{{ date('Y-m-d', strtotime($plant_log_entry->get('created_at'))) }} / {{ date('Y-m-d', strtotime($plant_log_entry->get('updated_at'))) }}</span>
+ 								<span class="plant-journal-entry-actions">
+-									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.innerText, el.dataset.tags, el.dataset.photoThumb, 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
++									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.dataset.title, el.dataset.content, el.dataset.tags, JSON.parse(el.dataset.photos), 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+ 								</span>
+ 							</div>
+ 						</div>
+diff --git a/app/views/layout.php b/app/views/layout.php
+index 7258ecd..ff9a788 100644
+--- a/app/views/layout.php
++++ b/app/views/layout.php
+@@ -1845,9 +1845,16 @@
+ 							<input type="hidden" name="anchor" id="inpAddPlantLogEntryAnchor"/>
+ 
+ 							<div class="field">
+-								<label class="label">{{ __('app.plant_log_content') }}</label>
++								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
+ 								<div class="control">
+-									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4" required></textarea>
++									<input type="text" class="input" name="title" id="inpAddPlantLogEntryTitle" required>
++								</div>
++							</div>
++
++							<div class="field">
++								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
++								<div class="control">
++									<textarea class="input" name="content" id="inpAddPlantLogEntryContent" rows="4"></textarea>
+ 								</div>
+ 							</div>
+ 
+@@ -1860,9 +1867,9 @@
+ 							</div>
+ 
+ 							<div class="field">
+-								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
++								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
+ 								<div class="control">
+-									<input type="file" class="input" name="photo" accept="image/*">
++									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
+ 								</div>
+ 							</div>
+ 						</form>
+@@ -1888,11 +1895,19 @@
+ 							<input type="hidden" name="item" id="inpEditPlantLogEntryItemId"/>
+ 							<input type="hidden" name="plant" id="inpEditPlantLogEntryPlantId"/>
+ 							<input type="hidden" name="anchor" id="inpEditPlantLogEntryAnchor"/>
++							<input type="hidden" name="remove_photos" id="inpEditPlantLogEntryRemovePhotos" value=""/>
++
++							<div class="field">
++								<label class="label">{{ __('app.plant_journal_entry_title_label') }}</label>
++								<div class="control">
++									<input type="text" class="input" name="title" id="inpEditPlantLogEntryTitle" required>
++								</div>
++							</div>
+ 
+ 							<div class="field">
+-								<label class="label">{{ __('app.plant_log_content') }}</label>
++								<label class="label">{{ __('app.plant_journal_entry_content_label') }}</label>
+ 								<div class="control">
+-									<textarea class="input" name="content" id="inpEditPlantLogEntryContent" rows="4" required></textarea>
++									<textarea class="input" name="content" id="inpEditPlantLogEntryContent" rows="4"></textarea>
+ 								</div>
+ 							</div>
+ 
+@@ -1904,20 +1919,16 @@
+ 								<p class="help">{{ __('app.plant_journal_tags_hint') }}</p>
+ 							</div>
+ 
+-							<div class="field is-hidden" id="edit-plant-log-entry-current-photo">
+-								<label class="label">{{ __('app.plant_journal_current_photo_label') }}</label>
+-								<div class="control">
+-									<img id="edit-plant-log-entry-current-photo-img" src="" alt="photo" class="plant-journal-modal-preview"/>
+-								</div>
+-								<label class="checkbox">
+-									<input type="checkbox" name="remove_photo" id="inpEditPlantLogEntryRemovePhoto" value="1">&nbsp;{{ __('app.plant_journal_remove_photo_label') }}
+-								</label>
++							<div class="field is-hidden" id="edit-plant-log-entry-current-photos">
++								<label class="label">{{ __('app.plant_journal_current_photos_label') }}</label>
++								<div class="plant-journal-modal-photo-grid" id="edit-plant-log-entry-current-photos-grid"></div>
++								<p class="help">{{ __('app.plant_journal_remove_photo_hint') }}</p>
+ 							</div>
+ 
+ 							<div class="field">
+-								<label class="label">{{ __('app.plant_journal_photo_label') }}</label>
++								<label class="label">{{ __('app.plant_journal_photos_label') }}</label>
+ 								<div class="control">
+-									<input type="file" class="input" name="photo" accept="image/*">
++									<input type="file" class="input" name="photos[]" accept="image/*" multiple>
+ 								</div>
+ 							</div>
+ 						</form>
+@@ -2136,6 +2147,7 @@
+ 				window.vue.confirmInventoryItemRemoval = '{{ __('app.confirmInventoryItemRemoval') }}';
+ 				window.vue.confirmRemovePlantAttachment = '{{ __('app.confirm_remove_plant_attachment') }}';
+ 				window.vue.confirmRemovePlantLogEntry = '{{ __('app.confirm_remove_plant_log_entry') }}';
++				window.vue.plantJournalSystemBadge = '{{ __('app.plant_journal_system_badge') }}';
+ 				window.vue.confirmRemoveLocationLogEntry = '{{ __('app.confirm_remove_location_log_entry') }}';
+ 				window.vue.confirmRemoveSharedPlantPhoto = '{{ __('app.confirm_remove_shared_photo') }}';
+ 				window.vue.confirmSetGalleryPhotoAsMain = '{{ __('app.confirm_set_gallery_photo_as_main') }}';
+@@ -2184,6 +2196,11 @@
+ 				}
+ 				@endif
+ 
++				let elPlantJournalToggleSystem = document.getElementById('plant-journal-toggle-system');
++				if (elPlantJournalToggleSystem) {
++					window.vue.initPlantJournalSystemToggle();
++				}
++
+ 				@if ((isset($user)) && ($user->get('show_calendar_view')) && (isset($calendar_sv_date_from)) && (isset($calendar_sv_date_till)))
+ 				let elCalendarSmallView = document.getElementById('calendar-small-view');
+ 				if (elCalendarSmallView) {
+-- 
+2.43.0
+
