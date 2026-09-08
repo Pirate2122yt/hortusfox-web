@@ -31,6 +31,7 @@ class ChatMsgModel_Migration {
         $this->database->add('userId INT NOT NULL');
         $this->database->add('message TEXT NOT NULL');
         $this->database->add('sysmsg BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('display_name VARCHAR(100) NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

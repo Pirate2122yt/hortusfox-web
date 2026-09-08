@@ -88,7 +88,7 @@ class ChatController extends BaseController {
 				$result[] = [
 					'id' => $message->get('id'),
 					'userId' => $message->get('userId'),
-					'userName' => UserModel::getNameById($message->get('userId')),
+					'userName' => $message->get('display_name') ?: UserModel::getNameById($message->get('userId')),
 					'message' => UtilsModule::translateURLs($message->get('message')),
 					'system' => $message->get('sysmsg'),
 					'chatcolor' => UserModel::getChatColorForUser($message->get('userId')),
@@ -124,7 +124,7 @@ class ChatController extends BaseController {
 				$message = [
 					'id' => $message->get('id'),
 					'userId' => $message->get('userId'),
-					'userName' => UserModel::getNameById($message->get('userId')),
+					'userName' => $message->get('display_name') ?: UserModel::getNameById($message->get('userId')),
 					'message' => $message->get('message'),
 					'created_at' => date('Y-m-h H:i', strtotime($message->get('created_at'))),
 					'diffForHumans' => (new Carbon($message->get('created_at')))->diffForHumans(),

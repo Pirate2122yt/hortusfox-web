@@ -218,7 +218,7 @@ class TextBlockModule {
 
             $text = __('tb.new_plant_comment', ['name' => $name, 'url' => $url, 'author' => $authorName, 'comment' => $preview]);
 
-            static::addToChat($text, 'x1f4ac', true);
+            static::addToChat($text, 'x1f4ac', true, __('app.chat_public_comment_label'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -228,26 +228,38 @@ class TextBlockModule {
      * @param $message
      * @param $icon
      * @param $api
+     * @param $displayName Overrides the "posted by" label shown in the
+     *                      chat tab with a fixed string instead of the
+     *                      signed-in user's name. Also forces userId to
+     *                      0 regardless of the ambient session, since a
+     *                      message using this is never really "from"
+     *                      whichever staff member's browser happened to
+     *                      trigger it (e.g. an admin testing the public
+     *                      comment form themselves would otherwise get
+     *                      credited with visitors' comments, since a
+     *                      public-page request can still carry an
+     *                      admin's logged-in session cookie).
      * @return void
      * @throws \Exception
      */
-    public static function addToChat($message, $icon, $api = false)
+    public static function addToChat($message, $icon, $api = false, $displayName = null)
     {
         try {
             if (!app('chat_system')) {
                 return;
             }
 
-            $user = UserModel::getAuthUser();
+            $user = ($displayName === null) ? UserModel::getAuthUser() : null;
             if ((!$user) && (!$api)) {
                 throw new \Exception('Invalid user');
             }
 
             $icon = html_entity_decode('&#' . $icon, ENT_COMPAT | ENT_QUOTES);
 
-            ChatMsgModel::raw('INSERT INTO `@THIS` (userId, message, sysmsg, created_at) VALUES(?, ?, 1, CURRENT_TIMESTAMP)', [
+            ChatMsgModel::raw('INSERT INTO `@THIS` (userId, message, sysmsg, display_name, created_at) VALUES(?, ?, 1, ?, CURRENT_TIMESTAMP)', [
                 (($user) ? $user->get('id') : 0),
-                $icon . ' ' . $message
+                $icon . ' ' . $message,
+                $displayName
             ]);
         } catch (\Exception $e) {
             throw $e;

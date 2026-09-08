@@ -165,6 +165,7 @@ return [
 	'send' => 'send',
 	'new' => 'New',
 	'chatcolor' => 'Username chat color',
+	'chat_public_comment_label' => 'Comment',
 	'currentlyOnline' => 'Currently online: ',
 	'no_photo_available' => 'No photo available',
 	'due' => 'Due',

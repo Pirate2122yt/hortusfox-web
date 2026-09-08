@@ -61,7 +61,7 @@
 
                         <div class="system-message">
                             <div class="system-message-left {{ ($isNewMessage) ? 'system-message-left-new' : '' }}">
-                                <div class="system-message-context" title="{{ date('Y-m-d H:i:s', strtotime($message->get('created_at'))) }}">{{ (($message->get('userId')) ? UserModel::getNameById($message->get('userId')) : 'System') . ' @ ' . (new Carbon(strtotime($message->get('created_at'))))->diffForHumans() }}</div>
+                                <div class="system-message-context" title="{{ date('Y-m-d H:i:s', strtotime($message->get('created_at'))) }}">{{ ($message->get('display_name') ?: (($message->get('userId')) ? UserModel::getNameById($message->get('userId')) : 'System')) . ' @ ' . (new Carbon(strtotime($message->get('created_at'))))->diffForHumans() }}</div>
                                 
                                 <div class="system-message-content">{!! UtilsModule::purify($message->get('message')) !!}</div>
                             </div>

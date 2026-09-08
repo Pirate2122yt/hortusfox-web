@@ -9,6 +9,14 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot24()
+    {
+        ChatMsgModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS display_name VARCHAR(100) NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot23()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_plantid_enable BOOLEAN NOT NULL DEFAULT 0');
