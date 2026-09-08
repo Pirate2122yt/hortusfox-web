@@ -51,8 +51,11 @@ class BaseController extends Asatru\Controller\Controller {
 			);
 
 			// The public, read-only plant catalogue (see PublicController)
-			// is reachable without a session, same as the URLs above.
-			$is_public_url = (strpos($url, '/public') === 0);
+			// is reachable without a session, same as the URLs above -
+			// unless an admin has switched it off entirely, in which case
+			// anonymous visitors are bounced to the login screen like any
+			// other page.
+			$is_public_url = (strpos($url, '/public') === 0) && (app('public_catalog_enable', true));
 
 			if ((!in_array($url, $allowed_urls)) && (!$is_public_url)) {
 				header('Location: /auth?redirect=' . urlencode($_SERVER['REQUEST_URI']));

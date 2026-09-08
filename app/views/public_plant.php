@@ -1,4 +1,4 @@
-<p><a href="{{ url('/public') }}">&larr; {{ __('app.public_back_to_catalog') }}</a></p>
+<a class="public-plant-back" href="{{ url('/public') }}">&larr; {{ __('app.public_back_to_catalog') }}</a>
 
 @include('flashmsg.php')
 
@@ -11,12 +11,80 @@
 <img class="public-plant-photo" src="{{ abs_photo($plant->get('photo')) }}" alt="{{ $plant->get('name') }}"/>
 
 @if ((is_string($plant->get('tags'))) && (strlen(trim($plant->get('tags'))) > 0))
-	<div>
+	<div class="public-plant-tags">
 		@foreach (preg_split('/\s+/', trim($plant->get('tags'))) as $public_plant_tag)
 			@if (strlen($public_plant_tag) > 0)
 				<span class="public-plant-tag">{{ $public_plant_tag }}</span>
 			@endif
 		@endforeach
+	</div>
+@endif
+
+<?php
+	$public_plant_has_info = (
+		(plant_attr('lifespan') && $plant->get('lifespan')) ||
+		(plant_attr('hardy') && !is_null($plant->get('hardy'))) ||
+		(plant_attr('humidity') && $plant->get('humidity')) ||
+		(plant_attr('light_level') && $plant->get('light_level')) ||
+		(plant_attr('last_repotted') && $plant->get('last_repotted'))
+	);
+?>
+
+@if ($public_plant_has_info)
+	<div class="public-plant-info">
+		<div class="public-plant-info-title">{{ __('app.public_plant_info_title') }}</div>
+
+		<div class="public-plant-info-grid">
+			@if (plant_attr('lifespan') && $plant->get('lifespan'))
+				<div class="public-plant-info-item">
+					<i class="fas fa-hourglass-half"></i>
+					<div>
+						<div class="public-plant-info-label">{{ __('app.lifespan') }}</div>
+						<div class="public-plant-info-value">{{ __('app.' . $plant->get('lifespan')) }}</div>
+					</div>
+				</div>
+			@endif
+
+			@if (plant_attr('hardy') && !is_null($plant->get('hardy')))
+				<div class="public-plant-info-item">
+					<i class="fas fa-snowflake"></i>
+					<div>
+						<div class="public-plant-info-label">{{ __('app.hardy') }}</div>
+						<div class="public-plant-info-value">{{ ($plant->get('hardy')) ? __('app.yes') : __('app.no') }}</div>
+					</div>
+				</div>
+			@endif
+
+			@if (plant_attr('humidity') && $plant->get('humidity'))
+				<div class="public-plant-info-item">
+					<i class="fas fa-tint"></i>
+					<div>
+						<div class="public-plant-info-label">{{ __('app.humidity') }}</div>
+						<div class="public-plant-info-value">{{ $plant->get('humidity') }}%</div>
+					</div>
+				</div>
+			@endif
+
+			@if (plant_attr('light_level') && $plant->get('light_level'))
+				<div class="public-plant-info-item">
+					<i class="fas fa-sun"></i>
+					<div>
+						<div class="public-plant-info-label">{{ __('app.light_level') }}</div>
+						<div class="public-plant-info-value">{{ __('app.' . $plant->get('light_level')) }}</div>
+					</div>
+				</div>
+			@endif
+
+			@if (plant_attr('last_repotted') && $plant->get('last_repotted'))
+				<div class="public-plant-info-item">
+					<i class="fas fa-seedling"></i>
+					<div>
+						<div class="public-plant-info-label">{{ __('app.last_repotted') }}</div>
+						<div class="public-plant-info-value">{{ date('Y-m-d', strtotime($plant->get('last_repotted'))) }}</div>
+					</div>
+				</div>
+			@endif
+		</div>
 	</div>
 @endif
 
@@ -30,7 +98,7 @@
 	</div>
 @endif
 
-<h3 class="title is-5">{{ __('app.public_journal_title') }}</h3>
+<h3 class="title is-5 public-journal-title">{{ __('app.public_journal_title') }}</h3>
 
 @if ((is_countable($log_entries)) && (count($log_entries) > 0))
 	@foreach ($log_entries as $public_log_entry)
@@ -98,5 +166,5 @@
 		</div>
 	@endforeach
 @else
-	<p>{{ __('app.public_no_journal_entries') }}</p>
+	<p class="public-no-entries">{{ __('app.public_no_journal_entries') }}</p>
 @endif

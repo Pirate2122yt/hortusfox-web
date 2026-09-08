@@ -9,6 +9,14 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot22()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_catalog_enable BOOLEAN NOT NULL DEFAULT 1');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot19()
     {
         PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT 0');

@@ -157,6 +157,15 @@
 
         <div class="field">
             <div class="control">
+                <input type="checkbox" class="checkbox" name="public_catalog_enable" value="1" {{ (app('public_catalog_enable', true)) ? 'checked': '' }}>&nbsp;<span>{{ __('app.public_catalog_enable_label') }}</span>
+            </div>
+            <p class="help">{{ __('app.public_catalog_enable_hint') }}</p>
+        </div>
+
+        <div><hr></div>
+
+        <div class="field">
+            <div class="control">
                 <input type="checkbox" class="checkbox" name="plantrec_enable" value="1" {{ (app('plantrec_enable')) ? 'checked': '' }}>&nbsp;<span>{{ __('app.plantrec_enable_label') }}</span>
             </div>
         </div>

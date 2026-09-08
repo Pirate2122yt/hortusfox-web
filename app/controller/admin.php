@@ -104,6 +104,7 @@ class AdminController extends BaseController {
 			$chattypingindicator = (bool)$request->params()->query('chattypingindicator', 0);
 			$enablehistory = (bool)$request->params()->query('enablehistory', 0);
 			$history_name = $request->params()->query('history_name', app('history_name'));
+			$public_catalog_enable = (bool)$request->params()->query('public_catalog_enable', 0);
 			$enablephotoshare = (bool)$request->params()->query('enablephotoshare', 0);
 			$custom_media_share_host = $request->params()->query('custom_media_share_host', share_api_host());
 			$cronpw = $request->params()->query('cronpw', app('cronjob_pw'));
@@ -132,6 +133,7 @@ class AdminController extends BaseController {
 				'chat_indicator' => $chattypingindicator,
 				'history_enable' => $enablehistory,
 				'history_name' => $history_name,
+				'public_catalog_enable' => $public_catalog_enable,
 				'enable_media_share' => $enablephotoshare,
 				'custom_media_share_host' => rtrim($custom_media_share_host, '/'),
 				'cronjob_pw' => $cronpw,

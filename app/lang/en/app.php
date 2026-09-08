@@ -593,5 +593,9 @@ return [
 	'public_comment_posted' => 'Your comment was posted.',
 	'public_comment_by' => '{name}',
 	'public_comment_anonymous' => 'Anonymous',
-	'view_public_catalog' => 'View public plant catalogue'
+	'view_public_catalog' => 'View public plant catalogue',
+	'public_catalog_enable_label' => 'Enable the public plant catalogue',
+	'public_catalog_enable_hint' => 'When turned off, /public is closed to everyone but signed-in users, regardless of which plants are marked public.',
+	'public_plant_info_title' => 'Plant info',
+	'public_footer_text' => 'Powered by ' . env('APP_NAME')
 ];

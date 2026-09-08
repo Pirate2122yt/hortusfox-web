@@ -23,7 +23,7 @@
   "devDependencies": {
     "css-loader": "^5.2.7",
     "sass": "^1.71.1",
-    "sass-loader": "^10.5.2",
+    "sass-loader": "^14.2.1",
     "webpack": "^5.90.3",
     "webpack-cli": "^4.10.0"
   },

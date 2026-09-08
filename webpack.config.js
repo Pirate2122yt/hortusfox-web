@@ -15,8 +15,16 @@ module.exports = {
           'style-loader',
           // Translates CSS into CommonJS
           'css-loader',
-          // Compiles Sass to CSS
-          'sass-loader',
+          // Compiles Sass to CSS. Explicitly use Dart Sass's modern JS API
+          // (the legacy render() API sass-loader used by default is
+          // deprecated and prints a warning on every build) - see
+          // https://sass-lang.com/d/legacy-js-api
+          {
+            loader: 'sass-loader',
+            options: {
+              api: 'modern',
+            },
+          },
         ],
       },
     ],

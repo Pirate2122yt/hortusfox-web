@@ -23,6 +23,42 @@ body {
     color: rgb(200, 200, 200);
 }
 
+/* Bulma's stock button colors (is-success, is-info, is-danger, is-link)
+   are tuned for white text at a ratio well below WCAG AA - e.g.
+   is-success's white-on-#23d160 is only ~2:1. These are darkened
+   versions of the same colors that keep white button text readable. */
+.button.is-success {
+    background-color: rgb(22, 134, 61);
+}
+
+.button.is-success:hover, .button.is-success.is-hovered {
+    background-color: rgb(18, 112, 51);
+}
+
+.button.is-info {
+    background-color: rgb(25, 122, 186);
+}
+
+.button.is-info:hover, .button.is-info.is-hovered {
+    background-color: rgb(20, 101, 154);
+}
+
+.button.is-danger {
+    background-color: rgb(214, 47, 81);
+}
+
+.button.is-danger:hover, .button.is-danger.is-hovered {
+    background-color: rgb(191, 38, 70);
+}
+
+.button.is-link {
+    background-color: rgb(49, 113, 216);
+}
+
+.button.is-link:hover, .button.is-link.is-hovered {
+    background-color: rgb(38, 92, 184);
+}
+
 .is-image-container {
     background-repeat: no-repeat;
     background-size: cover;

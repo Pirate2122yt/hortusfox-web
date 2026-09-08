@@ -79,6 +79,7 @@ class AppModel_Migration {
         $this->database->add('auth_proxy_sign_up BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('auth_proxy_whitelist TEXT NULL');
         $this->database->add('auth_proxy_hide_logout BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('public_catalog_enable BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }
