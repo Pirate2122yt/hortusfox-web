@@ -634,12 +634,25 @@
 							<div class="field">
 								<label class="label">{{ __('app.location') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="location" list="addinvlocations">
-									<datalist id="addinvlocations">
-										@foreach (LocationsModel::getAll() as $invloc)
-											<option value="{{ $invloc->get('name') }}"></option>
+									<select class="input" name="location_id" id="inpAddInventoryItemLocation">
+										<option value="unassigned">{{ __('app.inventory_unassigned') }}</option>
+										@foreach (PlacesModel::getAll() as $inv_place)
+											@if (count(LocationsModel::getByPlace($inv_place->get('id'))) > 0)
+												<optgroup label="{{ $inv_place->get('name') }}">
+													@foreach (LocationsModel::getByPlace($inv_place->get('id')) as $inv_loc)
+														<option value="{{ $inv_loc->get('id') }}">{{ $inv_loc->get('name') }}</option>
+													@endforeach
+												</optgroup>
+											@endif
 										@endforeach
-									</datalist>
+										@if (count(LocationsModel::getUnassignedToPlace()) > 0)
+											<optgroup label="{{ __('app.locations') }}">
+												@foreach (LocationsModel::getUnassignedToPlace() as $inv_loc)
+													<option value="{{ $inv_loc->get('id') }}">{{ $inv_loc->get('name') }}</option>
+												@endforeach
+											</optgroup>
+										@endif
+									</select>
 								</div>
 							</div>
 
@@ -737,12 +750,25 @@
 							<div class="field">
 								<label class="label">{{ __('app.location') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="location" id="inpInventoryItemLocation" list="edinvlocations" required>
-									<datalist id="edinvlocations">
-										@foreach (LocationsModel::getAll() as $invloc)
-											<option value="{{ $invloc->get('name') }}"></option>
+									<select class="input" name="location_id" id="inpInventoryItemLocation">
+										<option value="unassigned">{{ __('app.inventory_unassigned') }}</option>
+										@foreach (PlacesModel::getAll() as $inv_place)
+											@if (count(LocationsModel::getByPlace($inv_place->get('id'))) > 0)
+												<optgroup label="{{ $inv_place->get('name') }}">
+													@foreach (LocationsModel::getByPlace($inv_place->get('id')) as $inv_loc)
+														<option value="{{ $inv_loc->get('id') }}">{{ $inv_loc->get('name') }}</option>
+													@endforeach
+												</optgroup>
+											@endif
 										@endforeach
-									</datalist>
+										@if (count(LocationsModel::getUnassignedToPlace()) > 0)
+											<optgroup label="{{ __('app.locations') }}">
+												@foreach (LocationsModel::getUnassignedToPlace() as $inv_loc)
+													<option value="{{ $inv_loc->get('id') }}">{{ $inv_loc->get('name') }}</option>
+												@endforeach
+											</optgroup>
+										@endif
+									</select>
 								</div>
 							</div>
 
@@ -855,9 +881,14 @@
 
 						@if ((isset($inventory)) && (is_countable($inventory)) && (count($inventory) > 0))
 							@foreach ($inventory as $inventory_item)
+								<?php
+									$export_item_location = ($inventory_item->get('location_id'))
+										? LocationsModel::getNameById($inventory_item->get('location_id'))
+										: ($inventory_item->get('location') ?? '');
+								?>
 								<div class="field">
 									<div class="control">
-										<input type="checkbox" class="inventory-export-items" data-invitemid="{{ $inventory_item->get('id') }}" data-invitemname="{{ $inventory_item->get('name') }}" data-invdescription="inventory-item-description-{{ $inventory_item->get('id') }}" data-invgroup="{{ InvGroupModel::getLabel($inventory_item->get('group_ident')) }}" data-invamount="{{ $inventory_item->get('amount') }}" data-invlocation="{{ $inventory_item->get('location') ?? '' }}" data-invphoto="{{ $inventory_item->get('photo') ?? '' }}" data-invcreated="{{ $inventory_item->get('created_at') }}" data-invupdated="{{ $inventory_item->get('last_edited_date') ?? '' }}" value="1"/>&nbsp;{{ '[' . InvGroupModel::getLabel($inventory_item->get('group_ident')) . '] ' . $inventory_item->get('name') }}
+										<input type="checkbox" class="inventory-export-items" data-invitemid="{{ $inventory_item->get('id') }}" data-invitemname="{{ $inventory_item->get('name') }}" data-invdescription="inventory-item-description-{{ $inventory_item->get('id') }}" data-invgroup="{{ InvGroupModel::getLabel($inventory_item->get('group_ident')) }}" data-invamount="{{ $inventory_item->get('amount') }}" data-invlocation="{{ $export_item_location }}" data-invphoto="{{ $inventory_item->get('photo') ?? '' }}" data-invcreated="{{ $inventory_item->get('created_at') }}" data-invupdated="{{ $inventory_item->get('last_edited_date') ?? '' }}" value="1"/>&nbsp;{{ '[' . InvGroupModel::getLabel($inventory_item->get('group_ident')) . '] ' . $inventory_item->get('name') }}
 									</div>
 								</div>
 							@endforeach

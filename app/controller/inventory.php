@@ -24,7 +24,7 @@ class InventoryController extends BaseController {
 
     /**
 	 * Handles URL: /inventory
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\ViewHandler
 	 */
@@ -32,20 +32,86 @@ class InventoryController extends BaseController {
 	{
 		$user = UserModel::getAuthUser();
 
-		$inventory = InventoryModel::getInventory();
+		$expand = $request->params()->query('expand', null);
+
+		if ($expand) {
+			$item = InventoryModel::getItemById($expand);
+
+			if ($item) {
+				$target = ($item->get('location_id')) ? '/inventory/location/' . $item->get('location_id') : '/inventory/unassigned';
+
+				return redirect($target . '?expand=' . $expand . '#anchor-item-' . $expand);
+			}
+		}
+
+		$places = PlacesModel::getAll();
+		$unassigned_locations = LocationsModel::getUnassignedToPlace();
+		$unassigned_count = InventoryModel::getCountUnassigned();
+
+		return parent::view(['content', 'inventory_locations'], [
+			'user' => $user,
+			'places' => $places,
+			'unassigned_locations' => $unassigned_locations,
+			'unassigned_count' => $unassigned_count
+		]);
+	}
+
+	/**
+	 * Handles URL: /inventory/location/{id}
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_inventory_location($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$location_id = $request->arg('id');
+		$location = LocationsModel::getLocationById($location_id);
+
+		if (!$location) {
+			return redirect('/inventory');
+		}
+
+		$inventory = InventoryModel::getByLocation($location_id);
 
 		$expand = $request->params()->query('expand', null);
-		
+
 		return parent::view(['content', 'inventory'], [
 			'user' => $user,
 			'inventory' => $inventory,
-			'_expand_inventory_item' => $expand
+			'_expand_inventory_item' => $expand,
+			'inventory_scope_label' => $location->get('name'),
+			'inventory_scope_location_id' => $location_id
+		]);
+	}
+
+	/**
+	 * Handles URL: /inventory/unassigned
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_inventory_unassigned($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$inventory = InventoryModel::getUnassigned();
+
+		$expand = $request->params()->query('expand', null);
+
+		return parent::view(['content', 'inventory'], [
+			'user' => $user,
+			'inventory' => $inventory,
+			'_expand_inventory_item' => $expand,
+			'inventory_scope_label' => __('app.inventory_unassigned'),
+			'inventory_scope_location_id' => null
 		]);
 	}
 
 	/**
 	 * Handles URL: /inventory/add
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\RedirectHandler
 	 */
@@ -63,26 +129,29 @@ class InventoryController extends BaseController {
 			}
 
 			FlashMessage::setMsg('error', 'Invalid data given:<br/>' . $errorstr);
-			
+
 			return back();
 		}
 
 		$name = $request->params()->query('name', null);
 		$group = $request->params()->query('group', null);
 		$location = $request->params()->query('location', null);
+		$location_id = $request->params()->query('location_id', null);
 		$description = $request->params()->query('description', null);
 		$tags = $request->params()->query('tags', null);
 		$amount = $request->params()->query('amount', null);
 		$photo = $request->params()->query('photo', null);
 
-		$id = InventoryModel::addItem($name, $description, $tags, $location, $amount, $group, $photo);
+		$id = InventoryModel::addItem($name, $description, $tags, $location, $amount, $group, $photo, false, $location_id);
 
-		return redirect('/inventory?expand=' . $id . '#anchor-item-' . $id);
+		$redirect_base = (($location_id) && ($location_id !== 'unassigned')) ? '/inventory/location/' . $location_id : '/inventory/unassigned';
+
+		return redirect($redirect_base . '?expand=' . $id . '#anchor-item-' . $id);
 	}
 
 	/**
 	 * Handles URL: /inventory/edit
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\RedirectHandler
 	 */
@@ -101,7 +170,7 @@ class InventoryController extends BaseController {
 			}
 
 			FlashMessage::setMsg('error', 'Invalid data given:<br/>' . $errorstr);
-			
+
 			return back();
 		}
 
@@ -109,14 +178,17 @@ class InventoryController extends BaseController {
 		$name = $request->params()->query('name', null);
 		$group = $request->params()->query('group', null);
 		$location = $request->params()->query('location', null);
+		$location_id = $request->params()->query('location_id', null);
 		$amount = $request->params()->query('amount', null);
 		$description = $request->params()->query('description', null);
 		$tags = $request->params()->query('tags', null);
 		$photo = $request->params()->query('photo', null);
 
-		InventoryModel::editItem($id, $name, $description, $tags, $location, $amount, $group, $photo);
+		InventoryModel::editItem($id, $name, $description, $tags, $location, $amount, $group, $photo, false, $location_id);
 
-		return redirect('/inventory?expand=' . $id . '#anchor-item-' . $id);
+		$redirect_base = (($location_id) && ($location_id !== 'unassigned')) ? '/inventory/location/' . $location_id : '/inventory/unassigned';
+
+		return redirect($redirect_base . '?expand=' . $id . '#anchor-item-' . $id);
 	}
 
 	/**

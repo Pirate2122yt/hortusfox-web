@@ -47,6 +47,16 @@ h2 {
     margin-bottom: 15px;
 }
 
+.inventory-place-header {
+    font-size: 1.1em;
+    margin: 25px 0 10px 0;
+    opacity: 0.8;
+}
+
+.inventory-place-header:first-of-type {
+    margin-top: 10px;
+}
+
 .is-default-link {
     color: rgb(79, 134, 202);
 }

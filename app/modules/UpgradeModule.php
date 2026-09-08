@@ -9,6 +9,14 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot18()
+    {
+        InventoryModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS location_id INT NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot17()
     {
         PlacesModel::raw('CREATE TABLE IF NOT EXISTS PlacesModel (

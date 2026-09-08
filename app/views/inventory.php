@@ -1,12 +1,16 @@
-<h1>{{ __('app.inventory') }}</h1>
+<h1>{{ __('app.inventory') }}{{ (isset($inventory_scope_label)) ? ' — ' . $inventory_scope_label : '' }}</h1>
 
 <h2 class="smaller-headline">{{ __('app.inventory_hint') }}</h2>
 
 @include('flashmsg.php')
 
+<div class="margin-vertical">
+    <a class="is-default-link" href="{{ url('/inventory') }}"><i class="fas fa-arrow-left"></i>&nbsp;{{ __('app.back_to_inventory_overview') }}</a>
+</div>
+
 <div>
     <div class="margin-vertical is-inline-block">
-        <a class="button is-success" href="javascript:void(0);" onclick="window.vue.bShowAddInventoryItem = true;">{{ __('app.create_new') }}</a>
+        <a class="button is-success" href="javascript:void(0);" onclick="document.getElementById('inpAddInventoryItemLocation').value = '{{ ($inventory_scope_location_id) ?? 'unassigned' }}'; window.vue.bShowAddInventoryItem = true;">{{ __('app.create_new') }}</a>
         &nbsp;
         <a class="button is-link" href="javascript:void(0);" onclick="window.vue.showInvGroupModal();">{{ __('app.manage_groups') }}</a>
         &nbsp;
@@ -87,8 +91,14 @@
                     </div>
 
                     <div class="inventory-item-footer">
+                        <?php
+                            $item_location_name = ($inventory->get($i)->get('location_id'))
+                                ? LocationsModel::getNameById($inventory->get($i)->get('location_id'))
+                                : (($inventory->get($i)->get('location')) ?: __('app.inventory_unassigned'));
+                        ?>
                         <div class="inventory-item-location" id="inventory-item-location-{{ $inventory->get($i)->get('id') }}">
-                            {!! UtilsModule::purify(__('app.location_fmt', ['loc' => ($inventory->get($i)->get('location')) ?? 'N/A'])) !!}
+                            <div class="is-hidden" id="inventory-item-location-id-{{ $inventory->get($i)->get('id') }}">{{ $inventory->get($i)->get('location_id') ?? 'unassigned' }}</div>
+                            {!! UtilsModule::purify(__('app.location_fmt', ['loc' => $item_location_name])) !!}
                         </div>
 
                         <div class="inventory-item-author">

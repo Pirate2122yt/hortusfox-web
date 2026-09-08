@@ -901,11 +901,12 @@ class ApiController extends BaseController {
             $description = $request->params()->query('description', null);
             $tags = $request->params()->query('tags', null);
             $location = $request->params()->query('location', null);
+            $location_id = $request->params()->query('location_id', null);
             $amount = $request->params()->query('amount', null);
             $group = $request->params()->query('group', null);
             $photo = $request->params()->query('photo', null);
-			
-			$itemid = InventoryModel::addItem($name, $description, $tags, $location, $amount, $group, $photo, true);
+
+			$itemid = InventoryModel::addItem($name, $description, $tags, $location, $amount, $group, $photo, true, $location_id);
 
             return json([
                 'code' => 200,
@@ -933,11 +934,12 @@ class ApiController extends BaseController {
             $description = $request->params()->query('description', null);
             $tags = $request->params()->query('tags', null);
             $location = $request->params()->query('location', null);
+            $location_id = $request->params()->query('location_id', null);
             $amount = $request->params()->query('amount', null);
             $group = $request->params()->query('group', null);
             $photo = $request->params()->query('photo', null);
-			
-			InventoryModel::editItem($item, $name, $description, $tags, $location, $amount, $group, $photo, true);
+
+			InventoryModel::editItem($item, $name, $description, $tags, $location, $amount, $group, $photo, true, $location_id);
 
             return json([
                 'code' => 200

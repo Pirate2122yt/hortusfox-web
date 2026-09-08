@@ -89,6 +89,8 @@ return [
 
     /** Inventory Controller */
     array('/inventory', 'GET', 'inventory@view_inventory'),
+    array('/inventory/unassigned', 'GET', 'inventory@view_inventory_unassigned'),
+    array('/inventory/location/{id}', 'GET', 'inventory@view_inventory_location'),
     array('/inventory/add', 'POST', 'inventory@add_inventory_item'),
     array('/inventory/edit', 'POST', 'inventory@edit_inventory_item'),
     array('/inventory/amount/increment', 'ANY', 'inventory@inc_inventory_item'),

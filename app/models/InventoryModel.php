@@ -34,10 +34,11 @@ class InventoryModel extends \Asatru\Database\Model {
      * @param $group
      * @param $photo
      * @param $api
+     * @param $location_id A real LocationsModel id to scope this item to, or 'unassigned'/null to leave unassigned
      * @return int
      * @throws \Exception
      */
-    public static function addItem($name, $description, $tags, $location, $amount, $group, $photo, $api = false)
+    public static function addItem($name, $description, $tags, $location, $amount, $group, $photo, $api = false, $location_id = null)
     {
         try {
             $user = UserModel::getAuthUser();
@@ -49,8 +50,12 @@ class InventoryModel extends \Asatru\Database\Model {
                 throw new \Exception('Invalid group token: ' . $group);
             }
 
-            static::raw('INSERT INTO `@THIS` (name, group_ident, description, tags, location, amount, last_edited_user, last_edited_date) VALUES(?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', [
-                $name, $group, $description, trim($tags), $location, $amount, (($user) ? $user->get('id') : 0)
+            if ($location_id === 'unassigned') {
+                $location_id = null;
+            }
+
+            static::raw('INSERT INTO `@THIS` (name, group_ident, description, tags, location, location_id, amount, last_edited_user, last_edited_date) VALUES(?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', [
+                $name, $group, $description, trim($tags), $location, ($location_id ?: null), $amount, (($user) ? $user->get('id') : 0)
             ]);
 
             $row = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
@@ -106,10 +111,11 @@ class InventoryModel extends \Asatru\Database\Model {
      * @param $group
      * @param $photo
      * @param $api
+     * @param $location_id A real LocationsModel id to (re)assign this item to, 'unassigned' to explicitly clear it, or null to leave it untouched (used by the API, which may not know about locations)
      * @return void
      * @throws \Exception
      */
-    public static function editItem($id, $name, $description, $tags, $location, $amount, $group, $photo, $api = false)
+    public static function editItem($id, $name, $description, $tags, $location, $amount, $group, $photo, $api = false, $location_id = null)
     {
         try {
             $user = UserModel::getAuthUser();
@@ -122,9 +128,19 @@ class InventoryModel extends \Asatru\Database\Model {
                 throw new \Exception('Invalid item: ' . $id);
             }
 
-            static::raw('UPDATE `@THIS` SET name = ?, group_ident = ?, location = ?, description = ?, tags = ?, amount = ? WHERE id = ?', [
-                $name, $group, $location, $description, $tags, $amount, $row->get('id')
-            ]);
+            if ($location_id !== null) {
+                if ($location_id === 'unassigned') {
+                    $location_id = null;
+                }
+
+                static::raw('UPDATE `@THIS` SET name = ?, group_ident = ?, location = ?, location_id = ?, description = ?, tags = ?, amount = ? WHERE id = ?', [
+                    $name, $group, $location, $location_id, $description, $tags, $amount, $row->get('id')
+                ]);
+            } else {
+                static::raw('UPDATE `@THIS` SET name = ?, group_ident = ?, location = ?, description = ?, tags = ?, amount = ? WHERE id = ?', [
+                    $name, $group, $location, $description, $tags, $amount, $row->get('id')
+                ]);
+            }
 
             if ((isset($_FILES['photo'])) && ($_FILES['photo']['error'] === UPLOAD_ERR_OK)) {
                 $file_ext = UtilsModule::getImageExt($_FILES['photo']['tmp_name']);
@@ -263,6 +279,77 @@ class InventoryModel extends \Asatru\Database\Model {
     {
         try {
             return static::raw('SELECT * FROM `@THIS` ORDER BY group_ident, name ASC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getItemById($id)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $locationId
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getByLocation($locationId)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE location_id = ? ORDER BY group_ident, name ASC', [$locationId]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Items that have never been assigned a Location (e.g. from before
+     * per-location inventories existed).
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getUnassigned()
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE location_id IS NULL ORDER BY group_ident, name ASC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $locationId
+     * @return int
+     * @throws \Exception
+     */
+    public static function getCountByLocation($locationId)
+    {
+        try {
+            return (int)static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE location_id = ?', [$locationId])->first()->get('count');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @return int
+     * @throws \Exception
+     */
+    public static function getCountUnassigned()
+    {
+        try {
+            return (int)static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE location_id IS NULL')->first()->get('count');
         } catch (\Exception $e) {
             throw $e;
         }
