@@ -227,6 +227,7 @@ return [
     array('/api/calendar/remove', 'ANY', 'api@remove_calendar_entry'),
     array('/api/chat/fetch', 'ANY', 'api@fetch_chat_messages'),
     array('/api/chat/message/add', 'ANY', 'api@add_chat_message'),
+    array('/api/activity/rss', 'GET', 'api@fetch_activity_rss'),
     array('/api/backup/export', 'ANY', 'api@export_backup'),
     array('/api/backup/import', 'POST', 'api@import_backup'),
 

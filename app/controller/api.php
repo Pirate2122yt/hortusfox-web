@@ -1260,7 +1260,7 @@ class ApiController extends BaseController {
     {
         try {
             $message = $request->params()->query('message', null);
-			
+
 			TextBlockModule::addToChat($message, 'x1f916', true);
 
             return json([
@@ -1272,6 +1272,49 @@ class ApiController extends BaseController {
                 'msg' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+	 * Handles URL: /api/activity/rss
+	 *
+	 * Renders recent chat system messages (new plants, comments, task
+	 * activity, calendar changes, etc.) as a standard RSS 2.0 feed, for
+	 * subscribing from an RSS reader or a dashboard's generic RSS
+	 * widget (e.g. Homarr's RSS Feed widget) - anything that accepts a
+	 * plain feed URL. ?limit=N caps how many recent messages are
+	 * included (default 50, capped at 200). Auth is the same ?token=
+	 * API key as every other endpoint in this controller, which is
+	 * what makes the URL usable as a bare link: create a key just for
+	 * this in Admin > API keys, since it'll be sitting in another
+	 * app's config from here on.
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return void
+	 */
+    public function fetch_activity_rss($request)
+    {
+        $limit = (int)$request->params()->query('limit', 50);
+        if (($limit <= 0) || ($limit > 200)) {
+            $limit = 50;
+        }
+
+        try {
+            $messages = ChatMsgModel::getSystemMessagesForFeed($limit);
+        } catch (\Exception $e) {
+            $messages = [];
+        }
+
+        $workspace = app('workspace');
+        $rss = RssModule::renderFeed(
+            $messages,
+            $workspace . ' - ' . __('app.activity_feed_title'),
+            __('app.activity_feed_description', ['workspace' => $workspace]),
+            url('/chat')
+        );
+
+        header('Content-Type: application/rss+xml; charset=utf-8');
+
+        exit($rss);
     }
 
     /**

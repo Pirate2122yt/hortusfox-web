@@ -619,5 +619,7 @@ return [
 	'public_plantid_enable_hint' => 'Lets anonymous visitors on /public/identify upload a photo and get a species suggestion, using the Pl@ntNet key configured above. Capped at 10 identifications per visitor per day.',
 	'public_captcha_sitekey_label' => 'Cloudflare Turnstile site key (optional)',
 	'public_captcha_secretkey_label' => 'Cloudflare Turnstile secret key (optional)',
-	'public_captcha_hint' => 'Recommended when the public identifier is enabled. Leave both blank to skip the CAPTCHA challenge (the daily limit and upload checks still apply). Get free keys at dash.cloudflare.com/?to=/:account/turnstile.'
+	'public_captcha_hint' => 'Recommended when the public identifier is enabled. Leave both blank to skip the CAPTCHA challenge (the daily limit and upload checks still apply). Get free keys at dash.cloudflare.com/?to=/:account/turnstile.',
+	'activity_feed_title' => 'Activity',
+	'activity_feed_description' => 'Recent activity in {workspace}'
 ];

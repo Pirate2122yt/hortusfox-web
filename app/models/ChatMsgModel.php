@@ -115,6 +115,27 @@ class ChatMsgModel extends \Asatru\Database\Model {
     }
 
     /**
+     * System messages only, newest first, for the /api/activity/rss
+     * feed. Unlike getChat()/getLatestSystemMessage() this never
+     * touches a user's last_seen_msg/last_seen_sysmsg pointers -
+     * there's no ambient logged-in user on a token-authed API request,
+     * and reading the feed shouldn't mark anything as seen in the
+     * in-app chat tab anyway.
+     *
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getSystemMessagesForFeed($limit = 50)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE sysmsg = 1 ORDER BY created_at DESC LIMIT ' . safe_int($limit, 50));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @return int
      * @throws \Exception
      */
