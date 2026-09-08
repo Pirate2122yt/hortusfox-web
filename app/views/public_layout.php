@@ -107,11 +107,18 @@
 				margin-bottom: 0.25em;
 			}
 
-			/* Bulma pulls a .subtitle up by -1.25rem to sit snugly under a
-			   .title, sized for Bulma's own default 1.5rem title margin.
-			   The tighter margin-bottom above needs a matching offset here,
-			   or the subtitle overlaps the title text. */
-			.public-catalog-header .subtitle {
+			/* Bulma's own ".title:not(.is-spaced) + .subtitle" rule pulls a
+			   subtitle up by -1.25rem to sit snugly under a title, sized
+			   for Bulma's default 1.5rem title margin. The tighter
+			   margin-bottom above needs a matching offset here, or the
+			   subtitle overlaps the title text - and that Bulma rule has
+			   higher specificity than a plain ".public-catalog-header
+			   .subtitle" selector (3 classes vs. 2), so it was silently
+			   winning and the previous fix never actually applied. Matching
+			   Bulma's own selector shape here (same 3 classes, i.e. the
+			   :not(.is-spaced) itself counts as one) is what actually beats
+			   it. */
+			.public-catalog-header .title:not(.is-spaced) + .subtitle {
 				margin-top: 0.75em;
 			}
 
