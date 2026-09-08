@@ -1121,6 +1121,20 @@
 									<input type="text" class="input" name="name" required>
 								</div>
 							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.place') }}</label>
+								<div class="control">
+									<select class="input" name="place">
+										<option value="">{{ __('app.place_label_none') }}</option>
+										@if (isset($places))
+											@foreach ($places as $place)
+												<option value="{{ $place->get('id') }}">{{ $place->get('name') }}</option>
+											@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">
@@ -1161,6 +1175,67 @@
 					<footer class="modal-card-foot is-stretched">
 						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmRemoveLocation').submit();">{{ __('app.remove') }}</button>
 						<button class="button" onclick="window.vue.bShowRemoveLocation = false;">{{ __('app.cancel') }}</button>
+					</footer>
+				</div>
+			</div>
+
+			<div class="modal" :class="{'is-active': bShowCreateNewPlace}">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head is-stretched">
+						<p class="modal-card-title">{{ __('app.add_place') }}</p>
+						<button class="delete" aria-label="close" onclick="window.vue.bShowCreateNewPlace = false;"></button>
+					</header>
+					<section class="modal-card-body is-stretched">
+						<form id="frmCreateNewPlace" method="POST" action="{{ url('/admin/place/add') }}">
+							@csrf
+
+							<div class="field">
+								<label class="label">{{ __('app.name') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="name" required>
+								</div>
+							</div>
+						</form>
+					</section>
+					<footer class="modal-card-foot is-stretched">
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmCreateNewPlace').submit();">{{ __('app.add_place') }}</button>
+						<button class="button" onclick="window.vue.bShowCreateNewPlace = false;">{{ __('app.cancel') }}</button>
+					</footer>
+				</div>
+			</div>
+
+			<div class="modal" :class="{'is-active': bShowRemovePlace}">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head is-stretched">
+						<p class="modal-card-title">{{ __('app.remove_place') }}</p>
+						<button class="delete" aria-label="close" onclick="window.vue.bShowRemovePlace = false;"></button>
+					</header>
+					<section class="modal-card-body is-stretched">
+						<form id="frmRemovePlace" method="POST" action="{{ url('/admin/place/remove') }}">
+							@csrf
+
+							<input type="hidden" name="id" id="remove-place-id"/>
+
+							<div class="field">
+								<label class="label">{{ __('app.place_migration') }}</label>
+								<div class="control">
+									<select class="input" name="target" id="selRemovePlace">
+										<option value="">-</option>
+										@if (isset($places))
+											@foreach ($places as $place)
+												<option class="remove-place-item-option" id="remove-place-item-{{ $place->get('id') }}" value="{{ $place->get('id') }}">{{ $place->get('name') }}</option>
+											@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+						</form>
+					</section>
+					<footer class="modal-card-foot is-stretched">
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmRemovePlace').submit();">{{ __('app.remove') }}</button>
+						<button class="button" onclick="window.vue.bShowRemovePlace = false;">{{ __('app.cancel') }}</button>
 					</footer>
 				</div>
 			</div>

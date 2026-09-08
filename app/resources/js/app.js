@@ -133,6 +133,8 @@ window.createVueInstance = function(element) {
             bShowCreateNewUser: false,
             bShowCreateNewLocation: false,
             bShowRemoveLocation: false,
+            bShowCreateNewPlace: false,
+            bShowRemovePlace: false,
             bShowPreviewImageModal: false,
             bShowSharePhoto: false,
             bShowAddFirstLocation: false,

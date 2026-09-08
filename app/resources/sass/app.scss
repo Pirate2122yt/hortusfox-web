@@ -320,6 +320,16 @@ a.navbar-burger:hover {
     }
 }
 
+.navbar-dropdown-place-header {
+    opacity: 0.6;
+    pointer-events: none;
+    padding-bottom: 0.25rem;
+}
+
+.navbar-dropdown-place-child {
+    padding-left: 1.5rem;
+}
+
 .navbar-item-brand-mobile-right {
     @media screen and (max-width: 1087px) {
         position: absolute;

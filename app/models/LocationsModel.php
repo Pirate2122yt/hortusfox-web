@@ -95,14 +95,15 @@ class LocationsModel extends \Asatru\Database\Model {
 
     /**
      * @param $name
+     * @param $place
      * @return void
      * @throws \Exception
      */
-    public static function addLocation($name)
+    public static function addLocation($name, $place = null)
     {
         try {
-            static::raw('INSERT INTO `@THIS` (name) VALUES(?)', [
-                $name
+            static::raw('INSERT INTO `@THIS` (name, place) VALUES(?, ?)', [
+                $name, ($place ?: null)
             ]);
         } catch (\Exception $e) {
             throw $e;
@@ -113,15 +114,88 @@ class LocationsModel extends \Asatru\Database\Model {
      * @param $id
      * @param $name
      * @param $active
+     * @param $place
      * @return void
      * @throws \Exception
      */
-    public static function editLocation($id, $name, $active)
+    public static function editLocation($id, $name, $active, $place = null)
     {
         try {
-            static::raw('UPDATE `@THIS` SET name = ?, active = ? WHERE id = ?', [
-                $name, $active, $id
+            static::raw('UPDATE `@THIS` SET name = ?, active = ?, place = ? WHERE id = ?', [
+                $name, $active, ($place ?: null), $id
             ]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $placeId
+     * @param $only_active
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getByPlace($placeId, $only_active = true)
+    {
+        try {
+            if ($only_active) {
+                return static::raw('SELECT * FROM `@THIS` WHERE place = ? AND active = 1 ORDER BY name ASC', [$placeId]);
+            } else {
+                return static::raw('SELECT * FROM `@THIS` WHERE place = ? ORDER BY name ASC', [$placeId]);
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Locations that have never been assigned a Place (e.g. from
+     * before Places existed).
+     *
+     * @param $only_active
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getUnassignedToPlace($only_active = true)
+    {
+        try {
+            if ($only_active) {
+                return static::raw('SELECT * FROM `@THIS` WHERE place IS NULL AND active = 1 ORDER BY name ASC');
+            } else {
+                return static::raw('SELECT * FROM `@THIS` WHERE place IS NULL ORDER BY name ASC');
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $placeId
+     * @return int
+     * @throws \Exception
+     */
+    public static function getCountForPlace($placeId)
+    {
+        try {
+            return (int)static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE place = ?', [$placeId])->first()->get('count');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Reassigns every Location in $fromPlace to $toPlace, used when a
+     * Place is removed.
+     *
+     * @param $fromPlace
+     * @param $toPlace
+     * @return void
+     * @throws \Exception
+     */
+    public static function migrateLocationsToPlace($fromPlace, $toPlace)
+    {
+        try {
+            static::raw('UPDATE `@THIS` SET place = ? WHERE place = ?', [($toPlace ?: null), $fromPlace]);
         } catch (\Exception $e) {
             throw $e;
         }

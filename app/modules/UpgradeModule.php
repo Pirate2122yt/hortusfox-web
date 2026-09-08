@@ -9,6 +9,30 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot17()
+    {
+        PlacesModel::raw('CREATE TABLE IF NOT EXISTS PlacesModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(512) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        LocationsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS place INT NULL');
+
+        if (PlacesModel::getCount() == 0) {
+            PlacesModel::addPlace('Home');
+        }
+
+        $default_place = PlacesModel::raw('SELECT * FROM `PlacesModel` ORDER BY id ASC LIMIT 1')->first();
+
+        if ($default_place) {
+            LocationsModel::raw('UPDATE `@THIS` SET place = ? WHERE place IS NULL', [$default_place->get('id')]);
+        }
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot16()
     {
         FeatureRequestModel::raw('CREATE TABLE IF NOT EXISTS FeatureRequestModel (

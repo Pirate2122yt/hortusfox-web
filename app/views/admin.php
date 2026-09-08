@@ -407,6 +407,36 @@
 </div>
 
 <div class="admin-locations {{ ((!isset($_GET['tab'])) || ($_GET['tab'] !== 'locations')) ? 'is-hidden' : ''}}">
+    <h2>{{ __('app.places') }}</h2>
+
+    <div class="admin-places-list">
+        @foreach ($places as $place)
+            <div class="admin-location">
+                <form method="POST" action="{{ url('/admin/place/update') }}">
+                    @csrf
+
+                    <input type="hidden" name="id" value="{{ $place->get('id') }}"/>
+
+                    <div class="admin-location-item admin-location-item-ident">#{{ $place->get('id') }}</div>
+
+                    <div class="admin-location-item admin-location-item-input">
+                        <input type="text" class="input" name="name" value="{{ $place->get('name') }}"/>
+                    </div>
+
+                    <div class="admin-location-actions">
+                        <span class="admin-location-action-item"><input type="submit" class="button is-success" value="{{ __('app.update') }}"/></span>
+                        <span class="admin-location-action-item"><a class="button is-danger" href="javascript:void(0);" onclick="document.getElementById('remove-place-id').value = {{ $place->get('id') }}; document.querySelectorAll('.remove-place-item-option').forEach((el) => { el.classList.remove('is-hidden') }); document.querySelector('#remove-place-item-{{ $place->get('id') }}').classList.add('is-hidden'); window.vue.bShowRemovePlace = true;">{{ __('app.remove') }}</a></span>
+                    </div>
+                </form>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="admin-locations-actions">
+        <span><a class="button is-info" href="javascript:void(0);" onclick="window.vue.bShowCreateNewPlace = true;">{{ __('app.add_place') }}</a></span>
+        <span><a class="button is-success button-margin-left" href="javascript:void(0);" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>'; window.vue.saveAllAttributes('.admin-places-list');">{{ __('app.save_all') }}</a></span>
+    </div>
+
     <h2>{{ __('app.locations') }}</h2>
 
     <div>
@@ -434,6 +464,15 @@
                     </div>
 
                     <div class="admin-location-item admin-location-item-input">
+                        <select class="input" name="place">
+                            <option value="">{{ __('app.place_label_none') }}</option>
+                            @foreach ($places as $place)
+                                <option value="{{ $place->get('id') }}" {{ ((string)$location->get('place') === (string)$place->get('id')) ? 'selected' : '' }}>{{ $place->get('name') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="admin-location-item admin-location-item-input">
                         <div class="field has-addons">
                             <div class="control admin-location-control-icon">
                                 <input type="text" class="input" name="icon" value="{{ $location->get('icon') ?? '' }}"/>
@@ -450,7 +489,7 @@
 
                     <div class="admin-location-actions">
                         <span class="admin-location-action-item"><input type="submit" class="button is-success" value="{{ __('app.update') }}"/></span>
-                        <span class="admin-location-action-item"><a class="button is-danger" href="javascript:void(0);" onclick="document.getElementById('remove-location-id').value = {{ $location->get('id') }}; document.querySelectorAll('.remove-location-item-option').forEach((el) => { el.classList.remove('is-hidden') }); document.querySelector('#remove-location-item-{{ $location->get('id') }}').classList.add('is-hidden'); window.vue.bShowRemoveLocation = true;">{{ __('app.remove') }}</a></span> 
+                        <span class="admin-location-action-item"><a class="button is-danger" href="javascript:void(0);" onclick="document.getElementById('remove-location-id').value = {{ $location->get('id') }}; document.querySelectorAll('.remove-location-item-option').forEach((el) => { el.classList.remove('is-hidden') }); document.querySelector('#remove-location-item-{{ $location->get('id') }}').classList.add('is-hidden'); window.vue.bShowRemoveLocation = true;">{{ __('app.remove') }}</a></span>
                     </div>
                 </form>
             </div>

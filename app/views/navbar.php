@@ -120,7 +120,20 @@
                 </a>
 
                 <div class="navbar-dropdown">
-                    @foreach (LocationsModel::getAll() as $location_item)
+                    @foreach (PlacesModel::getAll() as $place_item)
+                        @if (count(LocationsModel::getByPlace($place_item->get('id'))) > 0)
+                            <a class="navbar-item navbar-dropdown-place-header" href="javascript:void(0);">
+                                <strong>{{ $place_item->get('name') }}</strong>
+                            </a>
+                            @foreach (LocationsModel::getByPlace($place_item->get('id')) as $location_item)
+                                <a class="navbar-item navbar-dropdown-place-child" href="{{ url('/plants/location/' . $location_item->get('id')) }}">
+                                    {{ $location_item->get('name') }}
+                                </a>
+                            @endforeach
+                        @endif
+                    @endforeach
+
+                    @foreach (LocationsModel::getUnassignedToPlace() as $location_item)
                         <a class="navbar-item" href="{{ url('/plants/location/' . $location_item->get('id')) }}">
                             {{ $location_item->get('name') }}
                         </a>

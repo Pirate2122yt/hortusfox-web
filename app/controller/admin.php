@@ -31,6 +31,7 @@ class AdminController extends BaseController {
 	{
 		$user = UserModel::getAuthUser();
 		$locs = LocationsModel::getAll(false);
+		$places = PlacesModel::getAll();
         $user_accounts = UserModel::getAll();
 		$calendar_classes = CalendarClassModel::getAll();
 		$mail_encryption_types = AppModel::getMailEncryptionTypes();
@@ -62,6 +63,7 @@ class AdminController extends BaseController {
 		return parent::view(['content', 'admin'], [
 			'user' => $user,
 			'locations' => $locs,
+			'places' => $places,
 			'user_accounts' => $user_accounts,
 			'calendar_classes' => $calendar_classes,
 			'mail_encryption_types' => $mail_encryption_types,
@@ -266,8 +268,9 @@ class AdminController extends BaseController {
 	{
 		try {
 			$name = $request->params()->query('name', null);
-			
-			LocationsModel::addLocation($name);
+			$place = $request->params()->query('place', null);
+
+			LocationsModel::addLocation($name, $place);
 
 			FlashMessage::setMsg('success', __('app.location_added_successfully'));
 
@@ -280,7 +283,7 @@ class AdminController extends BaseController {
 
 	/**
 	 * Handles URL: /admin/location/update
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\RedirectHandler
 	 */
@@ -290,8 +293,9 @@ class AdminController extends BaseController {
 			$id = $request->params()->query('id');
 			$name = $request->params()->query('name', null);
 			$active = $request->params()->query('active', 0);
-			
-			LocationsModel::editLocation($id, $name, (int)$active);
+			$place = $request->params()->query('place', null);
+
+			LocationsModel::editLocation($id, $name, (int)$active, $place);
 
 			FlashMessage::setMsg('success', __('app.location_updated_successfully'));
 
@@ -299,6 +303,74 @@ class AdminController extends BaseController {
 		} catch (\Exception $e) {
 			FlashMessage::setMsg('error', $e->getMessage());
 			return back();
+		}
+	}
+
+	/**
+	 * Handles URL: /admin/place/add
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function add_place($request)
+	{
+		try {
+			$name = $request->params()->query('name', null);
+
+			PlacesModel::addPlace($name);
+
+			FlashMessage::setMsg('success', __('app.place_added_successfully'));
+
+			return redirect('/admin?tab=locations');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
+
+	/**
+	 * Handles URL: /admin/place/update
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function update_place($request)
+	{
+		try {
+			$id = $request->params()->query('id');
+			$name = $request->params()->query('name', null);
+
+			PlacesModel::editPlace($id, $name);
+
+			FlashMessage::setMsg('success', __('app.place_updated_successfully'));
+
+			return redirect('/admin?tab=locations');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
+
+	/**
+	 * Handles URL: /admin/place/remove
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function remove_place($request)
+	{
+		try {
+			$id = $request->params()->query('id');
+			$target = $request->params()->query('target');
+
+			PlacesModel::removePlace($id, $target);
+
+			FlashMessage::setMsg('success', __('app.place_removed_successfully'));
+
+			return redirect('/admin?tab=locations');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return redirect('/admin?tab=locations');
 		}
 	}
 	
