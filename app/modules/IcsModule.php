@@ -3,10 +3,10 @@
 /**
  * Class IcsModule
  *
- * Renders calendar items as a standard iCalendar (RFC 5545) feed, for
- * subscribing from an external calendar client or a dashboard's
- * generic "iCal" integration (e.g. Homarr's Calendar widget) - anything
- * that accepts a plain .ics URL.
+ * Renders calendar items (and, optionally, open tasks) as a standard
+ * iCalendar (RFC 5545) feed, for subscribing from an external calendar
+ * client or a dashboard's generic "iCal" integration (e.g. Homarr's
+ * Calendar widget) - anything that accepts a plain .ics URL.
  */
 class IcsModule {
     const LINE_FOLD_LENGTH = 75;
@@ -14,9 +14,10 @@ class IcsModule {
     /**
      * @param $items An iterable of CalendarModel rows
      * @param $calendarName
+     * @param $tasks An iterable of TasksModel rows, or null to omit tasks
      * @return string
      */
-    public static function renderCalendar($items, $calendarName)
+    public static function renderCalendar($items, $calendarName, $tasks = null)
     {
         $lines = [];
         $lines[] = 'BEGIN:VCALENDAR';
@@ -29,6 +30,14 @@ class IcsModule {
         if (is_countable($items)) {
             foreach ($items as $item) {
                 foreach (static::renderEvent($item) as $line) {
+                    $lines[] = $line;
+                }
+            }
+        }
+
+        if (is_countable($tasks)) {
+            foreach ($tasks as $task) {
+                foreach (static::renderTaskEvent($task) as $line) {
                     $lines[] = $line;
                 }
             }
@@ -80,6 +89,90 @@ class IcsModule {
         }
 
         return 'calendar-item-' . $id . '@' . $host;
+    }
+
+    /**
+     * Renders an open (not yet done) task with a due date as an
+     * all-day VEVENT. Tasks only ever collect a plain date via the
+     * <input type="date"> due-date field, never a time, so this
+     * follows the same date-only/exclusive-end-date handling as
+     * renderEvent(). A task linked to a plant gets the plant's name
+     * appended to its summary, so e.g. a recurring "Water" task reads
+     * as "Water (Monstera)" rather than just "Water".
+     *
+     * @param $task A TasksModel row
+     * @return array Lines between (and including) BEGIN:VEVENT/END:VEVENT
+     */
+    private static function renderTaskEvent($task)
+    {
+        $dtstart = date('Ymd', strtotime($task->get('due_date')));
+        $dtend = date('Ymd', strtotime($task->get('due_date') . ' +1 day'));
+
+        $summary = (string)$task->get('title');
+        $plantName = static::plantNameForTask($task->get('id'));
+        if ($plantName !== null) {
+            $summary .= ' (' . $plantName . ')';
+        }
+
+        $lines = [
+            'BEGIN:VEVENT',
+            'UID:' . static::taskUid($task->get('id')),
+            'DTSTAMP:' . gmdate('Ymd\THis\Z'),
+            'DTSTART;VALUE=DATE:' . $dtstart,
+            'DTEND;VALUE=DATE:' . $dtend,
+            'SUMMARY:' . static::escapeText($summary),
+            'CATEGORIES:' . static::escapeText(__('app.tasks')),
+            'URL:' . url('/tasks#task-anchor-' . $task->get('id'))
+        ];
+
+        $description = (string)$task->get('description');
+        if (strlen($description) > 0) {
+            $lines[] = 'DESCRIPTION:' . static::escapeText($description);
+        }
+
+        $lines[] = 'END:VEVENT';
+
+        return $lines;
+    }
+
+    /**
+     * @param $taskId
+     * @return string|null The linked plant's name, or null if the
+     *                      task has no plant reference or it can't be
+     *                      resolved
+     */
+    private static function plantNameForTask($taskId)
+    {
+        try {
+            if (!PlantTasksRefModel::hasPlantReference($taskId)) {
+                return null;
+            }
+
+            $reference = PlantTasksRefModel::getForTask($taskId);
+            if (!$reference) {
+                return null;
+            }
+
+            $plant = PlantsModel::getDetails($reference->get('plant_id'));
+
+            return ($plant) ? $plant->get('name') : null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    private static function taskUid($id)
+    {
+        $host = parse_url((string)url('/'), PHP_URL_HOST);
+        if ((!is_string($host)) || (strlen($host) === 0)) {
+            $host = 'hortusfox.local';
+        }
+
+        return 'task-item-' . $id . '@' . $host;
     }
 
     /**

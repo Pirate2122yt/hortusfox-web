@@ -182,6 +182,27 @@ class TasksModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Open tasks with a due date falling inside the given range,
+     * inclusive on both ends - used by the ICS calendar feed so it can
+     * apply the same date_from/date_till window to tasks as it does to
+     * calendar entries. Done tasks and tasks without a due date are
+     * never included.
+     *
+     * @param $date_from
+     * @param $date_till
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getTasksInRange($date_from, $date_till)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE done = 0 AND due_date IS NOT NULL AND DATE(due_date) >= ? AND DATE(due_date) <= ? ORDER BY due_date ASC', [$date_from, $date_till]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @return mixed
      * @throws \Exception
      */
