@@ -16,6 +16,11 @@ html, body {
 
 body {
     overflow-x: hidden;
+    /* Bulma's default body color (#4a4a4a) is meant for light backgrounds
+       and is nearly invisible against this app's dark theme. Any element
+       that doesn't set its own color falls back to this, so it needs to
+       be readable on dark backgrounds by default. */
+    color: rgb(200, 200, 200);
 }
 
 .is-image-container {
@@ -104,7 +109,7 @@ h2 {
 }
 
 .is-color-darker {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .is-color-error {
@@ -331,7 +336,7 @@ a.navbar-burger:hover {
 }
 
 .navbar-dropdown-place-header {
-    opacity: 0.6;
+    opacity: 0.75;
     pointer-events: none;
     padding-bottom: 0.25rem;
 }
@@ -576,11 +581,11 @@ fieldset .field {
 }
 
 .locations a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .locations a:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .location {
@@ -1013,7 +1018,7 @@ fieldset .field {
     position: relative;
     display: inline-block;
     width: 50px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-list-name-full {
@@ -1142,7 +1147,7 @@ fieldset .field {
     display: inline-block;
     top: 14px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     float: right;
 }
 
@@ -1155,7 +1160,7 @@ fieldset .field {
 }
 
 .is-not-available {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-style: italic;
 }
 
@@ -1645,7 +1650,7 @@ fieldset .field {
 }
 
 .plant-gallery-photos strong {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-gallery-item {
@@ -1761,7 +1766,7 @@ fieldset .field {
 }
 
 .plant-attachments strong {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-attachments-action {
@@ -1815,7 +1820,7 @@ fieldset .field {
 }
 
 .plant-log strong {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-log-action {
@@ -1995,7 +2000,7 @@ fieldset .field {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgb(180, 180, 180);
+    color: rgb(220, 220, 220);
 }
 
 .plant-journal-entry-comment-header a {
@@ -2008,12 +2013,13 @@ fieldset .field {
 }
 
 .plant-journal-entry-comment-date {
-    opacity: 0.7;
+    color: rgb(180, 180, 180);
     font-size: 0.85em;
 }
 
 .plant-journal-entry-comment-text {
     margin-top: 2px;
+    color: rgb(210, 210, 210);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -2124,7 +2130,7 @@ fieldset .field {
 }
 
 .location-log strong {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .location-log-action {
@@ -2398,7 +2404,7 @@ fieldset .field {
 }
 
 .task-header-title span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .task-header-title-dashboard {
@@ -2549,7 +2555,7 @@ fieldset .field {
 }
 
 .inventory-item-name span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-item-name a {
@@ -2584,7 +2590,7 @@ fieldset .field {
 }
 
 .inventory-item-actions svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-item-body {
@@ -2835,7 +2841,7 @@ fieldset .field {
 }
 
 .calendar-day-cell.is-outside-month .calendar-day-number {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .calendar-day-cell.is-today {
@@ -3011,7 +3017,7 @@ fieldset .field {
 }
 
 .is-weather-fill-data {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .chat-message {
@@ -3432,7 +3438,7 @@ fieldset .field {
 }
 
 .reset-form input[type=email]::placeholder, .reset-form input[type=password]::placeholder {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .reset-form input[type=submit] {
@@ -3958,7 +3964,7 @@ fieldset .field {
 }
 
 .admin-mail input:disabled, .admin-mail select:disabled {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(55, 55, 55);
 }
 
