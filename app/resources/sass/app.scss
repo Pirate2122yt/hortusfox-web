@@ -3061,20 +3061,34 @@ fieldset .field {
     width: 90%;
     padding: 15px;
     margin-bottom: 20px;
-    background-color: rgba(200, 200, 200, 0.5);
+    /* Was a light gray at 50% opacity, which - blended over this app's
+       dark page background - landed as a mid-gray that left the
+       light-gray text everywhere inside (name, timestamp) at barely
+       2.4:1 contrast. A solid dark tone keeps the bubble distinct from
+       the page while giving that same light text proper contrast. */
+    background-color: rgb(64, 68, 72);
     border-radius: 10px;
 }
 
 .chat-message-right {
     margin-left: 10%;
-    background-color: rgba(115, 143, 100, 0.9);
+    /* Same fix as above, kept in the same green family so "this is my
+       message" is still visually obvious - just dark enough for the
+       light text inside to actually read. */
+    background-color: rgb(58, 92, 58);
+}
+
+/* A message is always yours if it's right-aligned, so repeating your
+   own name above every bubble is just noise - only show it for
+   messages from other people. */
+.chat-message-right .chat-message-user {
+    display: none;
 }
 
 .chat-message-user {
     position: relative;
     font-size: 1.2em;
     margin-bottom: 10px;
-    //color: rgb(123, 193, 223);
 }
 
 .chat-message-new {
@@ -3168,11 +3182,17 @@ fieldset .field {
     top: -1px;
     font-size: 0.9em;
     font-weight: bold;
+    /* This bubble's background is a light tan, meant for dark text. With
+       no color set here it fell back to this app's dark-theme default
+       (a light gray meant for dark backgrounds) - light-on-light, at
+       roughly 1:1 contrast, so it was genuinely unreadable. */
+    color: rgb(40, 36, 26);
 }
 
 .system-message-content {
     position: relative;
     display: inline-block;
+    color: rgb(40, 36, 26);
     @media screen and (max-width: 768px) {
         margin-top: 10px;
     }
@@ -3219,9 +3239,13 @@ fieldset .field {
 
 .system-message-small-context {
     font-weight: bold;
+    /* Same fix as .system-message-context above - same light tan
+       background, same unreadable fallback text color otherwise. */
+    color: rgb(40, 36, 26);
 }
 
 .system-message-small-content {
+    color: rgb(40, 36, 26);
 }
 
 .system-message-small-content a {
