@@ -10,7 +10,7 @@
 				width: 100%;
 				max-width: 800px;
 				background-color: rgb(31, 31, 31);
-				color: rgb(150, 150, 150);
+				color: rgb(190, 190, 190);
 				margin: 0 auto;
 				overflow-x: hidden;
 				font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
@@ -79,7 +79,7 @@
 			.footer {
 				width: 100%;
 				padding: 10px;
-				color: rgb(150, 150, 150);
+				color: rgb(190, 190, 190);
 				background-color: rgb(55, 55, 55);
 				font-size: 0.76em;
 			}

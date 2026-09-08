@@ -592,5 +592,6 @@ return [
 	'public_comment_submit' => 'Post comment',
 	'public_comment_posted' => 'Your comment was posted.',
 	'public_comment_by' => '{name}',
-	'public_comment_anonymous' => 'Anonymous'
+	'public_comment_anonymous' => 'Anonymous',
+	'view_public_catalog' => 'View public plant catalogue'
 ];

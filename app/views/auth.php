@@ -53,6 +53,12 @@
                     <div class="auth-help">
                         <a href="javascript:void(0);" onclick="window.vue.bShowRestorePassword = true;">{{ __('app.restore_password') }}</a>
                     </div>
+
+                    <div class="auth-public-link">
+                        <a href="{{ url('/public') }}" class="button is-outlined">
+                            <i class="fas fa-seedling"></i>&nbsp;{{ __('app.view_public_catalog') }}
+                        </a>
+                    </div>
                 </div>
             </div>
 

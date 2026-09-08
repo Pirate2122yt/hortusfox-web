@@ -58,29 +58,29 @@ h2 {
 }
 
 .is-default-link {
-    color: rgb(79, 134, 202);
+    color: rgb(115, 170, 238);
 }
 
 .is-default-link:hover {
-    color: rgb(79, 134, 202);
+    color: rgb(115, 170, 238);
     text-decoration: underline;
 }
 
 .is-yellow-link {
-    color: rgb(156, 115, 67);
+    color: rgb(201, 160, 112);
 }
 
 .is-yellow-link:hover {
-    color: rgb(156, 115, 67);
+    color: rgb(201, 160, 112);
     text-decoration: underline;
 }
 
 .is-gray-link {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .is-gray-link:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     text-decoration: underline;
 }
 
@@ -100,15 +100,15 @@ h2 {
 }
 
 .is-default-text-color {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .is-color-darker {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .is-color-error {
-    color: rgb(154, 73, 69);
+    color: rgb(226, 145, 141);
 }
 
 .is-input-dark {
@@ -220,7 +220,7 @@ h2 {
 }
 
 .field small {
-    color: rgb(120, 120, 120);
+    color: rgb(190, 190, 190);
 }
 
 .form-paragraph-modal a, .modal-anchors a {
@@ -413,7 +413,7 @@ a.navbar-burger:hover {
 }
 
 .modal-card {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .modal-card-head {
@@ -430,12 +430,12 @@ a.navbar-burger:hover {
 }
 
 .modal-card-body label {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .modal-card-body input, .modal-card-body select, .modal-card-body textarea, .modal-card-body table {
     background-color: rgb(57, 59, 63);
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     border: 1px solid rgb(100, 100, 100);
 }
 
@@ -576,11 +576,11 @@ fieldset .field {
 }
 
 .locations a {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .locations a:hover {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .location {
@@ -660,7 +660,7 @@ fieldset .field {
     padding-bottom: 10px;
     font-size: 0.9em;
     text-align: left;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgba(0, 0, 0, 0.8);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     @media screen and (max-width: 830px) {
@@ -689,11 +689,11 @@ fieldset .field {
 .location-notes-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .location-notes textarea {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
     margin-top: 20px;
     margin-bottom: 20px;
@@ -718,7 +718,7 @@ fieldset .field {
 .upcoming-tasks-overview h3 {
     padding-top: 25px;
     font-size: 2.0em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .upcoming-tasks-overview-items {
@@ -739,7 +739,7 @@ fieldset .field {
 .last-added-or-authored-plants h3 {
     padding-top: 15px;
     font-size: 2.0em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .margin-vertical {
@@ -781,7 +781,7 @@ fieldset .field {
 }
 
 .sorting-control a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .sorting-control a.is-selected {
@@ -844,7 +844,7 @@ fieldset .field {
 .plants-empty-text {
     position: relative;
     top: -20px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-style: italic;
     font-size: 1.4em;
 }
@@ -940,7 +940,7 @@ fieldset .field {
 }
 
 .plant-card-title-second {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-size: 0.8em;
 }
 
@@ -993,7 +993,7 @@ fieldset .field {
 .plant-list-item {
     position: relative;
     width: 100%;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgba(50, 50, 50, 0.76);
     border: 1px solid rgb(90, 90, 90);
     padding-top: 5px;
@@ -1013,7 +1013,7 @@ fieldset .field {
     position: relative;
     display: inline-block;
     width: 50px;
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .plant-list-name-full {
@@ -1121,11 +1121,11 @@ fieldset .field {
     position: relative;
     top: 10px;
     float: right;
-    color: rgb(200, 105, 105) !important;
+    color: rgb(235, 140, 140) !important;
 }
 
 .plant-custom-attribute-removal:hover {
-    color: rgb(200, 105, 105) !important;
+    color: rgb(235, 140, 140) !important;
     text-decoration: underline;
 }
 
@@ -1142,7 +1142,7 @@ fieldset .field {
     display: inline-block;
     top: 14px;
     font-size: 1.5em;
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
     float: right;
 }
 
@@ -1155,7 +1155,7 @@ fieldset .field {
 }
 
 .is-not-available {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
     font-style: italic;
 }
 
@@ -1263,7 +1263,7 @@ fieldset .field {
     width: 100%;
     height: 45px;
     background-color: rgba(0, 0, 0, 0.8);
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-photo-view {
@@ -1311,7 +1311,7 @@ fieldset .field {
 }
 
 .plant-state-withering {
-    color: rgb(156, 115, 67);
+    color: rgb(201, 160, 112);
 }
 
 .plant-state-infected {
@@ -1426,7 +1426,7 @@ fieldset .field {
 }
 
 .has-warnings {
-    color: rgb(200, 105, 105) !important;
+    color: rgb(235, 140, 140) !important;
 }
 
 .is-all-ok {
@@ -1474,7 +1474,7 @@ fieldset .field {
 }
 
 .warning-plants-content td {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     border: 1px solid rgb(100, 100, 100);
     padding-top: 5px;
     padding-left: 5px;
@@ -1554,7 +1554,7 @@ fieldset .field {
     margin-top: 10px;
     margin-bottom: 20px;
     font-size: 1.3em;
-    color: rgb(200, 105, 105);
+    color: rgb(235, 140, 140);
 }
 
 .overdue-tasks-content {
@@ -1570,7 +1570,7 @@ fieldset .field {
 }
 
 .overdue-tasks-content td {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     border: 1px solid rgb(100, 100, 100);
     padding-top: 5px;
     padding-left: 5px;
@@ -1579,7 +1579,7 @@ fieldset .field {
 }
 
 .overdue-tasks-item {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     margin-bottom: 10px;
 }
 
@@ -1608,12 +1608,12 @@ fieldset .field {
 }
 
 .log-item {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     margin-bottom: 10px;
 }
 
 .log-item a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .log-item a:hover {
@@ -1633,7 +1633,7 @@ fieldset .field {
 .plant-gallery-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-gallery-upload {
@@ -1645,7 +1645,7 @@ fieldset .field {
 }
 
 .plant-gallery-photos strong {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .plant-gallery-item {
@@ -1721,7 +1721,7 @@ fieldset .field {
     position: relative;
     top: -3px;
     padding: 10px;
-    color: rgb(135, 135, 135);
+    color: rgb(190, 190, 190);
 }
 
 .plant-tasks {
@@ -1737,7 +1737,7 @@ fieldset .field {
 .plant-tasks-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-attachments {
@@ -1753,7 +1753,7 @@ fieldset .field {
 .plant-attachments-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-attachments table {
@@ -1761,7 +1761,7 @@ fieldset .field {
 }
 
 .plant-attachments strong {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .plant-attachments-action {
@@ -1807,7 +1807,7 @@ fieldset .field {
 .plant-log-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-log table {
@@ -1815,7 +1815,7 @@ fieldset .field {
 }
 
 .plant-log strong {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .plant-log-action {
@@ -1848,7 +1848,7 @@ fieldset .field {
 .plant-journal-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .plant-journal-add {
@@ -1967,7 +1967,7 @@ fieldset .field {
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    color: rgb(135, 135, 135);
+    color: rgb(190, 190, 190);
     font-size: 0.9em;
 }
 
@@ -2102,7 +2102,7 @@ fieldset .field {
 .location-log-title {
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .location-log table {
@@ -2124,7 +2124,7 @@ fieldset .field {
 }
 
 .location-log strong {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .location-log-action {
@@ -2161,7 +2161,7 @@ fieldset .field {
 
 .location-journal-plants-label {
     display: block;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-size: 0.9em;
     margin-bottom: 8px;
 }
@@ -2398,7 +2398,7 @@ fieldset .field {
 }
 
 .task-header-title span {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .task-header-title-dashboard {
@@ -2412,7 +2412,7 @@ fieldset .field {
 }
 
 .task-header-action a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .task-description {
@@ -2421,7 +2421,7 @@ fieldset .field {
     margin-bottom: 43px;
     padding: 10px;
     font-size: 1.0em;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     overflow-y: auto;
 }
 
@@ -2483,7 +2483,7 @@ fieldset .field {
 }
 
 .task-footer-action a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .tasks-all-done {
@@ -2549,15 +2549,15 @@ fieldset .field {
 }
 
 .inventory-item-name span {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .inventory-item-name a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-item-name a:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-item-amount {
@@ -2566,7 +2566,7 @@ fieldset .field {
 }
 
 .inventory-item-amount svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-item-amount span {
@@ -2584,7 +2584,7 @@ fieldset .field {
 }
 
 .inventory-item-actions svg {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .inventory-item-body {
@@ -2604,7 +2604,7 @@ fieldset .field {
 
 .inventory-item-description {
     position: relative;
-    color: rgb(130, 130, 130);
+    color: rgb(190, 190, 190);
     margin-top: 10px;
     margin-bottom: 10px;
 }
@@ -2662,7 +2662,7 @@ fieldset .field {
 
 .inventory-item-footer {
     position: relative;
-    color: rgb(120, 120, 120);
+    color: rgb(190, 190, 190);
     margin-top: 10px;
 }
 
@@ -2682,7 +2682,7 @@ fieldset .field {
 }
 
 .inventory-groups thead td {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-groups thead td:last-child {
@@ -2694,11 +2694,11 @@ fieldset .field {
 }
 
 .inventory-groups a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .inventory-groups a:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     text-decoration: underline;
 }
 
@@ -2722,7 +2722,7 @@ fieldset .field {
 }
 
 .calendar-menu span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .calendar-input {
@@ -2792,7 +2792,7 @@ fieldset .field {
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: rgb(170, 170, 170);
+    color: rgb(190, 190, 190);
     background-color: rgb(40, 40, 40);
     border-bottom: 1px solid rgb(80, 80, 80);
     text-align: left;
@@ -2835,7 +2835,7 @@ fieldset .field {
 }
 
 .calendar-day-cell.is-outside-month .calendar-day-number {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .calendar-day-cell.is-today {
@@ -2910,7 +2910,7 @@ fieldset .field {
 
 .calendar-empty-hint {
     position: relative;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     padding: 30px 0;
     text-align: center;
 }
@@ -2919,11 +2919,11 @@ fieldset .field {
     position: relative;
     top: 10px;
     float: right;
-    color: rgb(200, 105, 105);
+    color: rgb(235, 140, 140);
 }
 
 .calendar-link-removal:hover {
-    color: rgb(200, 105, 105);
+    color: rgb(235, 140, 140);
     text-decoration: underline;
 }
 
@@ -2934,7 +2934,7 @@ fieldset .field {
 }
 
 .calendar-view h3 {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-size: 2.0em;
     padding-bottom: 10px;
 }
@@ -2969,7 +2969,7 @@ fieldset .field {
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 10px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     text-align: center;
     background-color: rgb(100, 100, 100);
     border-radius: 5px;
@@ -3007,11 +3007,11 @@ fieldset .field {
 
 .weather-day-data-attribute {
     position: relative;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .is-weather-fill-data {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .chat-message {
@@ -3305,7 +3305,7 @@ fieldset .field {
     }
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
-    color: rgb(150, 150, 150);
+    color: rgb(200, 200, 200);
 }
 
 .auth-info {
@@ -3314,11 +3314,11 @@ fieldset .field {
 }
 
 .auth-info-error {
-    color: rgb(154, 73, 69);
+    color: rgb(226, 145, 141);
 }
 
 .auth-info-success {
-    color: rgb(69, 154, 83);
+    color: rgb(100, 185, 114);
 }
 
 .auth-form {
@@ -3326,12 +3326,12 @@ fieldset .field {
 }
 
 .auth-form input[type=email], .auth-form input[type=password] {
-    color: rgb(150, 150, 150);
+    color: rgb(200, 200, 200);
     background-color: rgb(50, 50, 50);
 }
 
 .auth-form input[type=email]::placeholder, .auth-form input[type=password]::placeholder {
-    color: rgb(100, 100, 100);
+    color: rgb(170, 170, 170);
 }
 
 .auth-form input[type=submit] {
@@ -3344,12 +3344,29 @@ fieldset .field {
 }
 
 .auth-help a {
-    color: rgb(54, 105, 203);
+    color: rgb(94, 145, 243);
 }
 
 .auth-help a:hover {
-    color: rgb(54, 105, 203);
+    color: rgb(94, 145, 243);
     text-decoration: underline;
+}
+
+.auth-public-link {
+    position: relative;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.auth-public-link .button {
+    width: 100%;
+    color: rgb(200, 200, 200);
+    border-color: rgb(100, 100, 100);
+}
+
+.auth-public-link .button:hover {
+    color: rgb(235, 235, 235);
+    border-color: rgb(140, 140, 140);
 }
 
 .reset-main {
@@ -3398,11 +3415,11 @@ fieldset .field {
 }
 
 .reset-info-error {
-    color: rgb(154, 73, 69);
+    color: rgb(226, 145, 141);
 }
 
 .reset-info-success {
-    color: rgb(69, 154, 83);
+    color: rgb(100, 185, 114);
 }
 
 .reset-form {
@@ -3410,12 +3427,12 @@ fieldset .field {
 }
 
 .reset-form input[type=email], .reset-form input[type=password] {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
 .reset-form input[type=email]::placeholder, .reset-form input[type=password]::placeholder {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
 }
 
 .reset-form input[type=submit] {
@@ -3427,7 +3444,7 @@ fieldset .field {
 }
 
 .preferences-header svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .profile-shared-photos table {
@@ -3444,7 +3461,7 @@ fieldset .field {
 
 .profile-shared-photos td {
     padding: 10px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     border: 1px solid rgb(200, 200, 200);
 }
 
@@ -3458,11 +3475,11 @@ fieldset .field {
 }
 
 .profile-shared-photos td svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .profile-shared-photos td svg:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .profile-shared-photos td:last-child {
@@ -3471,7 +3488,7 @@ fieldset .field {
 }
 
 .profile-shared-photos svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-tabs {
@@ -3497,11 +3514,11 @@ fieldset .field {
 }
 
 .admin-environment label, .admin-environment span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-environment input, .admin-environment textarea, .admin-environment select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3533,11 +3550,11 @@ fieldset .field {
 }
 
 .admin-media label {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-media input, .admin-backup input {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3568,11 +3585,11 @@ fieldset .field {
 }
 
 .admin-user-account label, .admin-user-account span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-user-account input, .admin-user-account select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3640,11 +3657,11 @@ fieldset .field {
 }
 
 .admin-location label, .admin-location span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-location input {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3653,7 +3670,7 @@ fieldset .field {
     display: inline-block;
     margin-left: 5px;
     margin-right: 5px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-location-item-ident {
@@ -3699,11 +3716,11 @@ fieldset .field {
 }
 
 .admin-auth label, .admin-auth span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-auth input, .admin-auth textarea {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3743,11 +3760,11 @@ fieldset .field {
 }
 
 .admin-attribute-schema label, .admin-attribute-schema span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-attribute-schema input, .admin-attribute-schema select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3756,7 +3773,7 @@ fieldset .field {
     display: inline-block;
     margin-left: 5px;
     margin-right: 5px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-attribute-schema-item-input {
@@ -3782,11 +3799,11 @@ fieldset .field {
 }
 
 .admin-attributes {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-attributes p {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     margin-bottom: 30px;
 }
 
@@ -3806,11 +3823,11 @@ fieldset .field {
 }
 
 .admin-bulk-command label, .admin-bulk-command span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-bulk-command input, .admin-bulk-command select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3819,7 +3836,7 @@ fieldset .field {
     display: inline-block;
     margin-left: 5px;
     margin-right: 5px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-bulk-command-item-input {
@@ -3878,11 +3895,11 @@ fieldset .field {
 }
 
 .admin-calendar-class label, .admin-calendar-class span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-calendar-class input {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3932,21 +3949,21 @@ fieldset .field {
 }
 
 .admin-mail label, .admin-mail span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-mail input, .admin-mail select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
 .admin-mail input:disabled, .admin-mail select:disabled {
-    color: rgb(100, 100, 100);
+    color: rgb(150, 150, 150);
     background-color: rgb(55, 55, 55);
 }
 
 .admin-themes p {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     margin-bottom: 30px;
     font-size: 1.2em;
 }
@@ -3956,7 +3973,7 @@ fieldset .field {
 }
 
 .admin-themes input, .admin-themes select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
@@ -3990,16 +4007,16 @@ fieldset .field {
 
 .admin-themes-list td {
     padding: 10px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     border: 1px solid rgb(200, 200, 200);
 }
 
 .admin-themes-list td svg {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-themes-list td svg:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-theme-list-right {
@@ -4008,7 +4025,7 @@ fieldset .field {
 }
 
 .admin-backup label, .admin-backup span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-backup hr {
@@ -4037,16 +4054,16 @@ fieldset .field {
 }
 
 .admin-weather label, .admin-weather span {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-weather input, .admin-weather select {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     background-color: rgb(50, 50, 50);
 }
 
 .admin-api p {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     margin-bottom: 30px;
     font-size: 1.2em;
 }
@@ -4071,7 +4088,7 @@ fieldset .field {
 }
 
 .admin-api table td a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .admin-api table td a:hover {
@@ -4093,7 +4110,7 @@ fieldset .field {
 }
 
 .admin-info-version-smaller {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     font-size: 0.76em;
 }
 
@@ -4335,13 +4352,13 @@ fieldset .field {
     width: 65px;
     height: 50px;
     margin-top: 6px;
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
     text-align: center;
     font-size: 0.8em;
 }
 
 .bottomnav-item a {
-    color: rgb(150, 150, 150);
+    color: rgb(190, 190, 190);
 }
 
 .bottomnav-item a:hover {

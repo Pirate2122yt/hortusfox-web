@@ -95,7 +95,7 @@
 			}
 
 			.public-journal-entry-date {
-				color: rgb(150, 150, 150);
+				color: rgb(190, 190, 190);
 				font-size: 0.85em;
 				margin-bottom: 8px;
 			}
@@ -129,7 +129,7 @@
 			.public-comments-title {
 				font-weight: bold;
 				font-size: 0.9em;
-				color: rgb(170, 170, 170);
+				color: rgb(190, 190, 190);
 				margin-bottom: 8px;
 			}
 
@@ -143,7 +143,7 @@
 			}
 
 			.public-comment-date {
-				color: rgb(140, 140, 140);
+				color: rgb(170, 170, 170);
 				font-size: 0.85em;
 				margin-left: 6px;
 			}
