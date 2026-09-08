@@ -9,6 +9,29 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot16()
+    {
+        FeatureRequestModel::raw('CREATE TABLE IF NOT EXISTS FeatureRequestModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user INT NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            status VARCHAR(32) NOT NULL DEFAULT \'open\',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        FeatureRequestVoteModel::raw('CREATE TABLE IF NOT EXISTS FeatureRequestVoteModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            request_id INT NOT NULL,
+            user_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot15()
     {
         LocationLogModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT \'\'');

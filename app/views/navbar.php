@@ -47,6 +47,12 @@
                 </a>
             </div>
 
+            <div class="navbar-item">
+                <a href="{{ url('/feature-requests') }}">
+                    <i class="fas fa-lightbulb" title="{{ __('app.feature_requests') }}"></i><span class="navbar-item-only-mobile">&nbsp;{{ __('app.feature_requests') }}</span>
+                </a>
+            </div>
+
             @if (app('calendar_enable'))
             <div class="navbar-item">
                 <a href="{{ url('/calendar') }}">

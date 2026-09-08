@@ -2182,6 +2182,74 @@
 				</div>
 			</div>
 
+			<div class="modal" :class="{'is-active': bShowAddFeatureRequest}">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head is-stretched">
+						<p class="modal-card-title">{{ __('app.add_feature_request') }}</p>
+						<button class="delete" aria-label="close" onclick="window.vue.bShowAddFeatureRequest = false;"></button>
+					</header>
+					<section class="modal-card-body is-stretched">
+						<form id="frmAddFeatureRequest" method="POST" action="{{ url('/feature-requests/add') }}">
+							@csrf
+
+							<div class="field">
+								<label class="label">{{ __('app.feature_request_title_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="title" id="inpAddFeatureRequestTitle" required>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.feature_request_description_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="description" id="inpAddFeatureRequestDescription" rows="4"></textarea>
+								</div>
+							</div>
+						</form>
+					</section>
+					<footer class="modal-card-foot is-stretched">
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmAddFeatureRequest').submit();">{{ __('app.add') }}</button>
+						<button class="button" onclick="window.vue.bShowAddFeatureRequest = false;">{{ __('app.cancel') }}</button>
+					</footer>
+				</div>
+			</div>
+
+			<div class="modal" :class="{'is-active': bShowEditFeatureRequest}">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head is-stretched">
+						<p class="modal-card-title">{{ __('app.edit_feature_request') }}</p>
+						<button class="delete" aria-label="close" onclick="window.vue.bShowEditFeatureRequest = false;"></button>
+					</header>
+					<section class="modal-card-body is-stretched">
+						<form id="frmEditFeatureRequest" method="POST" action="{{ url('/feature-requests/edit') }}">
+							@csrf
+
+							<input type="hidden" name="item" id="inpEditFeatureRequestItemId"/>
+
+							<div class="field">
+								<label class="label">{{ __('app.feature_request_title_label') }}</label>
+								<div class="control">
+									<input type="text" class="input" name="title" id="inpEditFeatureRequestTitle" required>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.feature_request_description_label') }}</label>
+								<div class="control">
+									<textarea class="input" name="description" id="inpEditFeatureRequestDescription" rows="4"></textarea>
+								</div>
+							</div>
+						</form>
+					</section>
+					<footer class="modal-card-foot is-stretched">
+						<button class="button is-success" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>&nbsp;{{ __('app.loading_please_wait') }}'; document.getElementById('frmEditFeatureRequest').submit();">{{ __('app.save') }}</button>
+						<button class="button" onclick="window.vue.bShowEditFeatureRequest = false;">{{ __('app.cancel') }}</button>
+					</footer>
+				</div>
+			</div>
+
 			<div class="modal" :class="{'is-active': bShowSelectRecognizedPlant}">
 				<div class="modal-background"></div>
 				<div class="modal-card">
@@ -2332,6 +2400,11 @@
 				window.vue.confirmRemovePlantLogEntry = '{{ __('app.confirm_remove_plant_log_entry') }}';
 				window.vue.plantJournalSystemBadge = '{{ __('app.plant_journal_system_badge') }}';
 				window.vue.confirmRemoveLocationLogEntry = '{{ __('app.confirm_remove_location_log_entry') }}';
+
+				window.vue.featureRequestStatusLabels = {};
+				@foreach (FeatureRequestModel::$statuses as $fr_status)
+				window.vue.featureRequestStatusLabels['{{ $fr_status }}'] = '{{ __('app.feature_request_status_' . $fr_status) }}';
+				@endforeach
 				window.vue.confirmRemoveSharedPlantPhoto = '{{ __('app.confirm_remove_shared_photo') }}';
 				window.vue.confirmSetGalleryPhotoAsMain = '{{ __('app.confirm_set_gallery_photo_as_main') }}';
 				window.vue.addItem = '{{ __('app.add') }}';

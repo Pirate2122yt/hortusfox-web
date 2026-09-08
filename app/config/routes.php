@@ -101,6 +101,14 @@ return [
     array('/inventory/qrcode/bulk', 'POST', 'inventory@get_bulk_qr_codes'),
     array('/inventory/export', 'POST', 'inventory@export_items'),
 
+    /** Feature Requests Controller */
+    array('/feature-requests', 'GET', 'featurerequests@view_feature_requests'),
+    array('/feature-requests/add', 'POST', 'featurerequests@add_feature_request'),
+    array('/feature-requests/edit', 'POST', 'featurerequests@edit_feature_request'),
+    array('/feature-requests/remove', 'ANY', 'featurerequests@remove_feature_request'),
+    array('/feature-requests/status', 'ANY', 'featurerequests@set_feature_request_status'),
+    array('/feature-requests/vote', 'ANY', 'featurerequests@vote_feature_request'),
+
     /** Calendar Controller */
     array('/calendar', 'GET', 'calendar@view_calendar'),
     array('/calendar/query', 'POST', 'calendar@query_items'),

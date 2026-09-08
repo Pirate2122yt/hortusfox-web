@@ -2129,6 +2129,71 @@ fieldset .field {
     white-space: nowrap;
 }
 
+.feature-request-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background-color: rgba(150, 150, 150, 0.25);
+    color: rgb(200, 200, 200);
+}
+
+.feature-request-status-open {
+    background-color: rgba(55, 145, 243, 0.25);
+    color: rgb(130, 180, 250);
+}
+
+.feature-request-status-planned {
+    background-color: rgba(155, 89, 217, 0.25);
+    color: rgb(195, 155, 240);
+}
+
+.feature-request-status-in_progress {
+    background-color: rgba(243, 156, 18, 0.25);
+    color: rgb(250, 190, 110);
+}
+
+.feature-request-status-added {
+    background-color: rgba(76, 175, 80, 0.25);
+    color: rgb(140, 210, 145);
+}
+
+.feature-request-status-declined {
+    background-color: rgba(220, 40, 40, 0.25);
+    color: rgb(240, 140, 140);
+}
+
+.feature-request-vote-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background-color: rgba(123, 123, 123, 0.3);
+    color: rgb(200, 200, 200);
+}
+
+.feature-request-vote-btn:hover {
+    background-color: rgba(123, 123, 123, 0.5);
+    color: rgb(220, 220, 220);
+}
+
+.feature-request-vote-btn.is-voted {
+    background-color: rgba(55, 145, 243, 0.35);
+    color: rgb(150, 195, 250);
+}
+
+.feature-request-status-select {
+    border-radius: 4px;
+    background-color: rgba(73, 79, 83);
+    color: rgb(200, 200, 200);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    font-size: 0.85em;
+}
+
 .share-log-action {
     margin-top: 20px;
 }

@@ -151,6 +151,8 @@ window.createVueInstance = function(element) {
             bShowEditPlantLogEntry: false,
             bShowAddLocationLogEntry: false,
             bShowEditLocationLogEntry: false,
+            bShowAddFeatureRequest: false,
+            bShowEditFeatureRequest: false,
             bShowCreateNewBulkCmd: false,
             bShowSelectRecognizedPlant: false,
             bShowQuickScanPlant: false,
@@ -1131,6 +1133,70 @@ window.createVueInstance = function(element) {
 
                             paginateDiv.appendChild(loadMoreLink);
                             container.appendChild(paginateDiv);
+                        }
+                    } else {
+                        alert(response.msg);
+                    }
+                });
+            },
+
+            showAddFeatureRequest: function() {
+                document.getElementById('frmAddFeatureRequest').reset();
+                window.vue.bShowAddFeatureRequest = true;
+            },
+
+            showEditFeatureRequest: function(id, title, description) {
+                document.getElementById('inpEditFeatureRequestItemId').value = id;
+                document.getElementById('inpEditFeatureRequestTitle').value = title || '';
+                document.getElementById('inpEditFeatureRequestDescription').value = description || '';
+                window.vue.bShowEditFeatureRequest = true;
+            },
+
+            removeFeatureRequest: function(id) {
+                window.vue.ajaxRequest('post', window.location.origin + '/feature-requests/remove', { item: id }, function(response) {
+                    if (response.code == 200) {
+                        let entry = document.getElementById('feature-request-entry-' + id);
+                        if (entry) {
+                            entry.remove();
+                        }
+                    } else {
+                        alert(response.msg);
+                    }
+                });
+            },
+
+            voteFeatureRequest: function(id) {
+                window.vue.ajaxRequest('post', window.location.origin + '/feature-requests/vote', { item: id }, function(response) {
+                    if (response.code == 200) {
+                        let countEl = document.getElementById('feature-request-vote-count-' + id);
+                        if (countEl) {
+                            countEl.textContent = response.count;
+                        }
+
+                        let btnEl = document.getElementById('feature-request-vote-btn-' + id);
+                        if (btnEl) {
+                            if (response.voted) {
+                                btnEl.classList.add('is-voted');
+                            } else {
+                                btnEl.classList.remove('is-voted');
+                            }
+                        }
+                    } else {
+                        alert(response.msg);
+                    }
+                });
+            },
+
+            changeFeatureRequestStatus: function(id, status) {
+                window.vue.ajaxRequest('post', window.location.origin + '/feature-requests/status', { item: id, status: status }, function(response) {
+                    if (response.code == 200) {
+                        let entry = document.getElementById('feature-request-entry-' + id);
+                        if (entry) {
+                            let badge = entry.querySelector('.feature-request-status-badge');
+                            if (badge) {
+                                badge.className = 'feature-request-status-badge feature-request-status-' + status;
+                                badge.textContent = window.vue.featureRequestStatusLabels[status] || status;
+                            }
                         }
                     } else {
                         alert(response.msg);
