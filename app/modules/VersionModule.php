@@ -2,8 +2,14 @@
 
 /**
  * Class VersionModule
- * 
- * Used to check for new versions via the official HortusFox website
+ *
+ * Used to check for new versions. Reads the version straight out of
+ * version.php on the GitHub repo configured in APP_GITHUB_URL (the
+ * default branch), rather than the official HortusFox update service -
+ * so a fork whose own version numbering has diverged from upstream's
+ * only ever gets nagged about updates that exist in ITS OWN repo, not
+ * upstream's release schedule. Set APP_GITHUB_URL to your own fork's
+ * URL for this to compare against the right thing.
  */
 class VersionModule {
     const CACHED_VERSION_TIME = 86400;
@@ -14,31 +20,46 @@ class VersionModule {
     public static function getVersion()
     {
         try {
-            $serviceUrl = env('APP_SERVICE_URL');
+            $githubUrl = env('APP_GITHUB_URL');
 
-            if ((!is_string($serviceUrl)) || (!(strlen($serviceUrl) > 0))) {
-                throw new \Exception('No service URL defined.');
+            if ((!is_string($githubUrl)) || (!(strlen($githubUrl) > 0))) {
+                throw new \Exception('No GitHub URL defined.');
             }
 
-            $ch = curl_init($serviceUrl . '/software/version');
+            $repoPath = trim((string)parse_url($githubUrl, PHP_URL_PATH), '/');
 
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-            $response = curl_exec($ch);
-            if (curl_errno($ch)) {
-                throw new \Exception(curl_error($ch));
+            if (substr($repoPath, -4) === '.git') {
+                $repoPath = substr($repoPath, 0, -4);
             }
 
-            $json = json_decode($response);
-
-            curl_close($ch);
-
-            if ($json->code != 200) {
-                throw new \Exception($json->msg);
+            if (strlen($repoPath) === 0) {
+                throw new \Exception('Could not determine the repository from APP_GITHUB_URL.');
             }
 
-            return $json->version;
+            // Try both common default branch names rather than assuming
+            // one - whichever responds first wins.
+            foreach (['main', 'master'] as $branch) {
+                $ch = curl_init('https://raw.githubusercontent.com/' . $repoPath . '/' . $branch . '/app/config/version.php');
+
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_errno($ch);
+
+                curl_close($ch);
+
+                if (($curlError === 0) && ($httpCode === 200) && (is_string($response)) && (strlen($response) > 0)) {
+                    if (preg_match('/return\s*\'([0-9.]+)\'/', $response, $matches)) {
+                        return $matches[1];
+                    }
+                }
+            }
+
+            throw new \Exception('Could not read version.php from ' . $repoPath . '.');
         } catch (\Exception $e) {
             return '';
         }

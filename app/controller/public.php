@@ -133,7 +133,11 @@ class PublicController extends BaseController {
 				TextBlockModule::newPlantComment($plant->get('name'), url('/plants/details/' . $id), $name, $comment);
 			} catch (\Exception $e) {
 				// A failed chat notification shouldn't turn a successfully
-				// saved comment into an error for the visitor.
+				// saved comment into an error for the visitor - but it
+				// shouldn't vanish silently either, or a real problem here
+				// (a missing migration, chat disabled, a DB error) is
+				// undiagnosable from the outside.
+				addLog(ASATRU_LOG_ERROR, 'Failed to post chat notification for public comment: ' . $e->getMessage());
 			}
 
 			FlashMessage::setMsg('success', __('app.public_comment_posted'));
