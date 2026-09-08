@@ -1076,8 +1076,50 @@ class ApiController extends BaseController {
     }
 
     /**
+	 * Handles URL: /api/calendar/ics
+	 *
+	 * Renders the workspace calendar as a standard iCalendar (RFC 5545)
+	 * feed, for subscribing from an external calendar client or a
+	 * dashboard's generic "iCal" integration (e.g. Homarr's Calendar
+	 * widget) - anything that accepts a plain .ics URL. Auth is the
+	 * same ?token= API key as every other endpoint in this controller,
+	 * which is what makes the URL usable as a bare link: create a key
+	 * just for this in Admin > API keys, since it'll be sitting in
+	 * another app's config from here on.
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return void
+	 */
+    public function fetch_calendar_ics($request)
+    {
+        $date_from = $request->params()->query('date_from', null);
+        $date_till = $request->params()->query('date_till', null);
+
+        if ($date_from === null) {
+            $date_from = date('Y-m-d', strtotime('-1 year'));
+        }
+
+        if ($date_till === null) {
+            $date_till = date('Y-m-d', strtotime('+2 years'));
+        }
+
+        try {
+            $items = CalendarModel::getItems($date_from, $date_till);
+        } catch (\Exception $e) {
+            $items = [];
+        }
+
+        $ics = IcsModule::renderCalendar($items, app('workspace') . ' - ' . __('app.calendar'));
+
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: inline; filename="calendar.ics"');
+
+        exit($ics);
+    }
+
+    /**
 	 * Handles URL: /api/calendar/add
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\JsonHandler
 	 */
