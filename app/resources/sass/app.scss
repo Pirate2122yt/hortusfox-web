@@ -1980,6 +1980,44 @@ fieldset .field {
     color: rgb(220, 220, 220);
 }
 
+.plant-journal-entry-comments {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(123, 123, 123, 0.25);
+}
+
+.plant-journal-entry-comment {
+    padding: 6px 0;
+    font-size: 0.9em;
+}
+
+.plant-journal-entry-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(180, 180, 180);
+}
+
+.plant-journal-entry-comment-header a {
+    color: rgb(200, 200, 200);
+    margin-left: auto;
+}
+
+.plant-journal-entry-comment-header a:hover {
+    color: rgb(220, 220, 220);
+}
+
+.plant-journal-entry-comment-date {
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+.plant-journal-entry-comment-text {
+    margin-top: 2px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 .plant-journal-paginate {
     position: relative;
     text-align: center;

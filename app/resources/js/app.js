@@ -660,6 +660,20 @@ window.createVueInstance = function(element) {
                 });
             },
 
+            removePlantLogComment: function(id, comment_row) {
+                if (!confirm(window.vue.confirmRemovePlantLogComment)) {
+                    return;
+                }
+
+                window.vue.ajaxRequest('post', window.location.origin + '/plants/log/comment/remove', { item: id }, function(response) {
+                    if (response.code == 200) {
+                        document.getElementById(comment_row).remove();
+                    } else {
+                        alert(response.msg);
+                    }
+                });
+            },
+
             togglePlantJournalSystemEntries: function(show) {
                 let container = document.getElementById('plant-journal-entries');
                 if (container) {

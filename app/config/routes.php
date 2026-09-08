@@ -63,6 +63,7 @@ return [
     array('/plants/log/add', 'POST', 'plants@add_plant_log_entry'),
     array('/plants/log/edit', 'POST', 'plants@edit_plant_log_entry'),
     array('/plants/log/remove', 'POST', 'plants@remove_plant_log_entry'),
+    array('/plants/log/comment/remove', 'POST', 'plants@remove_plant_log_comment'),
     array('/plants/log/fetch', 'ANY', 'plants@fetch_plant_log_entries'),
     array('/plants/location/log/add', 'POST', 'plants@add_location_log_entry'),
     array('/plants/location/log/edit', 'POST', 'plants@edit_location_log_entry'),
@@ -231,6 +232,11 @@ return [
     /** Backup Controller */
     array('/export/start', 'POST', 'backup@export'),
     array('/import/start', 'POST', 'backup@import'),
+
+    /** Public Controller */
+    array('/public', 'GET', 'public@view_catalog'),
+    array('/public/plant/{id}', 'GET', 'public@view_plant'),
+    array('/public/plant/{id}/comment', 'POST', 'public@add_comment'),
 
     /** Error Controller */
     array('$404', 'ANY', 'error404@index')

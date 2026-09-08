@@ -9,6 +9,22 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot19()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT 0');
+
+        PlantLogCommentModel::raw('CREATE TABLE IF NOT EXISTS PlantLogCommentModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            log_entry INT NOT NULL,
+            author_name VARCHAR(255) NULL,
+            comment TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot18()
     {
         InventoryModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS location_id INT NULL');

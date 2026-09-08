@@ -306,6 +306,7 @@ class PlantLogModel extends \Asatru\Database\Model {
             }
 
             PlantLogPhotoModel::clearForEntry($item->get('id'));
+            PlantLogCommentModel::clearForEntry($item->get('id'));
 
             static::raw('DELETE FROM `@THIS` WHERE id = ?', [
                 $item->get('id')
@@ -341,6 +342,73 @@ class PlantLogModel extends \Asatru\Database\Model {
             } else {
                 return static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant]);
             }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Entries shown on the public catalogue (see PublicController).
+     * System entries are never shown there - the public page has no
+     * toggle for them and they're not meant for an outside audience.
+     *
+     * @param $plant
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getPublicLogEntries($plant, $limit = 50)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE plant = ? AND is_system = 0 ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Used for the initial (non-paginated) load of a plant's journal.
+     * System entries (automatic "watered"/"repotted"/"fertilised" log
+     * lines) are hidden by a client-side toggle rather than left out of
+     * the query, so a plant with a lot of recent system activity could
+     * bury the last few real entries below the fold, forcing a "load
+     * more" click just to see them. This grows the fetch window until
+     * at least $minRealEntries non-system entries are included (or
+     * there's nothing left to fetch), so the real entries are visible
+     * right away regardless of how old they are.
+     *
+     * @param $plant
+     * @param $minRealEntries
+     * @param $startLimit
+     * @param $maxLimit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getInitialLogEntries($plant, $minRealEntries = 5, $startLimit = 10, $maxLimit = 200)
+    {
+        try {
+            $total = (int)static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE plant = ?', [$plant])->first()->get('count');
+
+            $limit = $startLimit;
+            $entries = static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant]);
+
+            while ($limit < $total) {
+                $realCount = 0;
+                foreach ($entries as $entry) {
+                    if (!$entry->get('is_system')) {
+                        $realCount++;
+                    }
+                }
+
+                if (($realCount >= $minRealEntries) || ($limit >= $maxLimit)) {
+                    break;
+                }
+
+                $limit = min($limit * 3, $maxLimit);
+                $entries = static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$plant]);
+            }
+
+            return $entries;
         } catch (\Exception $e) {
             throw $e;
         }

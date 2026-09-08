@@ -47,7 +47,7 @@ class PlantsController extends BaseController {
 			}
 		}
 
-		$location_log_entries = LocationLogModel::getLogEntries($location);
+		$location_log_entries = LocationLogModel::getInitialLogEntries($location);
 
 		$location_log_entry_photos = [];
 		$location_log_entry_plants = [];
@@ -253,7 +253,7 @@ class PlantsController extends BaseController {
 		$photos = PlantPhotoModel::getPlantGallery($plant_id);
 		$custom_attributes = CustPlantAttrModel::getForPlant($plant_id);
 		$plant_attachments = PlantAttachmentModel::getForPlant($plant_id);
-		$plant_log_entries = PlantLogModel::getLogEntries($plant_id);
+		$plant_log_entries = PlantLogModel::getInitialLogEntries($plant_id);
 
 		$plant_log_entry_photos = [];
 		if (is_countable($plant_log_entries)) {
@@ -266,6 +266,13 @@ class PlantsController extends BaseController {
 					}
 				}
 				$plant_log_entry_photos[$plant_log_entry->get('id')] = $entry_photos_arr;
+			}
+		}
+
+		$plant_log_entry_comments = [];
+		if (is_countable($plant_log_entries)) {
+			foreach ($plant_log_entries as $plant_log_entry) {
+				$plant_log_entry_comments[$plant_log_entry->get('id')] = PlantLogCommentModel::getForEntry($plant_log_entry->get('id'));
 			}
 		}
 
@@ -295,6 +302,7 @@ class PlantsController extends BaseController {
 			'plant_attachments' => $plant_attachments,
 			'plant_log_entries' => $plant_log_entries,
 			'plant_log_entry_photos' => $plant_log_entry_photos,
+			'plant_log_entry_comments' => $plant_log_entry_comments,
 			'offspring' => $offspring,
 			'edit_user_name' => $edit_user_name,
 			'edit_user_when' => $edit_user_when
@@ -1219,8 +1227,32 @@ class PlantsController extends BaseController {
 	{
 		try {
 			$item = $request->params()->query('item');
-			
+
 			PlantLogModel::removeEntry($item);
+
+			return json([
+				'code' => 200
+			]);
+		} catch (\Exception $e) {
+			return json([
+				'code' => 500,
+				'msg' => $e->getMessage()
+			]);
+		}
+	}
+
+	/**
+	 * Handles URL: /plants/log/comment/remove
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\JsonHandler
+	 */
+	public function remove_plant_log_comment($request)
+	{
+		try {
+			$item = $request->params()->query('item');
+
+			PlantLogCommentModel::removeComment($item);
 
 			return json([
 				'code' => 200

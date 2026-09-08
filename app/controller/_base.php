@@ -40,9 +40,9 @@ class BaseController extends Asatru\Controller\Controller {
 			$url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 			$allowed_urls = array(
-				'/auth', 
-				'/login', 
-				'/password/restore', 
+				'/auth',
+				'/login',
+				'/password/restore',
 				'/password/reset',
 				'/cronjob/tasks/overdue',
 				'/cronjob/tasks/tomorrow',
@@ -50,7 +50,11 @@ class BaseController extends Asatru\Controller\Controller {
 				'/cronjob/backup/auto'
 			);
 
-			if (!in_array($url, $allowed_urls)) {
+			// The public, read-only plant catalogue (see PublicController)
+			// is reachable without a session, same as the URLs above.
+			$is_public_url = (strpos($url, '/public') === 0);
+
+			if ((!in_array($url, $allowed_urls)) && (!$is_public_url)) {
 				header('Location: /auth?redirect=' . urlencode($_SERVER['REQUEST_URI']));
 				exit();
 			}

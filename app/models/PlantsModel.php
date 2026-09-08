@@ -54,7 +54,8 @@ class PlantsModel extends \Asatru\Database\Model {
         'health_state',
         'notes',
         'history',
-        'history_date'
+        'history_date',
+        'is_public'
     ];
 
     static $plant_health_states = [
@@ -225,6 +226,38 @@ class PlantsModel extends \Asatru\Database\Model {
     {
         try {
             return static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Plants shown on the public, unauthenticated catalogue (see
+     * PublicController). Only plants explicitly marked is_public and
+     * not archived to history show up there.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getPublicPlants()
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE is_public = 1 AND history = 0 ORDER BY name ASC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $id
+     * @return bool
+     * @throws \Exception
+     */
+    public static function isPublic($id)
+    {
+        try {
+            $plant = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+            return (($plant) && ($plant->get('is_public')));
         } catch (\Exception $e) {
             throw $e;
         }

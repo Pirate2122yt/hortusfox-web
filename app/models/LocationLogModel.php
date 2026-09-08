@@ -325,4 +325,49 @@ class LocationLogModel extends \Asatru\Database\Model {
             throw $e;
         }
     }
+
+    /**
+     * Used for the initial (non-paginated) load of a location's journal.
+     * See PlantLogModel::getInitialLogEntries() for why this grows the
+     * fetch window instead of using a flat LIMIT: system entries are
+     * hidden client-side, not excluded from the query, so a location
+     * with a lot of recent system activity could otherwise bury the
+     * last few real entries below the fold.
+     *
+     * @param $location
+     * @param $minRealEntries
+     * @param $startLimit
+     * @param $maxLimit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getInitialLogEntries($location, $minRealEntries = 5, $startLimit = 10, $maxLimit = 200)
+    {
+        try {
+            $total = (int)static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE location = ?', [$location])->first()->get('count');
+
+            $limit = $startLimit;
+            $entries = static::raw('SELECT * FROM `@THIS` WHERE location = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$location]);
+
+            while ($limit < $total) {
+                $realCount = 0;
+                foreach ($entries as $entry) {
+                    if (!$entry->get('is_system')) {
+                        $realCount++;
+                    }
+                }
+
+                if (($realCount >= $minRealEntries) || ($limit >= $maxLimit)) {
+                    break;
+                }
+
+                $limit = min($limit * 3, $maxLimit);
+                $entries = static::raw('SELECT * FROM `@THIS` WHERE location = ? ORDER BY entry_date DESC, id DESC LIMIT ' . $limit, [$location]);
+            }
+
+            return $entries;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

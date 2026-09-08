@@ -2506,6 +2506,7 @@
 				window.vue.confirmRemovePlantLogEntry = '{{ __('app.confirm_remove_plant_log_entry') }}';
 				window.vue.plantJournalSystemBadge = '{{ __('app.plant_journal_system_badge') }}';
 				window.vue.confirmRemoveLocationLogEntry = '{{ __('app.confirm_remove_location_log_entry') }}';
+				window.vue.confirmRemovePlantLogComment = '{{ __('app.confirm_remove_plant_log_comment') }}';
 
 				window.vue.featureRequestStatusLabels = {};
 				@foreach (FeatureRequestModel::$statuses as $fr_status)

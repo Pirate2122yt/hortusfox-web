@@ -160,6 +160,19 @@
 				</tr>
 				@endif
 
+				<tr>
+					<td><strong>{{ __('app.is_public') }}</strong></td>
+					<td>
+						{!! ($plant->get('is_public')) ? '<span class="is-color-yes">' . __('app.yes') . '</span>' : '<span class="is-color-no">' . __('app.no') . '</span>' !!}
+
+						@if ($plant->get('is_public'))
+							&nbsp;<a href="{{ url('/public/plant/' . $plant->get('id')) }}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+						@endif
+
+						<span class="float-right"><a href="javascript:void(0);" onclick="window.vue.showEditBoolean({{ $plant->get('id') }}, 'is_public', '{{ __('app.is_public') }}', {{ ($plant->get('is_public')) ? 'true' : 'false' }});"><i class="fas fa-edit is-color-darker"></i></a></span>
+					</td>
+				</tr>
+
 				@if (plant_attr('cutting_month'))
 				<tr>
 					<td><strong>{{ __('app.cutting_month') }}</strong></td>
@@ -538,6 +551,21 @@
 									<a href="javascript:void(0);" onclick="let el = document.getElementById('plant-log-entry-item-{{ $plant_log_entry->get('id') }}'); window.vue.showEditPlantLogEntry('{{ $plant_log_entry->get('id') }}', '{{ $plant->get('id') }}', el.dataset.title, el.dataset.content, el.dataset.tags, el.dataset.entryDate, JSON.parse(el.dataset.photos), 'plant-journal-anchor');"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_plant_log_entry') }}')) { window.vue.removePlantLogEntry('{{ $plant_log_entry->get('id') }}', 'plant-log-entry-table-row-{{ $plant_log_entry->get('id') }}'); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
 								</span>
 							</div>
+
+							@if (isset($plant_log_entry_comments[$plant_log_entry->get('id')]) && count($plant_log_entry_comments[$plant_log_entry->get('id')]) > 0)
+								<div class="plant-journal-entry-comments">
+									@foreach ($plant_log_entry_comments[$plant_log_entry->get('id')] as $entry_comment)
+										<div class="plant-journal-entry-comment" id="plant-log-comment-{{ $entry_comment->get('id') }}">
+											<div class="plant-journal-entry-comment-header">
+												<strong>{{ $entry_comment->get('author_name') ?: __('app.public_comment_anonymous') }}</strong>
+												<span class="plant-journal-entry-comment-date">{{ (new Carbon($entry_comment->get('created_at')))->diffForHumans() }}</span>
+												<a href="javascript:void(0);" onclick="window.vue.removePlantLogComment({{ $entry_comment->get('id') }}, 'plant-log-comment-{{ $entry_comment->get('id') }}');"><i class="fas fa-trash-alt is-color-darker"></i></a>
+											</div>
+											<div class="plant-journal-entry-comment-text">{{ $entry_comment->get('comment') }}</div>
+										</div>
+									@endforeach
+								</div>
+							@endif
 						</div>
 					</div>
 				@endforeach
