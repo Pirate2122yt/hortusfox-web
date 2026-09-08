@@ -107,6 +107,14 @@
 				margin-bottom: 0.25em;
 			}
 
+			/* Bulma pulls a .subtitle up by -1.25rem to sit snugly under a
+			   .title, sized for Bulma's own default 1.5rem title margin.
+			   The tighter margin-bottom above needs a matching offset here,
+			   or the subtitle overlaps the title text. */
+			.public-catalog-header .subtitle {
+				margin-top: 0.75em;
+			}
+
 			.public-catalog-grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
