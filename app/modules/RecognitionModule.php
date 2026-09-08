@@ -53,6 +53,39 @@ class RecognitionModule {
     }
 
     /**
+     * Identifies a plant for an anonymous visitor of the public catalogue
+     * (see PublicController::identify_plant). Deliberately narrower than
+     * identify():
+     *
+     *  - only ever queries Pl@ntNet, and only using the free API key the
+     *    admin already configured for their own use - it never falls back
+     *    to Plant.id, since that key may be a separate, paid, personal
+     *    quota the admin didn't intend to share with the public
+     *  - gated by its own 'public_plantid_enable' switch, independent of
+     *    the admin-facing 'plantrec_enable' toggle, so an admin can offer
+     *    (or withhold) each independently
+     *
+     * Callers are expected to have already applied rate limiting - this
+     * method only checks whether the feature is configured at all.
+     *
+     * @param $asset
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function identifyPublic($asset)
+    {
+        if (!app('public_plantid_enable')) {
+            throw new \Exception('Public identification is currently deactivated');
+        }
+
+        if (empty(app('plantrec_apikey'))) {
+            throw new \Exception('Public identification is not configured');
+        }
+
+        return static::query(self::PROVIDER_PLANTNET, $asset);
+    }
+
+    /**
      * @param $provider
      * @return bool
      */

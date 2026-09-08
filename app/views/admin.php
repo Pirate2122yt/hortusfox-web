@@ -203,6 +203,28 @@
             </div>
         </div>
 
+        <div class="field">
+            <div class="control">
+                <input type="checkbox" class="checkbox" name="public_plantid_enable" value="1" {{ (app('public_plantid_enable')) ? 'checked': '' }}>&nbsp;<span>{{ __('app.public_plantid_enable_label') }}</span>
+            </div>
+            <p class="help">{{ __('app.public_plantid_enable_hint') }}</p>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ __('app.public_captcha_sitekey_label') }}</label>
+            <div class="control">
+                <input type="text" class="input" name="public_captcha_sitekey" value="{{ app('public_captcha_sitekey', '') }}">
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ __('app.public_captcha_secretkey_label') }}</label>
+            <div class="control">
+                <input type="text" class="input" name="public_captcha_secretkey" value="{{ app('public_captcha_secretkey', '') }}">
+            </div>
+            <p class="help">{{ __('app.public_captcha_hint') }}</p>
+        </div>
+
         <div><hr></div>
 
         <div class="field">

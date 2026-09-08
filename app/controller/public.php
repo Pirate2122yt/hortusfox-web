@@ -13,6 +13,13 @@ class PublicController extends BaseController {
     const INDEX_LAYOUT = 'public_layout';
 
     /**
+     * Maximum accepted upload size for the public identifier, in bytes.
+     * Deliberately tighter than a typical admin-side upload limit, since
+     * this endpoint is reachable without a session.
+     */
+    const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
+
+    /**
 	 * Perform base initialization
 	 *
 	 * @return void
@@ -128,5 +135,170 @@ class PublicController extends BaseController {
 		}
 
 		return redirect('/public/plant/' . $id . '#plant-log-entry-' . $log_entry);
+	}
+
+	/**
+	 * Handles URL: /public/identify
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function identify_page($request)
+	{
+		return parent::view(['content', 'public_identify'], [
+			'available' => static::identifyAvailable(),
+			'remaining' => PublicIdentifyRequestModel::getRemaining(static::clientIp()),
+			'results' => null
+		]);
+	}
+
+	/**
+	 * Handles URL: /public/identify (POST)
+	 *
+	 * Every safeguard here runs before the image ever reaches Pl@ntNet,
+	 * since that's a shared, free API key paid for in request quota:
+	 * the feature has its own admin opt-in, a hidden honeypot field, an
+	 * optional CAPTCHA, a strict per-IP daily cap, and the upload itself
+	 * is size-checked and content-verified as a real image before it's
+	 * used or stored anywhere (however briefly).
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function identify_plant($request)
+	{
+		$ip = static::clientIp();
+		$image_file = null;
+
+		try {
+			if (!static::identifyAvailable()) {
+				throw new \Exception(__('app.public_identify_unavailable'));
+			}
+
+			// Honeypot: a real visitor never fills this hidden field in.
+			// Pretend it worked rather than tipping a bot off.
+			$honeypot = $request->params()->query('website', null);
+			if ((is_string($honeypot)) && (strlen($honeypot) > 0)) {
+				return parent::view(['content', 'public_identify'], [
+					'available' => true,
+					'remaining' => PublicIdentifyRequestModel::getRemaining($ip),
+					'results' => []
+				]);
+			}
+
+			if (!static::verifyCaptcha($request->params()->query('cf-turnstile-response', null), $ip)) {
+				throw new \Exception(__('app.public_identify_captcha_failed'));
+			}
+
+			if (!PublicIdentifyRequestModel::tryConsume($ip)) {
+				throw new \Exception(__('app.public_identify_rate_limited'));
+			}
+
+			if ((!isset($_FILES['photo'])) || ($_FILES['photo']['error'] !== UPLOAD_ERR_OK)) {
+				throw new \Exception(__('app.public_identify_no_photo'));
+			}
+
+			if ($_FILES['photo']['size'] > self::MAX_UPLOAD_BYTES) {
+				throw new \Exception(__('app.public_identify_photo_too_large'));
+			}
+
+			// Written next to the (equally short-lived) admin-facing
+			// identify uploads, then removed again a few lines down
+			// whether recognition succeeds or fails.
+			$image_file = UtilsModule::uploadFile('photo', public_path() . '/img/');
+
+			$data = RecognitionModule::identifyPublic($image_file);
+
+			if ((!isset($data->results)) || (!is_array($data->results))) {
+				throw new \Exception(__('app.public_identify_no_results'));
+			}
+
+			return parent::view(['content', 'public_identify'], [
+				'available' => true,
+				'remaining' => PublicIdentifyRequestModel::getRemaining($ip),
+				'results' => $data->results
+			]);
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+
+			return parent::view(['content', 'public_identify'], [
+				'available' => static::identifyAvailable(),
+				'remaining' => PublicIdentifyRequestModel::getRemaining($ip),
+				'results' => null
+			]);
+		} finally {
+			if (($image_file) && (file_exists($image_file))) {
+				unlink($image_file);
+			}
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	private static function identifyAvailable()
+	{
+		return (app('public_plantid_enable')) && (!empty(app('plantrec_apikey')));
+	}
+
+	/**
+	 * @return string
+	 */
+	private static function clientIp()
+	{
+		return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+	}
+
+	/**
+	 * Verifies a Cloudflare Turnstile token, if the admin configured one.
+	 * If no secret key is configured the CAPTCHA step is simply skipped
+	 * (the daily IP cap, honeypot and upload validation still apply) -
+	 * but once a secret key IS configured, a failure to verify (missing
+	 * token, rejected token, or a network error reaching Cloudflare)
+	 * always fails closed.
+	 *
+	 * @param $token
+	 * @param $ip
+	 * @return bool
+	 */
+	private static function verifyCaptcha($token, $ip)
+	{
+		$secret = app('public_captcha_secretkey');
+
+		if (empty($secret)) {
+			return true;
+		}
+
+		if ((!is_string($token)) || (strlen($token) === 0)) {
+			return false;
+		}
+
+		try {
+			$ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+				'secret' => $secret,
+				'response' => $token,
+				'remoteip' => $ip
+			]));
+
+			$response = curl_exec($ch);
+			$error = curl_error($ch);
+
+			curl_close($ch);
+
+			if ((is_string($error)) && (strlen($error) > 0)) {
+				return false;
+			}
+
+			$json = json_decode($response);
+
+			return (bool)(($json && isset($json->success)) ? $json->success : false);
+		} catch (\Exception $e) {
+			return false;
+		}
 	}
 }

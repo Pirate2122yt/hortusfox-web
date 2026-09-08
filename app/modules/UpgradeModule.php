@@ -9,6 +9,25 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot23()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_plantid_enable BOOLEAN NOT NULL DEFAULT 0');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_captcha_sitekey VARCHAR(512) NULL');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_captcha_secretkey VARCHAR(512) NULL');
+
+        PublicIdentifyRequestModel::raw('CREATE TABLE IF NOT EXISTS PublicIdentifyRequestModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            ip_hash VARCHAR(64) NOT NULL,
+            request_date DATE NOT NULL,
+            request_count INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uniq_ip_date (ip_hash, request_date)
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot22()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_catalog_enable BOOLEAN NOT NULL DEFAULT 1');

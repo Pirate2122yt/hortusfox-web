@@ -235,6 +235,8 @@ return [
 
     /** Public Controller */
     array('/public', 'GET', 'public@view_catalog'),
+    array('/public/identify', 'GET', 'public@identify_page'),
+    array('/public/identify', 'POST', 'public@identify_plant'),
     array('/public/plant/{id}', 'GET', 'public@view_plant'),
     array('/public/plant/{id}/comment', 'POST', 'public@add_comment'),
 

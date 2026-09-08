@@ -387,6 +387,102 @@
 			.public-footer a {
 				color: rgb(160, 160, 160);
 			}
+
+			/* Bulma only shows .navbar-menu at desktop widths, or on mobile
+			   once a JS-driven burger toggles .is-active - this page has no
+			   JS burger, so the menu is forced flex at every width instead. */
+			.public-navbar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: wrap;
+			}
+
+			.public-navbar .navbar-menu {
+				display: flex !important;
+				background-color: transparent;
+				box-shadow: none;
+				padding: 0;
+			}
+
+			.public-navbar .navbar-end {
+				display: flex;
+				align-items: center;
+			}
+
+			.public-navbar .navbar-end a.navbar-item {
+				color: rgb(190, 190, 190);
+			}
+
+			.public-navbar .navbar-end a.navbar-item:hover {
+				color: rgb(255, 255, 255);
+			}
+
+			.public-identify-unavailable {
+				text-align: center;
+				padding: 60px 20px;
+				color: rgb(160, 160, 160);
+			}
+
+			.public-identify-unavailable i {
+				font-size: 2.2em;
+				color: rgb(120, 200, 140);
+				margin-bottom: 12px;
+				display: block;
+			}
+
+			.public-identify-form-wrap {
+				background-color: rgb(30, 32, 30);
+				border: 1px solid rgb(48, 50, 48);
+				border-radius: 10px;
+				padding: 20px 22px;
+				max-width: 480px;
+			}
+
+			.public-identify-remaining {
+				margin-top: 12px;
+				font-size: 0.85em;
+				color: rgb(160, 160, 160);
+			}
+
+			.public-identify-results-title {
+				margin-top: 30px;
+			}
+
+			.public-identify-results {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+
+			.public-identify-result {
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				background-color: rgb(30, 32, 30);
+				border: 1px solid rgb(48, 50, 48);
+				border-radius: 8px;
+				padding: 14px 16px;
+			}
+
+			.public-identify-result-score {
+				flex: 0 0 auto;
+				min-width: 3.2em;
+				text-align: center;
+				font-weight: 700;
+				color: rgb(120, 200, 140);
+			}
+
+			.public-identify-result-name {
+				color: rgb(225, 225, 225);
+				font-size: 1.05em;
+			}
+
+			.public-identify-result-common {
+				margin-top: 2px;
+				font-size: 0.85em;
+				color: rgb(170, 170, 170);
+			}
 		</style>
 	</head>
 
@@ -397,6 +493,14 @@
 					<img src="{{ asset('logo.png') }}"/>&nbsp;{{ app('workspace') }}
 				</a>
 			</div>
+
+			@if ((app('public_plantid_enable')) && (app('plantrec_apikey')))
+				<div class="navbar-menu">
+					<div class="navbar-end">
+						<a class="navbar-item" href="{{ url('/public/identify') }}"><i class="fas fa-camera-retro"></i>&nbsp;{{ __('app.public_identify_nav') }}</a>
+					</div>
+				</div>
+			@endif
 		</nav>
 
 		<div class="public-container">

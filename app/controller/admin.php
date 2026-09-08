@@ -115,6 +115,9 @@ class AdminController extends BaseController {
 			$plantrec_apikey = $request->params()->query('plantrec_apikey', app('plantrec_apikey'));
 			$plantrec_apikey_plantid = $request->params()->query('plantrec_apikey_plantid', app('plantrec_apikey_plantid'));
 			$plantrec_quickscan = (bool)$request->params()->query('plantrec_quickscan', 0);
+			$public_plantid_enable = (bool)$request->params()->query('public_plantid_enable', 0);
+			$public_captcha_sitekey = $request->params()->query('public_captcha_sitekey', app('public_captcha_sitekey'));
+			$public_captcha_secretkey = $request->params()->query('public_captcha_secretkey', app('public_captcha_secretkey'));
 
 			$set = [
 				'workspace' => $workspace,
@@ -143,7 +146,10 @@ class AdminController extends BaseController {
 				'plantrec_provider' => $plantrec_provider,
 				'plantrec_apikey' => $plantrec_apikey,
 				'plantrec_apikey_plantid' => $plantrec_apikey_plantid,
-				'plantrec_quickscan' => $plantrec_quickscan
+				'plantrec_quickscan' => $plantrec_quickscan,
+				'public_plantid_enable' => $public_plantid_enable,
+				'public_captcha_sitekey' => $public_captcha_sitekey,
+				'public_captcha_secretkey' => $public_captcha_secretkey
 			];
 
 			AppModel::updateSet($set);
