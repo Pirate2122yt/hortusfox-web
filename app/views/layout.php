@@ -2569,6 +2569,11 @@
 					window.vue.initLocationJournalSystemToggle();
 				}
 
+				let elChatToggleSystem = document.getElementById('chat-toggle-system');
+				if (elChatToggleSystem) {
+					window.vue.initChatSystemToggle();
+				}
+
 				@if ((isset($user)) && ($user->get('show_calendar_view')) && (isset($calendar_sv_date_from)) && (isset($calendar_sv_date_till)))
 				let elCalendarSmallView = document.getElementById('calendar-small-view');
 				if (elCalendarSmallView) {

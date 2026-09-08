@@ -3056,6 +3056,15 @@ fieldset .field {
     color: rgb(190, 190, 190);
 }
 
+.chat-system-toggle {
+    display: inline-block;
+    margin-bottom: 14px;
+}
+
+.chat.hide-system-entries .system-message {
+    display: none;
+}
+
 .chat-message {
     position: relative;
     width: 90%;

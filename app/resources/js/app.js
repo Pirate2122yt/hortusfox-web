@@ -1495,6 +1495,30 @@ window.createVueInstance = function(element) {
                 }
             },
 
+            toggleChatSystemMessages: function(show) {
+                let container = document.getElementById('chat');
+                if (container) {
+                    if (show) {
+                        container.classList.remove('hide-system-entries');
+                    } else {
+                        container.classList.add('hide-system-entries');
+                    }
+                }
+
+                window.vue.setCookieValue('chat_show_system', show ? '1' : '0');
+            },
+
+            initChatSystemToggle: function() {
+                let toggle = document.getElementById('chat-toggle-system');
+                if (!toggle) {
+                    return;
+                }
+
+                let show = window.vue.getCookieValue('chat_show_system', '1') == '1';
+                toggle.checked = show;
+                window.vue.toggleChatSystemMessages(show);
+            },
+
             refreshChat: function(auth_user)
             {
                 window.vue.ajaxRequest('get', window.location.origin + '/chat/query', {}, function(response) {

@@ -28,6 +28,13 @@
             <div class="chat-user-list" id="chat-user-list"></div>
         @endif
 
+        @if (app('chat_system'))
+            <label class="checkbox plant-journal-system-toggle chat-system-toggle">
+                <input type="checkbox" id="chat-toggle-system" onchange="window.vue.toggleChatSystemMessages(this.checked);">
+                {{ __('app.chat_show_system_label') }}
+            </label>
+        @endif
+
         <div class="chat" id="chat">
             <div class="chat-message chat-typing-indicator">
                 <div class="chat-message-content">
