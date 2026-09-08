@@ -129,6 +129,13 @@ class PublicController extends BaseController {
 
 			PlantLogCommentModel::addComment($log_entry, $name, $comment);
 
+			try {
+				TextBlockModule::newPlantComment($plant->get('name'), url('/plants/details/' . $id), $name, $comment);
+			} catch (\Exception $e) {
+				// A failed chat notification shouldn't turn a successfully
+				// saved comment into an error for the visitor.
+			}
+
 			FlashMessage::setMsg('success', __('app.public_comment_posted'));
 		} catch (\Exception $e) {
 			FlashMessage::setMsg('error', $e->getMessage());

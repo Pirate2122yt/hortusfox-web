@@ -192,6 +192,39 @@ class TextBlockModule {
     }
 
     /**
+     * @param $name
+     * @param $url
+     * @param $authorName
+     * @param $comment
+     * @return void
+     * @throws \Exception
+     */
+    public static function newPlantComment($name, $url, $authorName, $comment)
+    {
+        try {
+            $preview = (mb_strlen($comment) > 120) ? (mb_substr($comment, 0, 120) . '…') : $comment;
+
+            // The commenter is an anonymous visitor on the public catalogue,
+            // not a signed-in user - their name and comment text are
+            // untrusted input. addToChat()'s message is rendered straight
+            // into innerHTML by the live chat poll (app.js
+            // renderNewChatMessage), so anything left unescaped here would
+            // be a stored-XSS vector against every signed-in user's browser.
+            // The plant name/URL are not user input at this call site, so
+            // they're left as-is to match every other message in this file.
+            $authorName = trim((string)$authorName);
+            $authorName = htmlspecialchars(($authorName !== '') ? $authorName : __('app.public_comment_anonymous'), ENT_QUOTES, 'UTF-8');
+            $preview = htmlspecialchars($preview, ENT_QUOTES, 'UTF-8');
+
+            $text = __('tb.new_plant_comment', ['name' => $name, 'url' => $url, 'author' => $authorName, 'comment' => $preview]);
+
+            static::addToChat($text, 'x1f4ac', true);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $message
      * @param $icon
      * @param $api
