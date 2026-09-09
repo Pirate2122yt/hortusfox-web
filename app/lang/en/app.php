@@ -621,5 +621,7 @@ return [
 	'public_captcha_secretkey_label' => 'Cloudflare Turnstile secret key (optional)',
 	'public_captcha_hint' => 'Recommended when the public identifier is enabled. Leave both blank to skip the CAPTCHA challenge (the daily limit and upload checks still apply). Get free keys at dash.cloudflare.com/?to=/:account/turnstile.',
 	'activity_feed_title' => 'Activity',
-	'activity_feed_description' => 'Recent activity in {workspace}'
+	'activity_feed_description' => 'Recent activity in {workspace}',
+	'location_count' => '{count} locations',
+	'no_locations_in_place' => 'There are no locations in this place yet'
 ];

@@ -24,7 +24,7 @@
 @include('flashmsg.php')
 
 <div class="stats">
-	<div class="stats-item is-pointer" onclick="location.href = '{{ url('/#last-added-or-authored-plants') }}';">
+	<div class="stats-item is-pointer" onclick="location.href = '{{ url('/plants') }}';">
 		<div class="stats-item-count">{{ $stats['plants'] }}</div>
 		<div class="stats-item-label">{{ __('app.plants') }}</div>
 	</div>
@@ -124,13 +124,55 @@
 <div class="locations">
 	<a name="locations"></a>
 
-	@foreach ($locations as $location)
+	@foreach ($places as $place)
+		<a href="{{ url('/plants/place/' . $place['id']) }}">
+			<div class="location place">
+				<div class="location-title">
+					{{ $place['name'] }}
+				</div>
+
+				<div class="place-icon"><i class="fas fa-building"></i></div>
+
+				<div class="location-footer">
+					<div class="is-inline-block">
+						<span class="location-footer-count-desktop"><i class="fas fa-map-marker-alt is-color-ok"></i>&nbsp;{{ __('app.location_count', ['count' => $place['location_count']]) }} &nbsp;</span>
+						<span class="location-footer-count-mobile"><i class="fas fa-map-marker-alt is-color-ok"></i>&nbsp;{{ $place['location_count'] }} &nbsp;</span>
+					</div>
+
+					<div class="is-inline-block">
+						<span class="location-footer-count-desktop"><i class="fas fa-seedling is-color-ok"></i>&nbsp;{{ __('app.plant_count', ['count' => $place['plant_count']]) }} &nbsp;</span>
+						<span class="location-footer-count-mobile"><i class="fas fa-seedling is-color-ok"></i>&nbsp;{{ $place['plant_count'] }} &nbsp;</span>
+					</div>
+
+					<div class="is-inline-block">
+						<span class="location-footer-count-desktop">
+							@if ($place['danger_count'] > 0)
+								<i class="fas fa-exclamation-triangle is-color-danger"></i>&nbsp;{{ __('app.danger_count', ['count' => $place['danger_count']]) }}
+							@else
+								<i class="far fa-check-circle is-color-ok"></i>&nbsp;{{ __('app.all_in_good_standing') }}
+							@endif
+						</span>
+
+						<span class="location-footer-count-mobile">
+							@if ($place['danger_count'] > 0)
+								<i class="fas fa-exclamation-triangle is-color-danger"></i>&nbsp;{{ $place['danger_count'] }}
+							@else
+								<i class="far fa-check-circle is-color-ok"></i>&nbsp;{{ __('app.all_in_good_standing') }}
+							@endif
+						</span>
+					</div>
+				</div>
+			</div>
+		</a>
+	@endforeach
+
+	@foreach ($unassigned_locations as $location)
 		<a href="{{ url('/plants/location/' . $location->get('id')) }}">
 			<div class="location" style="--bg-image: url('{{ UtilsModule::iconAsset($location->get('icon')) }}');">
 				<div class="location-title">
 					{{ $location->get('name') }}
 				</div>
-				
+
 				<div class="location-footer">
 					<div class="is-inline-block">
 						<?php $plant_count = PlantsModel::getPlantCount($location->get('id')); ?>

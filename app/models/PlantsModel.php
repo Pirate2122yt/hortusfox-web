@@ -174,6 +174,36 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Every active (non-history) plant across every location, for the
+     * all-plants browsing page - same sorting rules as getAll(), just
+     * without the location filter.
+     *
+     * @param $sorting
+     * @param $direction
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getAllPlants($sorting = null, $direction = null)
+    {
+        try {
+            if ($sorting === null) {
+                $sorting = 'name';
+            }
+
+            if ($direction === null) {
+                $direction = 'asc';
+            }
+
+            static::validateSorting($sorting);
+            static::validateDirection($direction);
+
+            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 ORDER BY ' . $sorting . ' ' . $direction);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $userId
      * @return mixed
      * @throws \Exception

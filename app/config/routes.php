@@ -26,6 +26,8 @@ return [
     array('/password/reset', 'POST', 'index@reset_password'),
 
     /** Plants Controller */
+    array('/plants', 'GET', 'plants@view_all_plants'),
+    array('/plants/place/{id}', 'GET', 'plants@locations_from_place'),
     array('/plants/location/{id}', 'GET', 'plants@plants_from_location'),
     array('/plants/location/{id}/water', 'ANY', 'plants@set_plants_watered'),
     array('/plants/location/{id}/repot', 'ANY', 'plants@set_plants_repotted'),

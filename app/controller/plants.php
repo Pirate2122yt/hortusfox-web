@@ -19,6 +19,83 @@ class PlantsController extends BaseController {
 	}
 
     /**
+	 * Handles URL: /plants
+	 *
+	 * Every active plant across every location, for the "Plants"
+	 * dashboard tile - unlike plants_from_location() this isn't
+	 * scoped to one location, so it skips the location-only extras
+	 * (bulk water/repot/fertilise, notes, the location log).
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler|Asatru\View\RedirectHandler
+	 */
+	public function view_all_plants($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$sorting = $request->params()->query('sorting', $_COOKIE['list_sorting_style'] ?? null);
+		$direction = $request->params()->query('direction', $_COOKIE['list_order_style'] ?? null);
+		$show = $request->params()->query('show', null);
+
+		if ((is_string($show)) && ((isset($_COOKIE['list_show_style'])) && ($_COOKIE['list_show_style'] !== $show))) {
+			setcookie('list_show_style', $show, time() + 31536000, '/');
+			return redirect('/plants');
+		}
+
+		if ((is_string($sorting)) && ((isset($_COOKIE['list_sorting_style'])) && ($_COOKIE['list_sorting_style'] !== $sorting))) {
+			setcookie('list_sorting_style', $sorting, time() + 31536000, '/');
+			return redirect('/plants');
+		}
+
+		if ((is_string($direction)) && ((isset($_COOKIE['list_order_style'])) && ($_COOKIE['list_order_style'] !== $direction))) {
+			setcookie('list_order_style', $direction, time() + 31536000, '/');
+			return redirect('/plants');
+		}
+
+		$plants = PlantsModel::getAllPlants($sorting, $direction);
+
+		return parent::view(['content', 'all_plants'], [
+			'user' => $user,
+			'plants' => $plants,
+			'sorting_types' => PlantsModel::$sorting_list,
+			'sorting_dirs' => PlantsModel::$sorting_dir,
+			'list_sorting_style' => $sorting,
+			'list_order_style' => $direction
+		]);
+	}
+
+	/**
+	 * Handles URL: /plants/place/{id}
+	 *
+	 * Lists the locations that belong to one place (building/room), so
+	 * the homepage can show places first and let people drill into the
+	 * locations inside one, the same way a location tile itself then
+	 * drills into that location's plants.
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler|Asatru\View\RedirectHandler
+	 */
+	public function locations_from_place($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$placeId = $request->arg('id');
+
+		$place = PlacesModel::getById($placeId);
+		if (!$place) {
+			return redirect('/');
+		}
+
+		$locations = LocationsModel::getByPlace($placeId);
+
+		return parent::view(['content', 'place_locations'], [
+			'user' => $user,
+			'place' => $place,
+			'locations' => $locations
+		]);
+	}
+
+    /**
 	 * Handles URL: /plants/location/{id}
 	 * 
 	 * @param Asatru\Controller\ControllerArg $request

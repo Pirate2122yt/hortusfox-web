@@ -28,6 +28,32 @@ class IndexController extends BaseController {
 	{
 		$user = UserModel::getAuthUser();
 		$locs = LocationsModel::getAll();
+
+		$places = [];
+		foreach (PlacesModel::getAll() as $place_item) {
+			$place_locations = LocationsModel::getByPlace($place_item->get('id'));
+			if ((!is_countable($place_locations)) || (count($place_locations) === 0)) {
+				continue;
+			}
+
+			$plant_count = 0;
+			$danger_count = 0;
+			foreach ($place_locations as $place_location) {
+				$plant_count += PlantsModel::getPlantCount($place_location->get('id'));
+				$danger_count += PlantsModel::getDangerCount($place_location->get('id'));
+			}
+
+			$places[] = [
+				'id' => $place_item->get('id'),
+				'name' => $place_item->get('name'),
+				'location_count' => count($place_locations),
+				'plant_count' => $plant_count,
+				'danger_count' => $danger_count
+			];
+		}
+
+		$unassigned_locations = LocationsModel::getUnassignedToPlace();
+
 		$warning_plants = PlantsModel::getWarningPlants();
 		$overdue_tasks = TasksModel::getOverdueTasks();
 		$log = LogModel::getHistory();
@@ -56,6 +82,8 @@ class IndexController extends BaseController {
 			'warning_plants' => $warning_plants,
 			'overdue_tasks' => $overdue_tasks,
 			'locations' => $locs,
+			'places' => $places,
+			'unassigned_locations' => $unassigned_locations,
 			'log' => $log,
 			'stats' => $stats,
 			'upcoming_tasks_overview' => $upcoming_tasks_overview,
