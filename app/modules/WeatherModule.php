@@ -37,14 +37,46 @@ class WeatherModule {
     }
 
     /**
+     * Resolves the lat/lon to use for a given user: their chosen default
+     * weather location if they have one set and an admin has configured
+     * coordinates for it, falling back to the global workspace weather
+     * coordinates otherwise.
+     *
+     * @param $user
+     * @return array [latitude, longitude, location id or null]
+     */
+    public static function resolveCoordinates($user)
+    {
+        if ($user) {
+            $location_id = $user->get('weather_location');
+
+            if ($location_id) {
+                $location = LocationsModel::getLocationById($location_id);
+
+                if (($location) && ($location->get('weather_latitude') !== null) && ($location->get('weather_longitude') !== null)) {
+                    return [$location->get('weather_latitude'), $location->get('weather_longitude'), $location_id];
+                }
+            }
+        }
+
+        return [app('owm_latitude'), app('owm_longitude'), null];
+    }
+
+    /**
+     * @param $lat
+     * @param $lon
+     * @param $cache_ident
      * @return mixed
      * @throws \Exception
      */
-    public static function today()
+    public static function today($lat = null, $lon = null, $cache_ident = 'weather_today')
     {
         try {
-            $data = json_decode(CacheModel::remember('weather_today', app('owm_cache', self::WEATHER_CACHE_TIME), function() { 
-                return static::request('/data/2.5/weather?appid=' . app('owm_api_key') . '&lat=' . app('owm_latitude') . '&lon=' . app('owm_longitude') . '&units=' . app('owm_unittype'));
+            $lat = ($lat !== null) ? $lat : app('owm_latitude');
+            $lon = ($lon !== null) ? $lon : app('owm_longitude');
+
+            $data = json_decode(CacheModel::remember($cache_ident, app('owm_cache', self::WEATHER_CACHE_TIME), function() use ($lat, $lon) {
+                return static::request('/data/2.5/weather?appid=' . app('owm_api_key') . '&lat=' . $lat . '&lon=' . $lon . '&units=' . app('owm_unittype'));
             }));
 
             if ((isset($data->cod)) && ($data->cod != 200)) {
@@ -90,14 +122,20 @@ class WeatherModule {
     }
 
     /**
+     * @param $lat
+     * @param $lon
+     * @param $cache_ident
      * @return mixed
      * @throws \Exception
      */
-    public static function forecast()
+    public static function forecast($lat = null, $lon = null, $cache_ident = 'weather_forecast')
     {
         try {
-            $forecast = json_decode(CacheModel::remember('weather_forecast', app('owm_cache', self::WEATHER_CACHE_TIME), function() { 
-                return static::request('/data/2.5/forecast?appid=' . app('owm_api_key') . '&lat=' . app('owm_latitude') . '&lon=' . app('owm_longitude') . '&units=' . app('owm_unittype'));
+            $lat = ($lat !== null) ? $lat : app('owm_latitude');
+            $lon = ($lon !== null) ? $lon : app('owm_longitude');
+
+            $forecast = json_decode(CacheModel::remember($cache_ident, app('owm_cache', self::WEATHER_CACHE_TIME), function() use ($lat, $lon) {
+                return static::request('/data/2.5/forecast?appid=' . app('owm_api_key') . '&lat=' . $lat . '&lon=' . $lon . '&units=' . app('owm_unittype'));
             }));
             
             if ((!isset($forecast->cod)) && (!$forecast->cod != 200)) {

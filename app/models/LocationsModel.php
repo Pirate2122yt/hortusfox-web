@@ -115,14 +115,16 @@ class LocationsModel extends \Asatru\Database\Model {
      * @param $name
      * @param $active
      * @param $place
+     * @param $weather_latitude
+     * @param $weather_longitude
      * @return void
      * @throws \Exception
      */
-    public static function editLocation($id, $name, $active, $place = null)
+    public static function editLocation($id, $name, $active, $place = null, $weather_latitude = null, $weather_longitude = null)
     {
         try {
-            static::raw('UPDATE `@THIS` SET name = ?, active = ?, place = ? WHERE id = ?', [
-                $name, $active, ($place ?: null), $id
+            static::raw('UPDATE `@THIS` SET name = ?, active = ?, place = ?, weather_latitude = ?, weather_longitude = ? WHERE id = ?', [
+                $name, $active, ($place ?: null), (is_numeric($weather_latitude) ? $weather_latitude : null), (is_numeric($weather_longitude) ? $weather_longitude : null), $id
             ]);
         } catch (\Exception $e) {
             throw $e;

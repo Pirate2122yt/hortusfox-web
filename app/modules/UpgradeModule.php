@@ -9,6 +9,16 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot26()
+    {
+        LocationsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_latitude DECIMAL(10, 8) NULL');
+        LocationsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_longitude DECIMAL(11, 8) NULL');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_location INT NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot25()
     {
         PlacesModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS icon VARCHAR(512) NULL');

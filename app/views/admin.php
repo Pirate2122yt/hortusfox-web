@@ -535,6 +535,20 @@
                         </div>
                     </div>
 
+                    <div class="admin-location-item admin-location-item-input">
+                        <div class="field has-addons">
+                            <div class="control admin-location-control-weather">
+                                <input type="text" class="input" id="geo-latitude-{{ $location->get('id') }}" name="weather_latitude" placeholder="{{ __('app.weather_latitude') }}" value="{{ $location->get('weather_latitude') ?? '' }}"/>
+                            </div>
+                            <div class="control admin-location-control-weather">
+                                <input type="text" class="input" id="geo-longitude-{{ $location->get('id') }}" name="weather_longitude" placeholder="{{ __('app.weather_longitude') }}" value="{{ $location->get('weather_longitude') ?? '' }}"/>
+                            </div>
+                            <div class="control">
+                                <a class="button is-link" href="javascript:void(0);" title="{{ __('app.weather_autodetect_latlong') }}" onclick="window.vue.acquireGeoPosition(document.getElementById('geo-latitude-{{ $location->get('id') }}'), document.getElementById('geo-longitude-{{ $location->get('id') }}'), this);"><i class="fas fa-crosshairs"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="admin-location-item admin-location-item-centered">
                         <input type="checkbox" name="active" value="1" {{ ($location->get('active')) ? 'checked' : '' }}/>&nbsp;<span>{{ __('app.active') }}</span>
                     </div>

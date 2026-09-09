@@ -101,13 +101,21 @@ class BaseController extends Asatru\Controller\Controller {
 
 	/**
 	 * A more convenient view helper
-	 * 
+	 *
 	 * @param array $yields
 	 * @param array $attr
 	 * @return Asatru\View\ViewHandler
 	 */
 	public function view($yields, $attr = array())
 	{
+		// The shared layout's preferences modal (edit-preferences form) lets
+		// a user pick a default weather location, so make sure $locations
+		// is always available to it regardless of which controller renders
+		// the layout, unless the controller already supplied its own list.
+		if ((!isset($attr['locations'])) && ($this->layout === 'layout')) {
+			$attr['locations'] = LocationsModel::getAll();
+		}
+
 		return view($this->layout, $yields, $attr);
 	}
 }

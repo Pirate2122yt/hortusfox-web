@@ -32,7 +32,9 @@ class WeatherController extends BaseController {
 	{
 		try {
 			$user = UserModel::getAuthUser();
-			$forecast = WeatherModule::forecast();
+
+			[$weather_lat, $weather_lon, $weather_loc_id] = WeatherModule::resolveCoordinates($user);
+			$forecast = WeatherModule::forecast($weather_lat, $weather_lon, ($weather_loc_id) ? ('weather_forecast_loc_' . $weather_loc_id) : 'weather_forecast');
 
 			$weekdays = [];
 			for ($i = 0; $i < 5; $i++) {
@@ -43,7 +45,7 @@ class WeatherController extends BaseController {
 					'day' => date('l', $curtime)
 				];
 			}
-			
+
 			return parent::view(['content', 'weather'], [
 				'user' => $user,
 				'forecast' => $forecast,

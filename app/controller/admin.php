@@ -302,8 +302,10 @@ class AdminController extends BaseController {
 			$name = $request->params()->query('name', null);
 			$active = $request->params()->query('active', 0);
 			$place = $request->params()->query('place', null);
+			$weather_latitude = $request->params()->query('weather_latitude', null);
+			$weather_longitude = $request->params()->query('weather_longitude', null);
 
-			LocationsModel::editLocation($id, $name, (int)$active, $place);
+			LocationsModel::editLocation($id, $name, (int)$active, $place, $weather_latitude, $weather_longitude);
 
 			FlashMessage::setMsg('success', __('app.location_updated_successfully'));
 
