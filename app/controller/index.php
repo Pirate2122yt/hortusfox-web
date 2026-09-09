@@ -90,8 +90,8 @@ class IndexController extends BaseController {
 			'stats' => $stats,
 			'upcoming_tasks_overview' => $upcoming_tasks_overview,
 			'last_plants_list' => $last_plants_list,
-			'calendar_sv_date_from' => date('Y-m-d'),
-			'calendar_sv_date_till' => date('Y-m-d', strtotime('+1 week')),
+			'calendar_sv_date_from' => date('Y-m-d', strtotime('next monday')),
+			'calendar_sv_date_till' => date('Y-m-d', strtotime('next monday +6 days')),
 			'weather' => $weather
 		]);
 	}
