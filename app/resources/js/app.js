@@ -1798,7 +1798,7 @@ window.createVueInstance = function(element) {
             },
 
             selectAdminTab: function(tab) {
-                const tabs = ['environment', 'media', 'users', 'locations', 'auth', 'attributes', 'calendar', 'mail', 'themes', 'backup', 'weather', 'api', 'info'];
+                const tabs = ['environment', 'media', 'users', 'locations', 'auth', 'attributes', 'calendar', 'appearance', 'mail', 'themes', 'backup', 'weather', 'api', 'info'];
 
                 let selEl = document.querySelector('.admin-' + tab);
                 if (selEl) {

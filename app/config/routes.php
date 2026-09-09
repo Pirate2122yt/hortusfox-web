@@ -160,6 +160,7 @@ return [
     array('/admin/calendar/class/add', 'POST', 'admin@add_calendar_class'),
     array('/admin/calendar/class/edit', 'POST', 'admin@edit_calendar_class'),
     array('/admin/calendar/class/remove', 'POST', 'admin@remove_calendar_class'),
+    array('/admin/appearance/save', 'POST', 'admin@save_appearance'),
     array('/admin/media/logo', 'POST', 'admin@upload_media_logo'),
     array('/admin/media/banner', 'POST', 'admin@upload_media_banner'),
     array('/admin/media/background', 'POST', 'admin@upload_media_background'),

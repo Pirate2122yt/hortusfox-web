@@ -47,6 +47,7 @@ class UserModel_Migration {
         $this->database->add('notify_calendar_reminder BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('remember_location_sorting BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('weather_location INT NULL');
+        $this->database->add('color_scheme VARCHAR(512) NULL');
         $this->database->add('last_seen_msg INT NULL');
         $this->database->add('last_typing TIMESTAMP NULL');
         $this->database->add('last_seen_sysmsg INT NULL');

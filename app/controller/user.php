@@ -113,6 +113,7 @@ class UserController extends BaseController {
 			$show_plants_aoru = $request->params()->query('show_plants_aoru', 'added');
 			$remember_location_sorting = $request->params()->query('remember_location_sorting', false);
 			$weather_location = $request->params()->query('weather_location', null);
+			$color_scheme = $request->params()->query('color_scheme', null);
 
 			if ((is_numeric($theme)) && ((int)$theme === 0)) {
 				$theme = null;
@@ -122,7 +123,11 @@ class UserController extends BaseController {
 				$weather_location = null;
 			}
 
-			UserModel::editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location);
+			if ((is_numeric($color_scheme)) && ((int)$color_scheme === 0)) {
+				$color_scheme = null;
+			}
+
+			UserModel::editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location, $color_scheme);
 
 			UserModel::updateListSortingPreferences($remember_location_sorting);
 

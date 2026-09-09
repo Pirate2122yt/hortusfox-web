@@ -2,6 +2,50 @@
     app.scss
 */
 
+/*
+    Appearance / color schemes
+    --------------------------
+    These three CSS custom properties carry the app's background and
+    text colors, so a color scheme can be switched at runtime (no
+    rebuild) just by changing the <html> tag's data-theme attribute -
+    see AppearanceModule and layout.php's <html> tag.
+
+    :root holds the original, pre-theming colors as the fallback used
+    whenever no data-theme attribute is present at all. "midnight"
+    below is the same set of colors made selectable as a named scheme.
+
+    To add a new color scheme:
+      1. Pick a short lowercase identifier, e.g. "sunset".
+      2. Add a [data-theme="sunset"] block below, setting all three
+         custom properties.
+      3. Register it (identifier => human-readable label) in
+         AppearanceModule::$available_themes.
+      4. Run `npm run build` to bundle the new CSS into public/js/app.js.
+*/
+:root {
+    --hf-bg-page: rgb(48, 52, 55);
+    --hf-bg-surface: rgb(50, 50, 50);
+    --hf-text-primary: rgb(200, 200, 200);
+}
+
+[data-theme="midnight"] {
+    --hf-bg-page: rgb(48, 52, 55);
+    --hf-bg-surface: rgb(50, 50, 50);
+    --hf-text-primary: rgb(200, 200, 200);
+}
+
+[data-theme="forest"] {
+    --hf-bg-page: rgb(30, 38, 32);
+    --hf-bg-surface: rgb(38, 48, 40);
+    --hf-text-primary: rgb(198, 214, 200);
+}
+
+[data-theme="sandstone"] {
+    --hf-bg-page: rgb(237, 228, 214);
+    --hf-bg-surface: rgb(250, 244, 234);
+    --hf-text-primary: rgb(59, 47, 38);
+}
+
 html {
     overflow-y: hidden;
 }
@@ -11,7 +55,7 @@ html, body {
     height: 100%;
     padding: 0;
     margin: 0;
-    background-color: rgb(48, 52, 55);
+    background-color: var(--hf-bg-page);
 }
 
 body {
@@ -20,7 +64,7 @@ body {
        and is nearly invisible against this app's dark theme. Any element
        that doesn't set its own color falls back to this, so it needs to
        be readable on dark backgrounds by default. */
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 /* Bulma's stock button colors (is-success, is-info, is-danger, is-link)
@@ -80,7 +124,7 @@ h1 {
 h2 {
     font-size: 2.0em;
     margin-bottom: 30px;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .smaller-headline {
@@ -154,7 +198,7 @@ h2 {
 
 .is-input-dark {
     background-color: rgba(90, 90, 90, 0.5);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     border: 1px solid rgb(100, 100, 100);
 }
 
@@ -287,7 +331,7 @@ h2 {
 }
 
 .navbar-item a {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .navbar-item a:hover {
@@ -313,7 +357,7 @@ a.navbar-item:hover, a.navbar-item.is-active, .navbar-link:hover, .navbar-link.i
 }
 
 .dropdown-item {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .dropdown-item svg {
@@ -325,7 +369,7 @@ a.navbar-item:hover, a.navbar-item.is-active, .navbar-link:hover, .navbar-link.i
 }
 
 a.dropdown-item:hover, button.dropdown-item:hover {
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
     color: rgb(230, 230, 230);
 }
 
@@ -340,7 +384,7 @@ a.dropdown-item:hover, button.dropdown-item:hover {
 }
 
 a.navbar-burger:hover {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .navbar-start {
@@ -467,7 +511,7 @@ a.navbar-burger:hover {
 }
 
 .modal-card-body {
-    background-color: rgb(48, 52, 55);
+    background-color: var(--hf-bg-page);
 }
 
 .modal-card-body label {
@@ -489,7 +533,7 @@ a.navbar-burger:hover {
 }
 
 .modal-card-foot {
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
     border-top: 1px solid rgb(59, 59, 59);
 }
 
@@ -574,7 +618,7 @@ fieldset .field {
     position: relative;
     top: 20px;
     float: right;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     @media screen and (max-width: 525px) {
         top: -20px;
         float: unset;
@@ -711,7 +755,7 @@ fieldset .field {
     }
     margin-bottom: 20px;
     background-color: rgba(0, 0, 0, 0.83);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .location-footer {
@@ -757,7 +801,7 @@ fieldset .field {
 
 .location-notes textarea {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
     margin-top: 20px;
     margin-bottom: 20px;
 }
@@ -848,7 +892,7 @@ fieldset .field {
 }
 
 .sorting-control a.is-selected {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .sorting-control svg {
@@ -856,7 +900,7 @@ fieldset .field {
 }
 
 .sorting-control select, .sorting-control input[type=text] {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     background-color: rgba(50, 50, 50, 0.9);
     border: 1px solid rgb(100, 100, 100);
     margin-right: 5px;
@@ -972,7 +1016,7 @@ fieldset .field {
     height: 69px;
     padding-top: 17px;
     background-color: rgba(0, 0, 0, 0.5);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     text-align: center;
     font-size: 1.2em;
     border-bottom-left-radius: 10px;
@@ -1043,7 +1087,7 @@ fieldset .field {
 }
 
 .plant-card-options {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .plant-card-health-state svg, .plant-card-options svg {
@@ -1123,7 +1167,7 @@ fieldset .field {
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 1px;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     background-color: rgba(240, 65, 205, 0.75);
     border: 1px solid rgb(255, 80, 230);
     border-radius: 5px;
@@ -1158,11 +1202,11 @@ fieldset .field {
     @media screen and (max-width: 786px) {
         width: 100%;
     }
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .plant-column table strong {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .plant-column thead {
@@ -1170,7 +1214,7 @@ fieldset .field {
 }
 
 .plant-column table td {
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
     padding: 10px;
 }
 
@@ -1241,7 +1285,7 @@ fieldset .field {
     min-height: 75px;
     //margin-bottom: 10px;
     padding: 10px;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     background-color: rgba(90, 90, 90, 0.5);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     font-size: 1.0em;
@@ -1370,7 +1414,7 @@ fieldset .field {
 }
 
 .plant-photo-edit svg, .plant-photo-view svg, .plant-photo-share svg, .plant-photo-clear svg {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .plant-state-in-good-standing {
@@ -1512,7 +1556,7 @@ fieldset .field {
     margin-top: -2px;
     margin-bottom: 20px;
     font-size: 1.3em;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .warning-plants-title-no-margin-bottom {
@@ -1688,7 +1732,7 @@ fieldset .field {
 }
 
 .log-item a:hover {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .log-item strong {
@@ -1747,7 +1791,7 @@ fieldset .field {
 }
 
 .plant-gallery-item-header-action svg.is-action-share, .is-action-edit, .is-action-setmain {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .plant-gallery-item-header-action svg.is-action-share:hover, svg.is-action-edit:hover, svg.is-action-setmain:hover {
@@ -2043,7 +2087,7 @@ fieldset .field {
 }
 
 .plant-journal-entry-actions a {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     margin-left: 8px;
 }
 
@@ -2070,7 +2114,7 @@ fieldset .field {
 }
 
 .plant-journal-entry-comment-header a {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     margin-left: auto;
 }
 
@@ -2179,11 +2223,11 @@ fieldset .field {
 
 .location-log table {
     width: 100%;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .location-log table strong {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .location-log thead {
@@ -2191,7 +2235,7 @@ fieldset .field {
 }
 
 .location-log table td {
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
     padding: 10px;
 }
 
@@ -2267,7 +2311,7 @@ fieldset .field {
     text-transform: uppercase;
     letter-spacing: 0.03em;
     background-color: rgba(150, 150, 150, 0.25);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .feature-request-status-open {
@@ -2302,7 +2346,7 @@ fieldset .field {
     padding: 3px 10px;
     border-radius: 10px;
     background-color: rgba(123, 123, 123, 0.3);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .feature-request-vote-btn:hover {
@@ -2318,7 +2362,7 @@ fieldset .field {
 .feature-request-status-select {
     border-radius: 4px;
     background-color: rgba(73, 79, 83);
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 2px 6px;
     font-size: 0.85em;
@@ -2377,7 +2421,7 @@ fieldset .field {
 }
 
 .stats-item-label {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     font-size: 1.4em;
     text-align: center;
 }
@@ -2466,7 +2510,7 @@ fieldset .field {
     position: relative;
     display: inline-block;
     font-size: 1.2em;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .task-header-title span {
@@ -2707,7 +2751,7 @@ fieldset .field {
     padding-right: 10px;
     padding-bottom: 1px;
     background-color: rgb(100, 100, 100);
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
     border-radius: 5px;
     font-size: 0.75em;
     color: rgb(250, 250, 250);
@@ -2800,7 +2844,7 @@ fieldset .field {
 .calendar-input {
     padding: 8px;
     color: rgb(250, 250, 250);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
     border: 1px solid rgb(100, 100, 100);
     border-radius: 5px;
 }
@@ -2880,7 +2924,7 @@ fieldset .field {
     padding: 6px;
     border-right: 1px solid rgb(65, 65, 65);
     border-bottom: 1px solid rgb(65, 65, 65);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
     cursor: pointer;
     transition: background-color 0.15s ease;
 
@@ -2968,7 +3012,7 @@ fieldset .field {
     display: inline-flex;
     align-items: center;
     font-size: 0.85em;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .calendar-legend-swatch {
@@ -3049,7 +3093,7 @@ fieldset .field {
 }
 
 .weather-header-item strong {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .weather-day {
@@ -3069,7 +3113,7 @@ fieldset .field {
 
 .weather-day-data-title {
     position: relative;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     font-weight: bold;
 }
 
@@ -3164,7 +3208,7 @@ fieldset .field {
     position: relative;
     margin-top: 10px;
     font-size: 0.76em;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .chat-typing-indicator {
@@ -3314,7 +3358,7 @@ fieldset .field {
 }
 
 .scroll-to-top-inner a {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .quickscan {
@@ -3410,7 +3454,7 @@ fieldset .field {
     }
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .auth-info {
@@ -3431,8 +3475,8 @@ fieldset .field {
 }
 
 .auth-form input[type=email], .auth-form input[type=password] {
-    color: rgb(200, 200, 200);
-    background-color: rgb(50, 50, 50);
+    color: var(--hf-text-primary);
+    background-color: var(--hf-bg-surface);
 }
 
 .auth-form input[type=email]::placeholder, .auth-form input[type=password]::placeholder {
@@ -3465,7 +3509,7 @@ fieldset .field {
 
 .auth-public-link .button {
     width: 100%;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     border-color: rgb(100, 100, 100);
 }
 
@@ -3533,7 +3577,7 @@ fieldset .field {
 
 .reset-form input[type=email], .reset-form input[type=password] {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .reset-form input[type=email]::placeholder, .reset-form input[type=password]::placeholder {
@@ -3567,7 +3611,7 @@ fieldset .field {
 .profile-shared-photos td {
     padding: 10px;
     color: rgb(190, 190, 190);
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
 }
 
 .profile-shared-photos td a {
@@ -3601,7 +3645,7 @@ fieldset .field {
 }
 
 .admin-tabs a {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-tabs a:hover {
@@ -3624,7 +3668,7 @@ fieldset .field {
 
 .admin-environment input, .admin-environment textarea, .admin-environment select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-environment hr {
@@ -3660,7 +3704,7 @@ fieldset .field {
 
 .admin-media input, .admin-backup input {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-media input[type=submit] {
@@ -3695,7 +3739,7 @@ fieldset .field {
 
 .admin-user-account input, .admin-user-account select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-user-account-item {
@@ -3767,7 +3811,7 @@ fieldset .field {
 
 .admin-location input {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-location-item {
@@ -3830,7 +3874,7 @@ fieldset .field {
 
 .admin-auth input, .admin-auth textarea {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-auth-warning {
@@ -3874,7 +3918,7 @@ fieldset .field {
 
 .admin-attribute-schema input, .admin-attribute-schema select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-attribute-schema-item {
@@ -3937,7 +3981,7 @@ fieldset .field {
 
 .admin-bulk-command input, .admin-bulk-command select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-bulk-command-item {
@@ -4009,7 +4053,7 @@ fieldset .field {
 
 .admin-calendar-class input {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-calendar-class-item {
@@ -4063,7 +4107,7 @@ fieldset .field {
 
 .admin-mail input, .admin-mail select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-mail input:disabled, .admin-mail select:disabled {
@@ -4083,7 +4127,7 @@ fieldset .field {
 
 .admin-themes input, .admin-themes select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-themes-result {
@@ -4095,7 +4139,7 @@ fieldset .field {
 }
 
 .admin-themes-result svg {
-    color: rgb(50, 50, 50);
+    color: var(--hf-bg-surface);
 }
 
 .admin-themes-list {
@@ -4117,7 +4161,7 @@ fieldset .field {
 .admin-themes-list td {
     padding: 10px;
     color: rgb(190, 190, 190);
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
 }
 
 .admin-themes-list td svg {
@@ -4150,7 +4194,7 @@ fieldset .field {
 }
 
 .admin-backup-result svg {
-    color: rgb(50, 50, 50);
+    color: var(--hf-bg-surface);
 }
 
 .admin-backup-result a {
@@ -4162,13 +4206,70 @@ fieldset .field {
     text-decoration: underline;
 }
 
+.appearance-theme-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.appearance-theme-card {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    width: 160px;
+    padding: 10px;
+    border: 2px solid rgb(70, 70, 70);
+    border-radius: 6px;
+}
+
+.appearance-theme-card:has(input:checked) {
+    border-color: rgb(15, 150, 43);
+}
+
+.appearance-theme-card input[type="radio"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.appearance-theme-swatches {
+    display: flex;
+    height: 50px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.appearance-theme-swatch {
+    flex: 1;
+}
+
+.appearance-theme-swatch-page {
+    background-color: var(--hf-bg-page);
+}
+
+.appearance-theme-swatch-surface {
+    background-color: var(--hf-bg-surface);
+}
+
+.appearance-theme-swatch-text {
+    background-color: var(--hf-text-primary);
+}
+
+.appearance-theme-label {
+    display: block;
+    text-align: center;
+    color: rgb(190, 190, 190);
+}
+
 .admin-weather label, .admin-weather span {
     color: rgb(190, 190, 190);
 }
 
 .admin-weather input, .admin-weather select {
     color: rgb(190, 190, 190);
-    background-color: rgb(50, 50, 50);
+    background-color: var(--hf-bg-surface);
 }
 
 .admin-api p {
@@ -4180,11 +4281,11 @@ fieldset .field {
 .admin-api table {
     width: 100%;
     margin-top: 15px;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-api table strong {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-api thead {
@@ -4192,7 +4293,7 @@ fieldset .field {
 }
 
 .admin-api table td {
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
     padding: 10px;
 }
 
@@ -4201,7 +4302,7 @@ fieldset .field {
 }
 
 .admin-api table td a:hover {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-api table td:last-child {
@@ -4214,7 +4315,7 @@ fieldset .field {
 }
 
 .admin-info-version {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     font-size: 1.5em;
 }
 
@@ -4261,11 +4362,11 @@ fieldset .field {
 }
 
 .admin-info-github svg {
-    color: rgb(50, 50, 50);
+    color: var(--hf-bg-surface);
 }
 
 .admin-info-github svg:hover {
-    color: rgb(50, 50, 50);
+    color: var(--hf-bg-surface);
 }
 
 .admin-info-sponsor {
@@ -4357,7 +4458,7 @@ fieldset .field {
 }
 
 .admin-info-extensions h3 {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     font-size: 1.4em;
     margin-top: 20px;
     margin-bottom: 20px;
@@ -4375,11 +4476,11 @@ fieldset .field {
 .admin-info-extensions table {
     width: 100%;
     margin-top: 15px;
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-info-extensions table strong {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
 }
 
 .admin-info-extensions thead {
@@ -4387,7 +4488,7 @@ fieldset .field {
 }
 
 .admin-info-extensions table td {
-    border: 1px solid rgb(200, 200, 200);
+    border: 1px solid var(--hf-text-primary);
     padding: 10px;
 }
 
@@ -4471,7 +4572,7 @@ fieldset .field {
 }
 
 .bottomnav-item a:hover {
-    color: rgb(200, 200, 200);
+    color: var(--hf-text-primary);
     text-decoration: none;
 }
 

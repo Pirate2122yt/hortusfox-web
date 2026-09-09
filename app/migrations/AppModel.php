@@ -83,6 +83,7 @@ class AppModel_Migration {
         $this->database->add('public_plantid_enable BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('public_captcha_sitekey VARCHAR(512) NULL');
         $this->database->add('public_captcha_secretkey VARCHAR(512) NULL');
+        $this->database->add('color_scheme VARCHAR(512) NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

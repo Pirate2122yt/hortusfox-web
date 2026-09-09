@@ -11,6 +11,7 @@
         <li class="admin-tab-auth {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'auth')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('auth');">{{ __('app.auth') }}</a></li>
         <li class="admin-tab-attributes {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'attributes')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('attributes');">{{ __('app.attributes') }}</a></li>
         <li class="admin-tab-calendar {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'calendar')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('calendar');">{{ __('app.calendar') }}</a></li>
+        <li class="admin-tab-appearance {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'appearance')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('appearance');">{{ __('app.appearance') }}</a></li>
         <li class="admin-tab-mail {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'mail')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('mail');">{{ __('app.mail') }}</a></li>
         <li class="admin-tab-themes {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'themes')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('themes');">{{ __('app.themes') }}</a></li>
         <li class="admin-tab-backup {{ ((isset($_GET['tab'])) && ($_GET['tab'] === 'backup')) ? 'is-active' : ''}}"><a href="javascript:void(0);" onclick="window.vue.switchAdminTab('backup');">{{ __('app.backup') }}</a></li>
@@ -784,6 +785,35 @@
         <span><a class="button is-info" href="javascript:void(0);" onclick="window.vue.bShowCreateNewCalendarClass = true;">{{ __('app.add_calendar_class') }}</a></span>
         <span><a class="button is-success button-margin-left" href="javascript:void(0);" onclick="this.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>'; window.vue.saveAllAttributes('.admin-calendar-classes-list');">{{ __('app.save_all') }}</a></span>
     </div>
+</div>
+
+<div class="admin-appearance {{ ((!isset($_GET['tab'])) || ($_GET['tab'] !== 'appearance')) ? 'is-hidden' : ''}}">
+    <h2>{{ __('app.appearance') }}</h2>
+    <p class="help">{{ __('app.appearance_hint') }}</p>
+
+    <form method="POST" action="{{ url('/admin/appearance/save') }}">
+        @csrf
+
+        <div class="appearance-theme-grid">
+            @foreach (AppearanceModule::$available_themes as $theme_ident => $theme_label)
+                <label class="appearance-theme-card">
+                    <input type="radio" name="color_scheme" value="{{ $theme_ident }}" {{ ((app('color_scheme', AppearanceModule::DEFAULT_THEME)) === $theme_ident) ? 'checked' : '' }}/>
+                    <span class="appearance-theme-swatches" data-theme="{{ $theme_ident }}">
+                        <span class="appearance-theme-swatch appearance-theme-swatch-page"></span>
+                        <span class="appearance-theme-swatch appearance-theme-swatch-surface"></span>
+                        <span class="appearance-theme-swatch appearance-theme-swatch-text"></span>
+                    </span>
+                    <span class="appearance-theme-label">{{ $theme_label }}</span>
+                </label>
+            @endforeach
+        </div>
+
+        <div class="field">
+            <div class="control">
+                <input type="submit" class="button is-success" value="{{ __('app.save') }}"/>
+            </div>
+        </div>
+    </form>
 </div>
 
 <div class="admin-mail {{ ((!isset($_GET['tab'])) || ($_GET['tab'] !== 'mail')) ? 'is-hidden' : ''}}">

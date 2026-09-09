@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ getLocale() }}">
+<html lang="{{ getLocale() }}" data-theme="{{ AppearanceModule::resolve(isset($user) ? $user : null) }}">
 	<head>
 		@include('head.php')
 
@@ -1013,6 +1013,19 @@
 										@endforeach
 									</select>
 								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.color_scheme') }}</label>
+								<div class="control">
+									<select class="input" name="color_scheme" id="selEditCombo">
+										<option value="0" {{ (!$user->get('color_scheme')) ? 'selected' : ''}}>{{ __('app.color_scheme_label_default') }}</option>
+										@foreach (AppearanceModule::$available_themes as $scheme_ident => $scheme_label)
+											<option value="{{ $scheme_ident }}" {{ ($user->get('color_scheme') === $scheme_ident) ? 'selected' : ''}}>{{ $scheme_label }}</option>
+										@endforeach
+									</select>
+								</div>
+								<p class="help">{{ __('app.color_scheme_hint') }}</p>
 							</div>
 
 							<div class="field {{ ((!app('owm_enable')) ? 'is-hidden' : '') }}">

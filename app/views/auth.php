@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ getLocale() }}">
+<html lang="{{ getLocale() }}" data-theme="{{ AppearanceModule::resolve() }}">
     <head>
         @include('head.php')
         

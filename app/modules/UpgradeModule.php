@@ -9,6 +9,15 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot27()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS color_scheme VARCHAR(512) NULL');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS color_scheme VARCHAR(512) NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot26()
     {
         LocationsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_latitude DECIMAL(10, 8) NULL');

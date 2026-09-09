@@ -168,8 +168,34 @@ class AdminController extends BaseController {
 	}
 
 	/**
+	 * Handles URL: /admin/appearance/save
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function save_appearance($request)
+	{
+		try {
+			$color_scheme = $request->params()->query('color_scheme', AppearanceModule::DEFAULT_THEME);
+
+			if (!array_key_exists($color_scheme, AppearanceModule::$available_themes)) {
+				$color_scheme = AppearanceModule::DEFAULT_THEME;
+			}
+
+			AppModel::updateSingle('color_scheme', $color_scheme);
+
+			FlashMessage::setMsg('success', __('app.appearance_settings_saved'));
+
+			return redirect('/admin?tab=appearance');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
+
+	/**
 	 * Handles URL: /admin/environment/boolean/toggle
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\JsonHandler
 	 */
