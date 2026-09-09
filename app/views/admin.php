@@ -440,6 +440,16 @@
 <div class="admin-locations {{ ((!isset($_GET['tab'])) || ($_GET['tab'] !== 'locations')) ? 'is-hidden' : ''}}">
     <h2>{{ __('app.places') }}</h2>
 
+    <div>
+        <form id="place-image-upload-form" class="is-hidden" method="POST" action="{{ url('/admin/place/photo') }}" enctype="multipart/form-data">
+            @csrf
+
+            <input type="hidden" name="ident" id="place-image-upload-ident"/>
+
+            <input type="file" name="photo" id="place-image-upload-input" accept="image/*" onchange="if (this.files.length) { document.getElementById('admin-place-item-icon-input-' + document.getElementById('place-image-upload-ident').value).innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i>'; document.getElementById('place-image-upload-form').submit(); return false; } else { document.getElementById('admin-place-item-icon-input-' + document.getElementById('place-image-upload-ident').value).innerHTML = '<i class=\'fas fa-image\'></i>'; }"/>
+        </form>
+    </div>
+
     <div class="admin-places-list">
         @foreach ($places as $place)
             <div class="admin-location">
@@ -452,6 +462,17 @@
 
                     <div class="admin-location-item admin-location-item-input">
                         <input type="text" class="input" name="name" value="{{ $place->get('name') }}"/>
+                    </div>
+
+                    <div class="admin-location-item admin-location-item-input">
+                        <div class="field has-addons">
+                            <div class="control admin-location-control-icon">
+                                <input type="text" class="input" name="icon" value="{{ $place->get('icon') ?? '' }}"/>
+                            </div>
+                            <div class="control">
+                                <a class="button is-warning" id="admin-place-item-icon-input-{{ $place->get('id') }}" href="javascript:void(0);" onclick="document.getElementById('place-image-upload-ident').value = '{{ $place->get('id') }}'; document.getElementById('place-image-upload-input').click();"><i class="fas fa-image"></i></a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="admin-location-actions">

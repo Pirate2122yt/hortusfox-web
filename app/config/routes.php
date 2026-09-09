@@ -147,6 +147,7 @@ return [
     array('/admin/location/remove', 'ANY', 'admin@remove_location'),
     array('/admin/place/add', 'POST', 'admin@add_place'),
     array('/admin/place/update', 'POST', 'admin@update_place'),
+    array('/admin/place/photo', 'POST', 'admin@set_place_photo'),
     array('/admin/place/remove', 'ANY', 'admin@remove_place'),
     array('/admin/auth/proxy/save', 'POST', 'admin@save_proxy_auth_settings'),
     array('/admin/attribute/schema/add', 'POST', 'admin@add_attribute_schema'),

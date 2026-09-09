@@ -119,7 +119,86 @@ class PlacesModel extends \Asatru\Database\Model {
 
             LocationsModel::migrateLocationsToPlace($id, $target);
 
+            static::clearPhoto($id);
+
             static::raw('DELETE FROM `@THIS` WHERE id = ?', [$id]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Uploads and stores a photo for a Place, mirroring
+     * LocationsModel::setPhoto() exactly - same validation, storage
+     * directory, thumbnailing and optimization pipeline, so a Place's
+     * photo behaves identically to a Location's.
+     *
+     * @param $id
+     * @return void
+     * @throws \Exception
+     */
+    public static function setPhoto($id)
+    {
+        try {
+            if ((!isset($_FILES['photo'])) || ($_FILES['photo']['error'] !== UPLOAD_ERR_OK)) {
+                throw new \Exception('No image provided');
+            }
+
+            static::clearPhoto($id);
+
+            $file_ext = UtilsModule::getImageExt($_FILES['photo']['tmp_name']);
+
+            if ($file_ext === null) {
+                throw new \Exception('File is not a valid image');
+            }
+
+            $file_name = md5(random_bytes(55) . date('Y-m-d H:i:s'));
+
+            move_uploaded_file($_FILES['photo']['tmp_name'], public_path('/img/' . $file_name . '.' . $file_ext));
+
+            $img_type = UtilsModule::getImageType($file_ext, public_path('/img/' . $file_name));
+
+            UtilsModule::optimizeImage(public_path('/img/' . $file_name . '.' . $file_ext), $img_type);
+
+            if (!UtilsModule::createThumbFile(public_path('/img/' . $file_name . '.' . $file_ext), $img_type, public_path('/img/' . $file_name), $file_ext)) {
+                throw new \Exception('createThumbFile failed');
+            }
+
+            $fullFileName = $file_name . '_thumb.' . $file_ext;
+
+            static::raw('UPDATE `@THIS` SET icon = ? WHERE id = ?', [$fullFileName, $id]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $id
+     * @return void
+     * @throws \Exception
+     */
+    public static function clearPhoto($id)
+    {
+        try {
+            $item = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+            if (!$item) {
+                throw new \Exception('Item not found: ' . $id);
+            }
+
+            if ($item->get('icon')) {
+                $thumb_photo = $item->get('icon');
+                $full_photo = str_replace('_thumb', '', $item->get('icon'));
+
+                if (file_exists(public_path() . '/img/' . $thumb_photo)) {
+                    unlink(public_path() . '/img/' . $thumb_photo);
+                }
+
+                if (file_exists(public_path() . '/img/' . $full_photo)) {
+                    unlink(public_path() . '/img/' . $full_photo);
+                }
+
+                static::raw('UPDATE `@THIS` SET icon = NULL WHERE id = ?', [$id]);
+            }
         } catch (\Exception $e) {
             throw $e;
         }

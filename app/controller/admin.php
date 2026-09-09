@@ -381,7 +381,29 @@ class AdminController extends BaseController {
 			return redirect('/admin?tab=locations');
 		}
 	}
-	
+
+	/**
+	 * Handles URL: /admin/place/photo
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function set_place_photo($request)
+	{
+		try {
+			$ident = $request->params()->query('ident');
+
+			PlacesModel::setPhoto($ident);
+
+			FlashMessage::setMsg('success', __('app.place_updated_successfully'));
+
+			return redirect('/admin?tab=locations');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
+
 	/**
 	 * Handles URL: /admin/location/photo
 	 * 

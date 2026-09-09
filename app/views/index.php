@@ -126,12 +126,18 @@
 
 	@foreach ($places as $place)
 		<a href="{{ url('/plants/place/' . $place['id']) }}">
-			<div class="location place">
+			@if ($place['icon'])
+				<div class="location" style="--bg-image: url('{{ UtilsModule::iconAsset($place['icon']) }}');">
+			@else
+				<div class="location place">
+			@endif
 				<div class="location-title">
 					{{ $place['name'] }}
 				</div>
 
-				<div class="place-icon"><i class="fas fa-building"></i></div>
+				@if (!$place['icon'])
+					<div class="place-icon"><i class="fas fa-building"></i></div>
+				@endif
 
 				<div class="location-footer">
 					<div class="is-inline-block">

@@ -46,6 +46,7 @@ class IndexController extends BaseController {
 			$places[] = [
 				'id' => $place_item->get('id'),
 				'name' => $place_item->get('name'),
+				'icon' => $place_item->get('icon'),
 				'location_count' => count($place_locations),
 				'plant_count' => $plant_count,
 				'danger_count' => $danger_count

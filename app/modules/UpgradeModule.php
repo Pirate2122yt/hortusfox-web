@@ -9,6 +9,14 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot25()
+    {
+        PlacesModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS icon VARCHAR(512) NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot24()
     {
         ChatMsgModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS display_name VARCHAR(100) NULL');
