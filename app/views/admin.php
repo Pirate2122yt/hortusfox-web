@@ -176,6 +176,13 @@
             <p class="help">{{ __('app.public_catalog_enable_hint') }}</p>
         </div>
 
+        <div class="field">
+            <div class="control">
+                <input type="checkbox" class="checkbox" name="public_comment_notify_admins" value="1" {{ (app('public_comment_notify_admins', true)) ? 'checked': '' }}>&nbsp;<span>{{ __('app.public_comment_notify_admins_label') }}</span>
+            </div>
+            <p class="help">{{ __('app.public_comment_notify_admins_hint') }}</p>
+        </div>
+
         <div><hr></div>
 
         <div class="field">

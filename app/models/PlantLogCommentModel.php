@@ -119,6 +119,64 @@ class PlantLogCommentModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Emails every admin user when a new public comment is posted. These
+     * come from anonymous visitors, so without this admins would only
+     * find out by noticing the internal chat notification (itself only
+     * shown if chat_system is enabled) or by happening to revisit the
+     * plant. A failed send for one admin never blocks the others.
+     *
+     * @param $plant
+     * @param $entry
+     * @param $authorName
+     * @param $comment
+     * @return void
+     * @throws \Exception
+     */
+    public static function notifyAdmins($plant, $entry, $authorName, $comment)
+    {
+        try {
+            $admins = UserModel::getAdmins();
+
+            $authorName = trim((string)$authorName);
+            if ($authorName === '') {
+                $authorName = __('app.public_comment_anonymous');
+            }
+
+            // Rendering emails in each admin's own language switches the
+            // active locale, which also sets a cookie on the current HTTP
+            // response - restore it afterwards rather than leaking the
+            // last-emailed admin's language onto the visitor's browser.
+            $original_lang = getLocale();
+
+            try {
+                foreach ($admins as $admin) {
+                    if (!$admin->get('email')) {
+                        continue;
+                    }
+
+                    $lang = $admin->get('lang');
+                    if ($lang === null) {
+                        $lang = env('APP_LANG', 'en');
+                    }
+
+                    setLanguage($lang);
+
+                    $mailobj = new Asatru\SMTPMailer\SMTPMailer();
+                    $mailobj->setRecipient($admin->get('email'));
+                    $mailobj->setSubject('[' . __('app.mail_info_plant_comment_new') . '] ' . $plant->get('name'));
+                    $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/plant_comment_new']], ['plant' => $plant, 'entry' => $entry, 'authorName' => $authorName, 'comment' => $comment]);
+                    $mailobj->setProperties(mail_properties());
+                    $mailobj->send();
+                }
+            } finally {
+                setLanguage($original_lang);
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $logEntryId
      * @return void
      * @throws \Exception

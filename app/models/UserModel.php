@@ -563,6 +563,18 @@ class UserModel extends \Asatru\Database\Model {
     }
 
     /**
+     * @return mixed
+     */
+    public static function getAdmins()
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE admin = 1');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $name
      * @param $email
      * @param $sendmail

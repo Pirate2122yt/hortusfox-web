@@ -7,6 +7,14 @@
  */
 class UpgradeModule {
     /**
+     * @return void
+     */
+    private static function upgradeTo5dot36()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_comment_notify_admins BOOLEAN NOT NULL DEFAULT 1');
+    }
+
+    /**
      * Calendar events can now optionally be tied to a Location, the same
      * way Tasks are tied to one through a linked Plant. Used to filter
      * calendar reminder pushes through the preferred-Locations filter and

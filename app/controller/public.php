@@ -140,6 +140,17 @@ class PublicController extends BaseController {
 				addLog(ASATRU_LOG_ERROR, 'Failed to post chat notification for public comment: ' . $e->getMessage());
 			}
 
+			if (app('public_comment_notify_admins', true)) {
+				try {
+					PlantLogCommentModel::notifyAdmins($plant, $entry, $name, $comment);
+				} catch (\Exception $e) {
+					// Same reasoning as the chat notification above - a
+					// failed admin email is logged, not surfaced to the
+					// visitor whose comment was already saved fine.
+					addLog(ASATRU_LOG_ERROR, 'Failed to email admins about public comment: ' . $e->getMessage());
+				}
+			}
+
 			FlashMessage::setMsg('success', __('app.public_comment_posted'));
 		} catch (\Exception $e) {
 			FlashMessage::setMsg('error', $e->getMessage());
