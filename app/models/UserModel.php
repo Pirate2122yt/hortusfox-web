@@ -260,7 +260,7 @@ class UserModel extends \Asatru\Database\Model {
      * @return void
      * @throws \Exception
      */
-    public static function editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location = null, $color_scheme = null)
+    public static function editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location = null, $color_scheme = null, $notify_plant_care = false)
     {
         try {
             $user = static::getAuthUser();
@@ -268,8 +268,8 @@ class UserModel extends \Asatru\Database\Model {
                 throw new \Exception('User not authenticated');
             }
 
-            static::raw('UPDATE `@THIS` SET name = ?, email = ?, lang = ?, theme = ?, chatcolor = ?, show_log = ?, show_calendar_view = ?, show_plant_id = ?, notify_tasks_overdue = ?, notify_tasks_tomorrow = ?, notify_tasks_recurring = ?, notify_calendar_reminder = ?, show_plants_aoru = ?, remember_location_sorting = ?, weather_location = ?, color_scheme = ? WHERE id = ?', [
-                trim($name), trim($email), $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, (int)$show_plants_aoru, $remember_location_sorting, (is_numeric($weather_location) ? (int)$weather_location : null), (($color_scheme) && (array_key_exists($color_scheme, AppearanceModule::$available_themes)) ? $color_scheme : null), $user->get('id')
+            static::raw('UPDATE `@THIS` SET name = ?, email = ?, lang = ?, theme = ?, chatcolor = ?, show_log = ?, show_calendar_view = ?, show_plant_id = ?, notify_tasks_overdue = ?, notify_tasks_tomorrow = ?, notify_tasks_recurring = ?, notify_calendar_reminder = ?, show_plants_aoru = ?, remember_location_sorting = ?, weather_location = ?, color_scheme = ?, notify_plant_care = ? WHERE id = ?', [
+                trim($name), trim($email), $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, (int)$show_plants_aoru, $remember_location_sorting, (is_numeric($weather_location) ? (int)$weather_location : null), (($color_scheme) && (array_key_exists($color_scheme, AppearanceModule::$available_themes)) ? $color_scheme : null), $notify_plant_care, $user->get('id')
             ]);
         } catch (\Exception $e) {
             throw $e;

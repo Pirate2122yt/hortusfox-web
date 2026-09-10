@@ -98,6 +98,19 @@
 				</tr>
 				@endif
 
+				<tr>
+					<td><strong>{{ __('app.water_interval_days') }}</strong></td>
+					<td>
+						@if ($plant->get('water_interval_days'))
+							{{ __('app.care_interval_days_value', ['days' => $plant->get('water_interval_days')]) }}
+						@else
+							<span class="is-not-available">{{ __('app.care_interval_not_set') }}</span>
+						@endif
+
+						<span class="float-right"><a href="javascript:void(0);" onclick="window.vue.showEditInteger({{ $plant->get('id') }}, 'water_interval_days', '{{ ($plant->get('water_interval_days') ?? '0') }}');"><i class="fas fa-edit is-color-darker"></i></a></span>
+					</td>
+				</tr>
+
 				@if (plant_attr('last_repotted'))
 				<tr>
 					<td><strong>{{ __('app.last_repotted') }}</strong></td>
@@ -114,6 +127,19 @@
 				</tr>
 				@endif
 
+				<tr>
+					<td><strong>{{ __('app.repot_interval_days') }}</strong></td>
+					<td>
+						@if ($plant->get('repot_interval_days'))
+							{{ __('app.care_interval_days_value', ['days' => $plant->get('repot_interval_days')]) }}
+						@else
+							<span class="is-not-available">{{ __('app.care_interval_not_set') }}</span>
+						@endif
+
+						<span class="float-right"><a href="javascript:void(0);" onclick="window.vue.showEditInteger({{ $plant->get('id') }}, 'repot_interval_days', '{{ ($plant->get('repot_interval_days') ?? '0') }}');"><i class="fas fa-edit is-color-darker"></i></a></span>
+					</td>
+				</tr>
+
 				@if (plant_attr('last_fertilised'))
 				<tr>
 					<td><strong>{{ __('app.last_fertilised') }}</strong></td>
@@ -129,6 +155,19 @@
 					</td>
 				</tr>
 				@endif
+
+				<tr>
+					<td><strong>{{ __('app.fertilise_interval_days') }}</strong></td>
+					<td>
+						@if ($plant->get('fertilise_interval_days'))
+							{{ __('app.care_interval_days_value', ['days' => $plant->get('fertilise_interval_days')]) }}
+						@else
+							<span class="is-not-available">{{ __('app.care_interval_not_set') }}</span>
+						@endif
+
+						<span class="float-right"><a href="javascript:void(0);" onclick="window.vue.showEditInteger({{ $plant->get('id') }}, 'fertilise_interval_days', '{{ ($plant->get('fertilise_interval_days') ?? '0') }}');"><i class="fas fa-edit is-color-darker"></i></a></span>
+					</td>
+				</tr>
 
 				@if (plant_attr('lifespan'))
 				<tr>

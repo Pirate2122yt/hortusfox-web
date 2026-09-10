@@ -55,7 +55,27 @@ class PlantsModel extends \Asatru\Database\Model {
         'notes',
         'history',
         'history_date',
-        'is_public'
+        'is_public',
+        'water_interval_days',
+        'fertilise_interval_days',
+        'repot_interval_days'
+    ];
+
+    static $care_actions = [
+        'water' => [
+            'interval' => 'water_interval_days',
+            'last' => 'last_watered'
+        ],
+
+        'fertilise' => [
+            'interval' => 'fertilise_interval_days',
+            'last' => 'last_fertilised'
+        ],
+
+        'repot' => [
+            'interval' => 'repot_interval_days',
+            'last' => 'last_repotted'
+        ]
     ];
 
     static $plant_health_states = [
@@ -301,6 +321,65 @@ class PlantsModel extends \Asatru\Database\Model {
     {
         try {
             return static::raw('SELECT * FROM `@THIS` WHERE health_state <> \'in_good_standing\' AND history = 0 ORDER BY last_edited_date DESC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Lists every (plant, care action) pair that is currently overdue,
+     * i.e. has a configured interval and its last care date (or the
+     * plant's creation date, if that care was never logged) plus that
+     * interval has already passed. An interval of NULL or 0 means "no
+     * reminder configured" for that action and is excluded. Archived
+     * plants (history = 1) are excluded too.
+     *
+     * @return array a list of ['plant' => PlantsModel row, 'action' => string, 'due_since' => string, 'interval_days' => int]
+     * @throws \Exception
+     */
+    public static function getCareDuePlants()
+    {
+        try {
+            $due = [];
+
+            foreach (static::$care_actions as $action => $cols) {
+                $rows = static::raw('SELECT *, COALESCE(' . $cols['last'] . ', created_at) AS care_basis_date FROM `@THIS` WHERE history = 0 AND ' . $cols['interval'] . ' IS NOT NULL AND ' . $cols['interval'] . ' > 0 AND DATE_ADD(COALESCE(' . $cols['last'] . ', created_at), INTERVAL ' . $cols['interval'] . ' DAY) <= NOW()');
+
+                foreach ($rows as $row) {
+                    $due[] = [
+                        'plant' => $row,
+                        'action' => $action,
+                        'due_since' => $row->get('care_basis_date'),
+                        'interval_days' => $row->get($cols['interval'])
+                    ];
+                }
+            }
+
+            usort($due, function ($a, $b) {
+                return strtotime($a['due_since']) <=> strtotime($b['due_since']);
+            });
+
+            return $due;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Cronjob endpoint: emails every opted-in user about plants that
+     * are currently due for watering, fertilising or repotting.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public static function cronjobCareReminder()
+    {
+        try {
+            $due = static::getCareDuePlants();
+
+            foreach ($due as $entry) {
+                PlantCareInformerModel::inform($entry['plant'], $entry['action'], $entry['due_since'], env('APP_CRONJOB_MAILLIMIT', 5));
+            }
         } catch (\Exception $e) {
             throw $e;
         }

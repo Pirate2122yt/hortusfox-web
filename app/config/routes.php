@@ -183,6 +183,7 @@ return [
     array('/cronjob/tasks/tomorrow', 'ANY', 'cronjobs@tomorrow_tasks'),
     array('/cronjob/tasks/recurring', 'ANY', 'cronjobs@recurring_tasks'),
     array('/cronjob/calendar/reminder', 'ANY', 'cronjobs@calendar_reminder'),
+    array('/cronjob/plants/care', 'ANY', 'cronjobs@plant_care_reminder'),
     array('/cronjob/backup/auto', 'ANY', 'cronjobs@auto_backup'),
 
     /** Share Controller */

@@ -107,6 +107,26 @@ class CronjobsController extends BaseController {
     }
 
     /**
+	 * Handles URL: /cronjob/plants/care
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\JsonHandler
+	 */
+    public function plant_care_reminder($request)
+    {
+        try {
+            PlantsModel::cronjobCareReminder();
+
+            return json(['code' => 200]);
+        } catch (\Exception $e) {
+            return json([
+                'code' => 500,
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
 	 * Handles URL: /cronjob/backup/auto
 	 * 
 	 * @param Asatru\Controller\ControllerArg $request

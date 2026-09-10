@@ -53,6 +53,9 @@ class PlantsModel_Migration {
         $this->database->add('last_photo_date DATETIME NULL');
         $this->database->add('clone_num INT NULL');
         $this->database->add('clone_origin INT NULL');
+        $this->database->add('water_interval_days INT NULL');
+        $this->database->add('fertilise_interval_days INT NULL');
+        $this->database->add('repot_interval_days INT NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

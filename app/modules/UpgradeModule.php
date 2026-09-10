@@ -9,6 +9,27 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot29()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS water_interval_days INT NULL');
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS fertilise_interval_days INT NULL');
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS repot_interval_days INT NULL');
+
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS notify_plant_care BOOLEAN NOT NULL DEFAULT 1');
+
+        PlantCareInformerModel::raw('CREATE TABLE IF NOT EXISTS PlantCareInformerModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            plant INT NOT NULL,
+            user INT NOT NULL,
+            action VARCHAR(512) NOT NULL,
+            notified_for DATETIME NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot28()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS feature_request_notify_user INT NULL');

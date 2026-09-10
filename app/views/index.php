@@ -109,6 +109,36 @@
 			</div>
 		</div>
 	@endif
+
+	@if (count($care_due_plants) > 0)
+		<div class="overdue-tasks">
+			<div class="overdue-tasks-title">{{ __('app.care_due_title') }}</div>
+
+			<div class="overdue-tasks-content">
+				<table>
+					<thead>
+						<tr>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody>
+						<?php $table_counter = 0; ?>
+						@foreach ($care_due_plants as $care_due)
+							<tr class="{{ ($table_counter % 2 === 0) ? 'table-bright-color' : '' }}">
+								<td><a class="is-yellow-link" href="{{ url('/plants/details/' . $care_due['plant']->get('id')) }}">{{ (strlen($care_due['plant']->get('name')) > 20) ? substr($care_due['plant']->get('name'), 0, 20) . '...' : $care_due['plant']->get('name') }}</a></td>
+								<td>{{ __('app.care_action_' . $care_due['action']) }}</td>
+								<td>{{ (new Carbon($care_due['due_since']))->diffForHumans() }}</td>
+							</tr>
+
+							<?php $table_counter++; ?>
+						@endforeach
+					</tbody>
+				</table>
+			</div>
+		</div>
+	@endif
 </div>
 
 @if ((app('calendar_enable')) && ($user->get('show_calendar_view')))

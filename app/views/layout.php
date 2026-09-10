@@ -1088,6 +1088,12 @@
 
 							<div class="field">
 								<div class="control">
+									<input type="checkbox" name="notify_plant_care" value="1" {{ ($user->get('notify_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_plant_care') }}
+								</div>
+							</div>
+
+							<div class="field">
+								<div class="control">
 									<input type="checkbox" name="remember_location_sorting" value="1" {{ ($user->get('remember_location_sorting')) ? 'checked' : ''}}>&nbsp;{{ __('app.remember_location_sorting') }}
 								</div>
 							</div>

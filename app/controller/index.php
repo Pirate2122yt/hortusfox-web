@@ -58,6 +58,7 @@ class IndexController extends BaseController {
 		$unassigned_locations = LocationsModel::getUnassignedToPlace();
 
 		$warning_plants = PlantsModel::getWarningPlants();
+		$care_due_plants = PlantsModel::getCareDuePlants();
 		$overdue_tasks = TasksModel::getOverdueTasks();
 		$log = LogModel::getHistory();
 		$stats = UtilsModule::getStats();
@@ -84,6 +85,7 @@ class IndexController extends BaseController {
 		return parent::view(['content', 'index'], [
 			'user' => $user,
 			'warning_plants' => $warning_plants,
+			'care_due_plants' => $care_due_plants,
 			'overdue_tasks' => $overdue_tasks,
 			'locations' => $locs,
 			'places' => $places,
