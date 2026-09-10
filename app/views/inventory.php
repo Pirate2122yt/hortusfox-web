@@ -17,6 +17,12 @@
         <a class="button" href="javascript:void(0);" onclick="window.vue.bShowInventoryBulkPrint = true;">{{ __('app.bulk_print_qr_codes') }}</a>
         &nbsp;
         <a class="button is-warning" href="javascript:void(0);" onclick="window.vue.bShowInventoryExport = true;">{{ __('app.export') }}</a>
+        &nbsp;
+        <form class="is-inline-block" method="POST" action="{{ url('/inventory/import/csv') }}" enctype="multipart/form-data">
+            @csrf
+            <input type="file" name="csv" accept=".csv" required>
+            <button type="submit" class="button">{{ __('app.import_csv') }}</button>
+        </form>
     </div>
 
     <div class="sorting-control is-rounded is-small is-inline-block is-next-to-elem">

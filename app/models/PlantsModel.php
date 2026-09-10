@@ -130,6 +130,44 @@ class PlantsModel extends \Asatru\Database\Model {
         ],
     ];
 
+    static $lifespan_values = [
+        'lifespan_annual',
+        'lifespan_biennial',
+        'lifespan_perennial'
+    ];
+
+    static $light_level_values = [
+        'light_level_sunny',
+        'light_level_half_shade',
+        'light_level_filtered_light',
+        'light_level_indirect_light',
+        'light_level_full_shade',
+        'light_level_darkness'
+    ];
+
+    //Columns offered on CSV export/import, in export column order. 'id' is prepended separately (see exportAllAsCsv/importFromCsv); 'location' is exported/imported by name rather than raw id.
+    static $csv_columns = [
+        'name',
+        'scientific_name',
+        'location',
+        'tags',
+        'last_watered',
+        'last_repotted',
+        'last_fertilised',
+        'lifespan',
+        'hardy',
+        'cutting_month',
+        'date_of_purchase',
+        'humidity',
+        'light_level',
+        'health_state',
+        'notes',
+        'water_interval_days',
+        'fertilise_interval_days',
+        'repot_interval_days',
+        'is_public'
+    ];
+
     /**
      * @param $type
      * @return void
@@ -380,6 +418,229 @@ class PlantsModel extends \Asatru\Database\Model {
             foreach ($due as $entry) {
                 PlantCareInformerModel::inform($entry['plant'], $entry['action'], $entry['due_since'], env('APP_CRONJOB_MAILLIMIT', 5));
             }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Exports every active (non-history) plant as a CSV string, one row
+     * per plant with a header row. The location column is exported as
+     * its human-readable name (not the raw id) so the file round-trips
+     * cleanly through importFromCsv().
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public static function exportAllAsCsv()
+    {
+        try {
+            $plants = static::raw('SELECT * FROM `@THIS` WHERE history = 0 ORDER BY name ASC');
+
+            $stream = fopen('php://temp', 'r+');
+
+            fputcsv($stream, array_merge(['id'], static::$csv_columns));
+
+            foreach ($plants as $plant) {
+                $line = [$plant->get('id')];
+
+                foreach (static::$csv_columns as $column) {
+                    $line[] = ($column === 'location') ? LocationsModel::getNameById($plant->get('location')) : $plant->get($column);
+                }
+
+                fputcsv($stream, $line);
+            }
+
+            rewind($stream);
+            $csv = stream_get_contents($stream);
+            fclose($stream);
+
+            return $csv;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Validates and coerces one parsed CSV row (column => raw string)
+     * into a column => value map suitable for editPlantAttribute(). A
+     * cell that doesn't fit its column's expected type/enum (or is
+     * blank) is simply left out rather than failing the whole row, so
+     * the row's other valid cells still get applied.
+     *
+     * @param $data
+     * @return array
+     * @throws \Exception
+     */
+    private static function sanitizeCsvRow($data)
+    {
+        $values = [];
+
+        foreach (static::$csv_columns as $column) {
+            if (!array_key_exists($column, $data)) {
+                continue;
+            }
+
+            $value = trim($data[$column]);
+
+            if ($value === '') {
+                continue;
+            }
+
+            switch ($column) {
+                case 'location':
+                    $location_row = LocationsModel::raw('SELECT * FROM `@THIS` WHERE name = ?', [$value])->first();
+                    if ($location_row) {
+                        $values['location'] = $location_row->get('id');
+                    }
+                    break;
+
+                case 'last_watered':
+                case 'last_repotted':
+                case 'last_fertilised':
+                case 'date_of_purchase':
+                    $timestamp = strtotime($value);
+                    if ($timestamp !== false) {
+                        $values[$column] = date('Y-m-d H:i:s', $timestamp);
+                    }
+                    break;
+
+                case 'hardy':
+                case 'is_public':
+                    $values[$column] = (in_array(strtolower($value), ['1', 'true', 'yes', 'y'])) ? 1 : 0;
+                    break;
+
+                case 'cutting_month':
+                    if ((is_numeric($value)) && ((int)$value >= 1) && ((int)$value <= 12)) {
+                        $values[$column] = (int)$value;
+                    }
+                    break;
+
+                case 'humidity':
+                case 'water_interval_days':
+                case 'fertilise_interval_days':
+                case 'repot_interval_days':
+                    if ((is_numeric($value)) && ((int)$value >= 0)) {
+                        $values[$column] = (int)$value;
+                    }
+                    break;
+
+                case 'lifespan':
+                    if (in_array($value, static::$lifespan_values)) {
+                        $values[$column] = $value;
+                    }
+                    break;
+
+                case 'light_level':
+                    if (in_array($value, static::$light_level_values)) {
+                        $values[$column] = $value;
+                    }
+                    break;
+
+                case 'health_state':
+                    if (array_key_exists($value, static::$plant_health_states)) {
+                        $values[$column] = $value;
+                    }
+                    break;
+
+                default:
+                    $values[$column] = $value;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Imports plants from an uploaded CSV file (as produced by
+     * exportAllAsCsv(), or hand-edited to match its columns). Each row
+     * is matched to an existing active plant by its 'id' column, when
+     * present and valid; rows without a matching id are created as new
+     * plants instead, provided they have a 'name' and a 'location' that
+     * resolves to an existing location by name. Unknown columns are
+     * ignored. Every applied cell goes through the same
+     * editPlantAttribute()/addPlant() path as a manual edit, so it's
+     * logged and (for health_state) recorded to the health history the
+     * same way.
+     *
+     * @param $tmpFilePath path to the uploaded CSV file (e.g. $_FILES[...]['tmp_name'])
+     * @return array ['created' => int, 'updated' => int, 'errors' => string[]]
+     * @throws \Exception
+     */
+    public static function importFromCsv($tmpFilePath)
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $stream = fopen($tmpFilePath, 'r');
+            if (!$stream) {
+                throw new \Exception('Could not read the uploaded file');
+            }
+
+            $header = fgetcsv($stream);
+            if (!is_array($header)) {
+                fclose($stream);
+                throw new \Exception('The file is empty or not a valid CSV');
+            }
+
+            $header = array_map(function ($col) {
+                return strtolower(trim($col));
+            }, $header);
+
+            $created = 0;
+            $updated = 0;
+            $errors = [];
+            $row_num = 1;
+
+            while (($row = fgetcsv($stream)) !== false) {
+                $row_num++;
+
+                if (count($row) !== count($header)) {
+                    $errors[] = 'Row ' . $row_num . ': column count does not match the header';
+                    continue;
+                }
+
+                $data = array_combine($header, $row);
+                $values = static::sanitizeCsvRow($data);
+
+                $plant_id = ((isset($data['id'])) && (is_numeric($data['id'])) && ((int)$data['id'] > 0)) ? (int)$data['id'] : null;
+                $existing = ($plant_id) ? static::raw('SELECT * FROM `@THIS` WHERE id = ? AND history = 0', [$plant_id])->first() : null;
+
+                if ($existing) {
+                    foreach ($values as $column => $value) {
+                        static::editPlantAttribute($existing->get('id'), $column, $value);
+                    }
+
+                    $updated++;
+                } else {
+                    if ((!isset($values['name'])) || (strlen($values['name']) === 0)) {
+                        $errors[] = 'Row ' . $row_num . ': a name is required to create a new plant';
+                        continue;
+                    }
+
+                    if (!isset($values['location'])) {
+                        $errors[] = 'Row ' . $row_num . ': "' . htmlspecialchars(trim($data['location'] ?? ''), ENT_QUOTES) . '" is not a known location, so this plant could not be created';
+                        continue;
+                    }
+
+                    $new_id = static::addPlant($values['name'], $values['location']);
+
+                    unset($values['name'], $values['location']);
+
+                    foreach ($values as $column => $value) {
+                        static::editPlantAttribute($new_id, $column, $value);
+                    }
+
+                    $created++;
+                }
+            }
+
+            fclose($stream);
+
+            return ['created' => $created, 'updated' => $updated, 'errors' => $errors];
         } catch (\Exception $e) {
             throw $e;
         }

@@ -523,6 +523,137 @@ class InventoryModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Imports inventory items from an uploaded CSV file (accepted
+     * columns: id, name, description, group, tags, amount, location -
+     * any subset, matched case-insensitively; unknown columns are
+     * ignored). Rows are matched to an existing item by 'id', when
+     * present and valid, and updated - a blank cell on an otherwise
+     * matched row leaves that field unchanged rather than clearing it.
+     * Rows without a matching id are created instead, provided they
+     * have a 'name' and a 'group' that resolves to a configured
+     * inventory group (matched by token or by label). 'location' is
+     * matched by name against an existing location when possible.
+     *
+     * @param $tmpFilePath path to the uploaded CSV file (e.g. $_FILES[...]['tmp_name'])
+     * @return array ['created' => int, 'updated' => int, 'errors' => string[]]
+     * @throws \Exception
+     */
+    public static function importFromCsv($tmpFilePath)
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $stream = fopen($tmpFilePath, 'r');
+            if (!$stream) {
+                throw new \Exception('Could not read the uploaded file');
+            }
+
+            $header = fgetcsv($stream);
+            if (!is_array($header)) {
+                fclose($stream);
+                throw new \Exception('The file is empty or not a valid CSV');
+            }
+
+            $header = array_map(function ($col) {
+                return strtolower(trim($col));
+            }, $header);
+
+            $created = 0;
+            $updated = 0;
+            $errors = [];
+            $row_num = 1;
+
+            while (($row = fgetcsv($stream)) !== false) {
+                $row_num++;
+
+                if (count($row) !== count($header)) {
+                    $errors[] = 'Row ' . $row_num . ': column count does not match the header';
+                    continue;
+                }
+
+                $data = array_combine($header, $row);
+
+                $cell = function ($key) use ($data) {
+                    $value = trim($data[$key] ?? '');
+                    return ($value !== '') ? $value : null;
+                };
+
+                $name = $cell('name');
+                $description = $cell('description');
+                $tags = $cell('tags');
+                $amount_raw = $cell('amount');
+                $amount = (($amount_raw !== null) && (is_numeric($amount_raw))) ? (int)$amount_raw : null;
+
+                $group_input = $cell('group');
+                $group_token = null;
+                if ($group_input !== null) {
+                    if (InvGroupModel::isValidGroupToken($group_input)) {
+                        $group_token = $group_input;
+                    } else {
+                        $group_row = InvGroupModel::raw('SELECT * FROM `@THIS` WHERE label = ?', [$group_input])->first();
+                        if ($group_row) {
+                            $group_token = $group_row->get('token');
+                        }
+                    }
+                }
+
+                $location_label = $cell('location');
+                $location_id = null;
+                if ($location_label !== null) {
+                    $location_row = LocationsModel::raw('SELECT * FROM `@THIS` WHERE name = ?', [$location_label])->first();
+                    if ($location_row) {
+                        $location_id = $location_row->get('id');
+                    }
+                }
+
+                $item_id_raw = $cell('id');
+                $item_id = (($item_id_raw !== null) && (is_numeric($item_id_raw)) && ((int)$item_id_raw > 0)) ? (int)$item_id_raw : null;
+                $existing = ($item_id) ? static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$item_id])->first() : null;
+
+                if ($existing) {
+                    static::editItem(
+                        $existing->get('id'),
+                        $name ?? $existing->get('name'),
+                        $description ?? $existing->get('description'),
+                        $tags ?? $existing->get('tags'),
+                        ($location_id) ? $location_label : $existing->get('location'),
+                        $amount ?? $existing->get('amount'),
+                        $group_token ?? $existing->get('group_ident'),
+                        null,
+                        false,
+                        ($location_id) ? $location_id : null
+                    );
+
+                    $updated++;
+                } else {
+                    if ($name === null) {
+                        $errors[] = 'Row ' . $row_num . ': a name is required to create a new item';
+                        continue;
+                    }
+
+                    if ($group_token === null) {
+                        $errors[] = 'Row ' . $row_num . ': "' . htmlspecialchars($group_input ?? '', ENT_QUOTES) . '" is not a known inventory group, so this item could not be created';
+                        continue;
+                    }
+
+                    static::addItem($name, $description ?? '', $tags ?? '', $location_label ?? '', $amount ?? 0, $group_token, null, false, ($location_id) ? $location_id : 'unassigned');
+
+                    $created++;
+                }
+            }
+
+            fclose($stream);
+
+            return ['created' => $created, 'updated' => $updated, 'errors' => $errors];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $items
      * @return string
      * @throws \Exception

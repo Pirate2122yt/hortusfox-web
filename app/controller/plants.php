@@ -1551,4 +1551,48 @@ class PlantsController extends BaseController {
 			]);
 		}
 	}
+
+	/**
+	 * Handles URL: /plants/export/csv
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return void
+	 */
+	public function export_csv($request)
+	{
+		$csv = PlantsModel::exportAllAsCsv();
+
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="plants_export_' . date('Y-m-d') . '.csv"');
+
+		exit($csv);
+	}
+
+	/**
+	 * Handles URL: /plants/import/csv
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function import_csv($request)
+	{
+		try {
+			if ((!isset($_FILES['csv'])) || ($_FILES['csv']['error'] !== UPLOAD_ERR_OK)) {
+				throw new \Exception(__('app.csv_import_no_file'));
+			}
+
+			$result = PlantsModel::importFromCsv($_FILES['csv']['tmp_name']);
+
+			FlashMessage::setMsg('success', __('app.csv_import_summary', ['created' => $result['created'], 'updated' => $result['updated'], 'skipped' => count($result['errors'])]));
+
+			if (count($result['errors']) > 0) {
+				FlashMessage::setMsg('error', implode('<br/>', array_slice($result['errors'], 0, 10)));
+			}
+
+			return redirect('/plants');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
 }

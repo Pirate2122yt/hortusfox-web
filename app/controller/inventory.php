@@ -439,4 +439,32 @@ class InventoryController extends BaseController {
 			]);
 		}
 	}
+
+	/**
+	 * Handles URL: /inventory/import/csv
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function import_csv($request)
+	{
+		try {
+			if ((!isset($_FILES['csv'])) || ($_FILES['csv']['error'] !== UPLOAD_ERR_OK)) {
+				throw new \Exception(__('app.csv_import_no_file'));
+			}
+
+			$result = InventoryModel::importFromCsv($_FILES['csv']['tmp_name']);
+
+			FlashMessage::setMsg('success', __('app.csv_import_summary', ['created' => $result['created'], 'updated' => $result['updated'], 'skipped' => count($result['errors'])]));
+
+			if (count($result['errors']) > 0) {
+				FlashMessage::setMsg('error', implode('<br/>', array_slice($result['errors'], 0, 10)));
+			}
+
+			return redirect('/inventory');
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return back();
+		}
+	}
 }

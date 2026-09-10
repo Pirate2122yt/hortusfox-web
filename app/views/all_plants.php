@@ -3,6 +3,12 @@
 <div class="margin-vertical">
 	<div class="action-strip action-strip-left">
 		<div class="is-inline-block is-action-button-margin"><a class="button is-success" href="javascript:void(0);" onclick="window.addNewPlant();">{{ __('app.add_plant') }}</a></div>
+		<div class="is-inline-block is-action-button-margin"><a class="button" href="{{ url('/plants/export/csv') }}">{{ __('app.export_csv') }}</a></div>
+		<form class="is-inline-block is-action-button-margin" method="POST" action="{{ url('/plants/import/csv') }}" enctype="multipart/form-data">
+			@csrf
+			<input type="file" name="csv" accept=".csv" required>
+			<button type="submit" class="button">{{ __('app.import_csv') }}</button>
+		</form>
 		<div class="is-inline-block is-action-button-margin"><a class="is-default-link is-fixed-button-link is-fixed-margin-left-mobile" href="{{ url('/') }}">{{ __('app.back_to_dashboard') }}</a></div>
 	</div>
 </div>

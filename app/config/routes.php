@@ -72,6 +72,8 @@ return [
     array('/plants/location/log/remove', 'POST', 'plants@remove_location_log_entry'),
     array('/plants/location/log/fetch', 'ANY', 'plants@fetch_location_log_entries'),
     array('/plants/gbif/{section}/{identifier}/{information}', 'ANY', 'plants@gbif_query'),
+    array('/plants/export/csv', 'GET', 'plants@export_csv'),
+    array('/plants/import/csv', 'POST', 'plants@import_csv'),
 
     /** User controller Controller */
     array('/profile', 'GET', 'user@view_profile'),
@@ -105,6 +107,7 @@ return [
     array('/inventory/qrcode', 'ANY', 'inventory@generate_qr_code'),
     array('/inventory/qrcode/bulk', 'POST', 'inventory@get_bulk_qr_codes'),
     array('/inventory/export', 'POST', 'inventory@export_items'),
+    array('/inventory/import/csv', 'POST', 'inventory@import_csv'),
 
     /** Feature Requests Controller */
     array('/feature-requests', 'GET', 'featurerequests@view_feature_requests'),
