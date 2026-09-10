@@ -3212,6 +3212,14 @@ fieldset .field {
 .chat-message-content pre {
     background-color: transparent;
     color: rgb(255, 255, 255);
+    /* A plain <pre> preserves line breaks but never wraps long lines,
+       which forced the whole page to scroll sideways to read a long
+       message. pre-wrap keeps the line breaks the sender typed while
+       still wrapping like a normal paragraph, and overflow-wrap makes
+       sure even a single very long unbroken word/URL breaks instead of
+       stretching the bubble. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .chat-message-content a {
