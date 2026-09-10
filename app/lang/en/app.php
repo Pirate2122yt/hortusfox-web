@@ -351,7 +351,7 @@ return [
 	'timespan_half_a_year' => 'Half a year',
 	'remove_calendar_item' => 'Remove item',
 	'confirm_remove_calendar_item' => 'Are you sure that you want to remove this item?',
-	'calendar_overview' => 'Dates of next week',
+	'calendar_overview' => 'Upcoming (next 7 days)',
 	'show_calendar_view' => 'Show calendar view in dashboard',
 	'show_plant_id' => 'Show plant IDs in lists',
 	'unknown_calendar_class' => 'Unknown',
