@@ -2315,7 +2315,7 @@ window.createVueInstance = function(element) {
                             const itemFrom = item.date_from.split(' ')[0];
                             const itemTill = item.date_till.split(' ')[0];
 
-                            if ((cellDateStr >= itemFrom) && (cellDateStr < itemTill)) {
+                            if ((cellDateStr >= itemFrom) && (cellDateStr <= itemTill)) {
                                 let chip = document.createElement('div');
                                 chip.className = 'calendar-event-chip';
                                 chip.style.backgroundColor = item.color_background;
