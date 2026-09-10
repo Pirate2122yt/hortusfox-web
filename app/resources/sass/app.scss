@@ -46,6 +46,24 @@
     --hf-text-primary: rgb(59, 47, 38);
 }
 
+[data-theme="ember"] {
+    --hf-bg-page: rgb(43, 27, 27);
+    --hf-bg-surface: rgb(58, 36, 36);
+    --hf-text-primary: rgb(224, 198, 194);
+}
+
+[data-theme="abyss"] {
+    --hf-bg-page: rgb(20, 26, 38);
+    --hf-bg-surface: rgb(29, 38, 54);
+    --hf-text-primary: rgb(198, 210, 226);
+}
+
+[data-theme="amber"] {
+    --hf-bg-page: rgb(43, 31, 20);
+    --hf-bg-surface: rgb(58, 43, 28);
+    --hf-text-primary: rgb(232, 210, 180);
+}
+
 html {
     overflow-y: hidden;
 }

@@ -36,7 +36,10 @@ class AppearanceModule {
     public static $available_themes = [
         'midnight' => 'Midnight',
         'forest' => 'Forest',
-        'sandstone' => 'Sandstone'
+        'sandstone' => 'Sandstone',
+        'ember' => 'Ember',
+        'abyss' => 'Abyss',
+        'amber' => 'Amber'
     ];
 
     /**
