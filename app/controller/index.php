@@ -29,8 +29,10 @@ class IndexController extends BaseController {
 		$user = UserModel::getAuthUser();
 		$locs = LocationsModel::getAll();
 
-		$places = [];
-		foreach (PlacesModel::getAll() as $place_item) {
+		$places = PlacesModel::getAll();
+
+		$places_overview = [];
+		foreach ($places as $place_item) {
 			$place_locations = LocationsModel::getByPlace($place_item->get('id'));
 			if ((!is_countable($place_locations)) || (count($place_locations) === 0)) {
 				continue;
@@ -43,7 +45,7 @@ class IndexController extends BaseController {
 				$danger_count += PlantsModel::getDangerCount($place_location->get('id'));
 			}
 
-			$places[] = [
+			$places_overview[] = [
 				'id' => $place_item->get('id'),
 				'name' => $place_item->get('name'),
 				'icon' => $place_item->get('icon'),
@@ -85,6 +87,7 @@ class IndexController extends BaseController {
 			'overdue_tasks' => $overdue_tasks,
 			'locations' => $locs,
 			'places' => $places,
+			'places_overview' => $places_overview,
 			'unassigned_locations' => $unassigned_locations,
 			'log' => $log,
 			'stats' => $stats,

@@ -124,7 +124,7 @@
 <div class="locations">
 	<a name="locations"></a>
 
-	@foreach ($places as $place)
+	@foreach ($places_overview as $place)
 		<a href="{{ url('/plants/place/' . $place['id']) }}">
 			@if ($place['icon'])
 				<div class="location" style="--bg-image: url('{{ UtilsModule::iconAsset($place['icon']) }}');">
