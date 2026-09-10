@@ -964,227 +964,252 @@
 						<form id="frmEditPreferences" method="POST" action="{{ url('/profile/preferences') }}">
 							@csrf
 
-							<div class="field">
-								<label class="label">{{ __('app.name') }}</label>
-								<div class="control">
-									<input type="text" class="input" name="name" value="{{ $user->get('name') }}">
-								</div>
-							</div>
+							<div class="settings-section">
+								<h3 class="settings-section-title"><i class="fas fa-user"></i>&nbsp;{{ __('app.settings_section_account') }}</h3>
 
-							<div class="field">
-								<label class="label">{{ __('app.email') }}</label>
-								<div class="control">
-									<input type="email" class="input" name="email" value="{{ $user->get('email') }}">
+								<div class="field">
+									<label class="label">{{ __('app.name') }}</label>
+									<div class="control">
+										<input type="text" class="input" name="name" value="{{ $user->get('name') }}">
+									</div>
 								</div>
-							</div>
 
-							<div class="field">
-								<label class="label">{{ __('app.password') }}</label>
-								<div class="control">
-									<input type="password" class="input" name="password">
+								<div class="field">
+									<label class="label">{{ __('app.email') }}</label>
+									<div class="control">
+										<input type="email" class="input" name="email" value="{{ $user->get('email') }}">
+									</div>
 								</div>
-							</div>
 
-							<div class="field">
-								<label class="label">{{ __('app.password_confirmation') }}</label>
-								<div class="control">
-									<input type="password" class="input" name="password_confirmation">
+								<div class="field">
+									<label class="label">{{ __('app.password') }}</label>
+									<div class="control">
+										<input type="password" class="input" name="password">
+									</div>
 								</div>
-							</div>
 
-							<div class="field">
-								<label class="label">{{ __('app.language') }}</label>
-								<div class="control">
-									<select class="input" name="lang" id="selEditCombo">
-										@foreach (UtilsModule::getLabeledLanguageList() as $lang)
-											<option value="{{ $lang['ident'] }}" {{ (UtilsModule::getLanguage() === $lang['ident']) ? 'selected' : ''}}>{{ $lang['label'] }}</option>
-										@endforeach
-									</select>
+								<div class="field">
+									<label class="label">{{ __('app.password_confirmation') }}</label>
+									<div class="control">
+										<input type="password" class="input" name="password_confirmation">
+									</div>
 								</div>
-							</div>
 
-							<div class="field">
-								<label class="label">{{ __('app.theme') }}</label>
-								<div class="control">
-									<select class="input" name="theme" id="selEditCombo">
-										<option value="0" {{ ($user->get('theme') === null) ? 'selected' : ''}}>{{ '- ' . strtolower(__('app.none')) . ' -' }}</option>
-										@foreach (ThemeModule::list() as $theme)
-											<option value="{{ $theme }}" {{ ($user->get('theme') === $theme) ? 'selected' : ''}}>{{ $theme }}</option>
-										@endforeach
-									</select>
-								</div>
-							</div>
-
-							<div class="field">
-								<label class="label">{{ __('app.color_scheme') }}</label>
-								<div class="control">
-									<select class="input" name="color_scheme" id="selEditCombo">
-										<option value="0" {{ (!$user->get('color_scheme')) ? 'selected' : ''}}>{{ __('app.color_scheme_label_default') }}</option>
-										@foreach (AppearanceModule::$available_themes as $scheme_ident => $scheme_label)
-											<option value="{{ $scheme_ident }}" {{ ($user->get('color_scheme') === $scheme_ident) ? 'selected' : ''}}>{{ $scheme_label }}</option>
-										@endforeach
-									</select>
-								</div>
-								<p class="help">{{ __('app.color_scheme_hint') }}</p>
-							</div>
-
-							<div class="field {{ ((!app('owm_enable')) ? 'is-hidden' : '') }}">
-								<label class="label">{{ __('app.weather_default_place') }}</label>
-								<div class="control">
-									<select class="input" name="weather_place" id="selEditCombo">
-										<option value="0" {{ (!$user->get('weather_place')) ? 'selected' : ''}}>{{ __('app.weather_place_label_none') }}</option>
-										@if (isset($places))
-											@foreach ($places as $weather_place_option)
-												<option value="{{ $weather_place_option->get('id') }}" {{ ((string)$user->get('weather_place') === (string)$weather_place_option->get('id')) ? 'selected' : ''}}>{{ $weather_place_option->get('name') }}</option>
+								<div class="field">
+									<label class="label">{{ __('app.language') }}</label>
+									<div class="control">
+										<select class="input" name="lang" id="selEditCombo">
+											@foreach (UtilsModule::getLabeledLanguageList() as $lang)
+												<option value="{{ $lang['ident'] }}" {{ (UtilsModule::getLanguage() === $lang['ident']) ? 'selected' : ''}}>{{ $lang['label'] }}</option>
 											@endforeach
-										@endif
-									</select>
-								</div>
-								<p class="help">{{ __('app.weather_default_place_hint') }}</p>
-							</div>
-
-							<div class="field {{ ((!app('chat_enable')) ? 'is-hidden': '') }}">
-								<label class="label">{{ __('app.chatcolor') }}</label>
-								<div class="control">
-									<input type="color" class="input" name="chatcolor" value="{{ UserModel::getChatColorForUser($user->get('id')) }}">
+										</select>
+									</div>
 								</div>
 							</div>
 
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="show_calendar_view" value="1" {{ ($user->get('show_calendar_view')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_calendar_view') }}
-								</div>
-							</div>
+							<div class="settings-section">
+								<h3 class="settings-section-title"><i class="fas fa-palette"></i>&nbsp;{{ __('app.settings_section_appearance') }}</h3>
 
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="show_plant_id" value="1" {{ ($user->get('show_plant_id')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_plant_id') }}
-								</div>
-							</div>
-
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="notify_tasks_overdue" value="1" {{ ($user->get('notify_tasks_overdue')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_overdue') }}
-								</div>
-							</div>
-
-							@if (app('push_enable'))
-							<div class="field belongs-to-previous-field">
-								<div class="control">
-									<input type="checkbox" name="push_tasks_overdue" value="1" {{ ($user->get('push_tasks_overdue')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_overdue') }}
-								</div>
-							</div>
-							@endif
-
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="notify_tasks_tomorrow" value="1" {{ ($user->get('notify_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_tomorrow') }}
-								</div>
-							</div>
-
-							@if (app('push_enable'))
-							<div class="field belongs-to-previous-field">
-								<div class="control">
-									<input type="checkbox" name="push_tasks_tomorrow" value="1" {{ ($user->get('push_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_tomorrow') }}
-								</div>
-							</div>
-							@endif
-
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="notify_tasks_recurring" value="1" {{ ($user->get('notify_tasks_recurring')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_recurring') }}
-								</div>
-							</div>
-
-							@if (app('push_enable'))
-							<div class="field belongs-to-previous-field">
-								<div class="control">
-									<input type="checkbox" name="push_tasks_recurring" value="1" {{ ($user->get('push_tasks_recurring')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_recurring') }}
-								</div>
-							</div>
-							@endif
-
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="notify_calendar_reminder" value="1" {{ ($user->get('notify_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_calendar_reminder') }}
-								</div>
-							</div>
-
-							@if (app('push_enable'))
-							<div class="field belongs-to-previous-field">
-								<div class="control">
-									<input type="checkbox" name="push_calendar_reminder" value="1" {{ ($user->get('push_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_calendar_reminder') }}
-								</div>
-							</div>
-							@endif
-
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="notify_plant_care" value="1" {{ ($user->get('notify_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_plant_care') }}
-								</div>
-							</div>
-
-							@if (app('push_enable'))
-							<div class="field belongs-to-previous-field">
-								<div class="control">
-									<input type="checkbox" name="push_plant_care" value="1" {{ ($user->get('push_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_plant_care') }}
-								</div>
-							</div>
-							@endif
-
-							@if (app('push_enable'))
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="push_chat_message" value="1" {{ ($user->get('push_chat_message')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_chat_message') }}
-								</div>
-							</div>
-							@endif
-
-							@if (app('push_enable'))
-							<div class="field">
-								<label class="label">{{ __('app.preferred_locations') }}</label>
-								<div class="control">
-									<select class="input" name="preferred_locations[]" multiple>
-										@if (isset($locations))
-											@foreach ($locations as $preferred_location_option)
-												<option value="{{ $preferred_location_option->get('id') }}" {{ (in_array((int)$preferred_location_option->get('id'), $user_preferred_location_ids ?? [])) ? 'selected' : '' }}>{{ $preferred_location_option->get('name') }}</option>
+								<div class="field">
+									<label class="label">{{ __('app.theme') }}</label>
+									<div class="control">
+										<select class="input" name="theme" id="selEditCombo">
+											<option value="0" {{ ($user->get('theme') === null) ? 'selected' : ''}}>{{ '- ' . strtolower(__('app.none')) . ' -' }}</option>
+											@foreach (ThemeModule::list() as $theme)
+												<option value="{{ $theme }}" {{ ($user->get('theme') === $theme) ? 'selected' : ''}}>{{ $theme }}</option>
 											@endforeach
-										@endif
-									</select>
+										</select>
+									</div>
 								</div>
-								<p class="help">{{ __('app.preferred_locations_hint') }}</p>
-							</div>
-							@endif
 
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="remember_location_sorting" value="1" {{ ($user->get('remember_location_sorting')) ? 'checked' : ''}}>&nbsp;{{ __('app.remember_location_sorting') }}
+								<div class="field">
+									<label class="label">{{ __('app.color_scheme') }}</label>
+									<div class="control">
+										<select class="input" name="color_scheme" id="selEditCombo">
+											<option value="0" {{ (!$user->get('color_scheme')) ? 'selected' : ''}}>{{ __('app.color_scheme_label_default') }}</option>
+											@foreach (AppearanceModule::$available_themes as $scheme_ident => $scheme_label)
+												<option value="{{ $scheme_ident }}" {{ ($user->get('color_scheme') === $scheme_ident) ? 'selected' : ''}}>{{ $scheme_label }}</option>
+											@endforeach
+										</select>
+									</div>
+									<p class="help">{{ __('app.color_scheme_hint') }}</p>
+								</div>
+
+								<div class="field {{ ((!app('owm_enable')) ? 'is-hidden' : '') }}">
+									<label class="label">{{ __('app.weather_default_place') }}</label>
+									<div class="control">
+										<select class="input" name="weather_place" id="selEditCombo">
+											<option value="0" {{ (!$user->get('weather_place')) ? 'selected' : ''}}>{{ __('app.weather_place_label_none') }}</option>
+											@if (isset($places))
+												@foreach ($places as $weather_place_option)
+													<option value="{{ $weather_place_option->get('id') }}" {{ ((string)$user->get('weather_place') === (string)$weather_place_option->get('id')) ? 'selected' : ''}}>{{ $weather_place_option->get('name') }}</option>
+												@endforeach
+											@endif
+										</select>
+									</div>
+									<p class="help">{{ __('app.weather_default_place_hint') }}</p>
+								</div>
+
+								<div class="field {{ ((!app('chat_enable')) ? 'is-hidden': '') }}">
+									<label class="label">{{ __('app.chatcolor') }}</label>
+									<div class="control">
+										<input type="color" class="input" name="chatcolor" value="{{ UserModel::getChatColorForUser($user->get('id')) }}">
+									</div>
 								</div>
 							</div>
 
-							<div class="field">
-								<div class="control">
-									<input type="checkbox" name="show_log" value="1" {{ ($user->get('show_log')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_log') }}
-								</div>
-							</div>
-
-							<fieldset>
-								<legend>{{ __('app.last_added_or_updated_plants_hint') }}</legend>
+							<div class="settings-section">
+								<h3 class="settings-section-title"><i class="fas fa-eye"></i>&nbsp;{{ __('app.settings_section_display') }}</h3>
 
 								<div class="field">
 									<div class="control">
-										<input type="radio" name="show_plants_aoru" id="show_plants_aoru_added" value="1" {{ ($user->get('show_plants_aoru')) ? 'checked' : ''}}>
-										<label for="show_plants_aoru_added">{{ __('app.show_plants_aoru_added') }}</label>
+										<input type="checkbox" name="show_calendar_view" value="1" {{ ($user->get('show_calendar_view')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_calendar_view') }}
 									</div>
 								</div>
 
 								<div class="field">
 									<div class="control">
-										<input type="radio" name="show_plants_aoru" id="show_plants_aoru_updated" value="0" {{ (!$user->get('show_plants_aoru')) ? 'checked' : ''}}>
-										<label for="show_plants_aoru_updated">{{ __('app.show_plants_aoru_updated') }}</label>
+										<input type="checkbox" name="show_plant_id" value="1" {{ ($user->get('show_plant_id')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_plant_id') }}
 									</div>
 								</div>
-							</fieldset>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="remember_location_sorting" value="1" {{ ($user->get('remember_location_sorting')) ? 'checked' : ''}}>&nbsp;{{ __('app.remember_location_sorting') }}
+									</div>
+								</div>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="show_log" value="1" {{ ($user->get('show_log')) ? 'checked' : ''}}>&nbsp;{{ __('app.show_log') }}
+									</div>
+								</div>
+
+								<fieldset>
+									<legend>{{ __('app.last_added_or_updated_plants_hint') }}</legend>
+
+									<div class="field">
+										<div class="control">
+											<input type="radio" name="show_plants_aoru" id="show_plants_aoru_added" value="1" {{ ($user->get('show_plants_aoru')) ? 'checked' : ''}}>
+											<label for="show_plants_aoru_added">{{ __('app.show_plants_aoru_added') }}</label>
+										</div>
+									</div>
+
+									<div class="field">
+										<div class="control">
+											<input type="radio" name="show_plants_aoru" id="show_plants_aoru_updated" value="0" {{ (!$user->get('show_plants_aoru')) ? 'checked' : ''}}>
+											<label for="show_plants_aoru_updated">{{ __('app.show_plants_aoru_updated') }}</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="settings-section">
+								<h3 class="settings-section-title"><i class="fas fa-bell"></i>&nbsp;{{ __('app.settings_section_notifications') }}</h3>
+
+								<p class="settings-subsection-label">{{ __('app.settings_subsection_tasks') }}</p>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="notify_tasks_overdue" value="1" {{ ($user->get('notify_tasks_overdue')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_overdue') }}
+									</div>
+								</div>
+
+								@if (app('push_enable'))
+								<div class="field belongs-to-previous-field">
+									<div class="control">
+										<input type="checkbox" name="push_tasks_overdue" value="1" {{ ($user->get('push_tasks_overdue')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_overdue') }}
+									</div>
+								</div>
+								@endif
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="notify_tasks_tomorrow" value="1" {{ ($user->get('notify_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_tomorrow') }}
+									</div>
+								</div>
+
+								@if (app('push_enable'))
+								<div class="field belongs-to-previous-field">
+									<div class="control">
+										<input type="checkbox" name="push_tasks_tomorrow" value="1" {{ ($user->get('push_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_tomorrow') }}
+									</div>
+								</div>
+								@endif
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="notify_tasks_recurring" value="1" {{ ($user->get('notify_tasks_recurring')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_recurring') }}
+									</div>
+								</div>
+
+								@if (app('push_enable'))
+								<div class="field belongs-to-previous-field">
+									<div class="control">
+										<input type="checkbox" name="push_tasks_recurring" value="1" {{ ($user->get('push_tasks_recurring')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_recurring') }}
+									</div>
+								</div>
+								@endif
+
+								<p class="settings-subsection-label">{{ __('app.settings_subsection_calendar') }}</p>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="notify_calendar_reminder" value="1" {{ ($user->get('notify_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_calendar_reminder') }}
+									</div>
+								</div>
+
+								@if (app('push_enable'))
+								<div class="field belongs-to-previous-field">
+									<div class="control">
+										<input type="checkbox" name="push_calendar_reminder" value="1" {{ ($user->get('push_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_calendar_reminder') }}
+									</div>
+								</div>
+								@endif
+
+								<p class="settings-subsection-label">{{ __('app.settings_subsection_plant_care') }}</p>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="notify_plant_care" value="1" {{ ($user->get('notify_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_plant_care') }}
+									</div>
+								</div>
+
+								@if (app('push_enable'))
+								<div class="field belongs-to-previous-field">
+									<div class="control">
+										<input type="checkbox" name="push_plant_care" value="1" {{ ($user->get('push_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_plant_care') }}
+									</div>
+								</div>
+								@endif
+
+								@if (app('push_enable'))
+								<p class="settings-subsection-label">{{ __('app.settings_subsection_chat') }}</p>
+
+								<div class="field">
+									<div class="control">
+										<input type="checkbox" name="push_chat_message" value="1" {{ ($user->get('push_chat_message')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_chat_message') }}
+									</div>
+								</div>
+								@endif
+
+								@if (app('push_enable'))
+								<p class="settings-subsection-label">{{ __('app.preferred_locations') }}</p>
+
+								<div class="field">
+									<div class="control">
+										<select class="input" name="preferred_locations[]" multiple>
+											@if (isset($locations))
+												@foreach ($locations as $preferred_location_option)
+													<option value="{{ $preferred_location_option->get('id') }}" {{ (in_array((int)$preferred_location_option->get('id'), $user_preferred_location_ids ?? [])) ? 'selected' : '' }}>{{ $preferred_location_option->get('name') }}</option>
+												@endforeach
+											@endif
+										</select>
+									</div>
+									<p class="help">{{ __('app.preferred_locations_hint') }}</p>
+								</div>
+								@endif
+							</div>
 						</form>
 					</section>
 					<footer class="modal-card-foot is-stretched">

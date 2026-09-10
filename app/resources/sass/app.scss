@@ -561,6 +561,90 @@ a.navbar-burger:hover {
     background-color: rgb(100, 100, 100);
 }
 
+// Groups a modal form's fields into labeled cards (e.g. the Preferences
+// modal's Account / Appearance / Display / Notifications sections), so a
+// long flat list of fields reads as organized categories instead.
+.settings-section {
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background-color: var(--hf-bg-surface);
+    border: 1px solid rgba(128, 128, 128, 0.18);
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section-title {
+    margin: 0 0 14px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.18);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgb(190, 190, 190);
+}
+
+.settings-section-title i {
+    opacity: 0.8;
+}
+
+// A lighter-weight divider for a subgroup within a .settings-section
+// (e.g. "Tasks" / "Calendar" / "Plant care" within Notifications).
+.settings-subsection-label {
+    margin: 18px 0 6px 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+}
+
+.settings-subsection-label:first-of-type {
+    margin-top: 2px;
+}
+
+// A consistent, slightly more prominent heading style for every Admin
+// tab's <h2> section headers, applied after the per-tab rules above so it
+// wins on equal specificity without needing to edit each one individually.
+.admin-environment h2,
+.admin-media h2,
+.admin-users h2,
+.admin-locations h2,
+.admin-auth h2,
+.admin-attributes h2,
+.admin-calendar h2,
+.admin-appearance h2,
+.admin-mail h2,
+.admin-themes h2,
+.admin-backup h2,
+.admin-weather h2,
+.admin-api h2,
+.admin-info h2 {
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.admin-environment h2:first-child,
+.admin-media h2:first-child,
+.admin-users h2:first-child,
+.admin-locations h2:first-child,
+.admin-auth h2:first-child,
+.admin-attributes h2:first-child,
+.admin-calendar h2:first-child,
+.admin-appearance h2:first-child,
+.admin-mail h2:first-child,
+.admin-themes h2:first-child,
+.admin-backup h2:first-child,
+.admin-weather h2:first-child,
+.admin-api h2:first-child,
+.admin-info h2:first-child {
+    margin-top: 0;
+}
+
 .modal-card-foot {
     background-color: var(--hf-bg-surface);
     border-top: 1px solid rgb(59, 59, 59);

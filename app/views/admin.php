@@ -1156,6 +1156,7 @@
     <form method="POST" action="{{ url('/admin/weather/save') }}">
         @csrf
 
+        <div class="settings-section">
         <div class="field">
             <div class="control">
                 <input type="checkbox" name="owm_enable" value="1" {{ ((app('owm_enable')) ? 'checked': '') }}/>&nbsp;<span>{{ __('app.enable_weather') }}</span>
@@ -1199,6 +1200,7 @@
             <div class="control">
                 <input class="input" type="text" name="owm_cache" value="{{ (app('owm_cache') ?? '300') }}"/>
             </div>
+        </div>
         </div>
 
         <div class="field">
