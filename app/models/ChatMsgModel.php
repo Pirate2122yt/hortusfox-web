@@ -199,6 +199,65 @@ class ChatMsgModel extends \Asatru\Database\Model {
     }
 
     /**
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getMessageById($id)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Edits a user-typed chat message (never a system message) and posts a
+     * new system message recording the original text and its author, so
+     * the change stays visible in the chat history rather than silently
+     * overwriting it. Authorization (only the message's own author may
+     * edit it) is the caller's responsibility - this assumes it has
+     * already been checked.
+     *
+     * @param $id
+     * @param $newMessage
+     * @return bool true if a message was found and edited
+     * @throws \Exception
+     */
+    public static function editMessage($id, $newMessage)
+    {
+        try {
+            $row = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+            if ((!$row) || ($row->get('sysmsg'))) {
+                return false;
+            }
+
+            $newMessage = trim($newMessage);
+            if (strlen($newMessage) === 0) {
+                throw new \Exception(__('app.chat_message_empty'));
+            }
+
+            if ($newMessage === $row->get('message')) {
+                return true;
+            }
+
+            $authorName = $row->get('display_name') ?: UserModel::getNameById($row->get('userId'));
+
+            static::raw('UPDATE `@THIS` SET message = ? WHERE id = ?', [$newMessage, $id]);
+
+            static::raw('INSERT INTO `@THIS` (userId, message, sysmsg, created_at) VALUES(?, ?, 1, CURRENT_TIMESTAMP)', [
+                $row->get('userId'),
+                __('app.chat_message_edited_sysmsg', ['user' => $authorName, 'original' => $row->get('message')])
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Deletes a single chat entry - a user-typed message or a system
      * message (activity log entry) alike, since both are rows in this
      * same table distinguished only by the sysmsg flag. Admin-only,

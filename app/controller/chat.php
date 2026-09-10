@@ -244,6 +244,57 @@ class ChatController extends BaseController {
 	}
 
 	/**
+	 * Handles URL: /chat/message/edit
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\JsonHandler
+	 */
+	public function edit_message($request)
+	{
+		try {
+			$user = UserModel::getAuthUser();
+			if (!$user) {
+				return json([
+					'code' => 403,
+					'msg' => __('app.access_denied')
+				]);
+			}
+
+			$id = $request->params()->query('message', null);
+			$newMessage = $request->params()->query('newMessage', null);
+
+			if (!is_numeric($id)) {
+				throw new \Exception('Invalid message');
+			}
+
+			$existing = ChatMsgModel::getMessageById((int)$id);
+			if ((!$existing) || ($existing->get('sysmsg'))) {
+				throw new \Exception('Invalid message');
+			}
+
+			if ((int)$existing->get('userId') !== (int)$user->get('id')) {
+				return json([
+					'code' => 403,
+					'msg' => __('app.access_denied')
+				]);
+			}
+
+			$edited = ChatMsgModel::editMessage((int)$id, $newMessage);
+
+			return json([
+				'code' => 200,
+				'edited' => $edited,
+				'message' => UtilsModule::purify(UtilsModule::translateURLs(ChatMsgModel::getMessageById((int)$id)?->get('message')))
+			]);
+		} catch (\Exception $e) {
+			return json([
+				'code' => 500,
+				'msg' => $e->getMessage()
+			]);
+		}
+	}
+
+	/**
 	 * Handles URL: /chat/message/remove
 	 *
 	 * @param Asatru\Controller\ControllerArg $request

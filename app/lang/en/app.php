@@ -197,6 +197,7 @@ return [
 	'create' => 'Create',
 	'update' => 'Update',
 	'remove' => 'Remove',
+	'edit' => 'Edit',
 	'create_user' => 'Create user',
 	'account_created' => 'Account created',
 	'account_created_hint' => 'Your account for {workspace} was just created. Please <a href="{url}">login</a> with your e-mail and the password <strong>{password}</strong>. It is strongly recommended to change your password after logging in.',
@@ -686,5 +687,7 @@ return [
 	'preferred_locations' => 'Preferred locations for push notifications',
 	'preferred_locations_hint' => 'Only get Task and plant care push notifications for these locations. Leave empty to get them for every location.',
 	'access_denied' => 'Access denied.',
-	'confirm_remove_chat_message' => 'Delete this message? This can\'t be undone.'
+	'confirm_remove_chat_message' => 'Delete this message? This can\'t be undone.',
+	'chat_message_empty' => 'Message can\'t be empty.',
+	'chat_message_edited_sysmsg' => '{user} edited a message. Original: "{original}"'
 ];

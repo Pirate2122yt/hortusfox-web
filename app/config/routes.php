@@ -137,6 +137,7 @@ return [
     array('/chat/messages/count', 'ANY', 'chat@get_message_count'),
     array('/chat/system/message/latest', 'ANY', 'chat@get_latest_system_message'),
     array('/chat/message/remove', 'POST', 'chat@remove_message'),
+    array('/chat/message/edit', 'POST', 'chat@edit_message'),
 
     /** Admin Controller */
     array('/admin', 'GET', 'admin@index'),

@@ -62,6 +62,10 @@
                             <div class="chat-message-info">
                                 {{ (new Carbon($message->get('created_at')))->diffForHumans() }}
 
+                                @if ((int)$message->get('userId') === (int)$user->get('id'))
+                                    &nbsp;<a href="javascript:void(0);" title="{{ __('app.edit') }}" onclick="chatEditMessage({{ $message->get('id') }}, this);"><i class="fas fa-pen"></i></a>
+                                @endif
+
                                 @if (UserModel::isCurrentlyAdmin())
                                     &nbsp;<a href="javascript:void(0);" title="{{ __('app.remove') }}" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage({{ $message->get('id') }}, this); }"><i class="fas fa-trash-alt"></i></a>
                                 @endif
@@ -100,6 +104,8 @@
 
 <script>
     const CHAT_DELETE_CONFIRM = {!! json_encode(__('app.confirm_remove_chat_message')) !!};
+    const CHAT_EDIT_SAVE_LABEL = {!! json_encode(__('app.save')) !!};
+    const CHAT_EDIT_CANCEL_LABEL = {!! json_encode(__('app.cancel')) !!};
 
     function chatDeleteMessage(id, el) {
         window.vue.ajaxRequest('post', window.location.origin + '/chat/message/remove', { message: id }, function(response) {
@@ -114,39 +120,100 @@
         });
     }
 
-    @if (UserModel::isCurrentlyAdmin())
-        // Messages that arrive live via the periodic /chat/query poll are
-        // rendered by window.vue.renderNewChatMessage(), which lives in the
-        // compiled app.js bundle and has no delete affordance built in.
-        // Rather than requiring a frontend rebuild to add one, wrap the
-        // existing function here and splice a delete icon into the HTML it
-        // returns, so live-polled messages get the same delete option as
-        // the ones rendered server-side above. If the bundle's markup for
-        // this ever changes shape, the string replace below just silently
-        // doesn't match - it never breaks the underlying chat feature.
-        document.addEventListener('DOMContentLoaded', function() {
-            if ((typeof window.vue === 'undefined') || (typeof window.vue.renderNewChatMessage !== 'function')) {
-                return;
+    function chatEditMessage(id, el) {
+        let container = el.closest('.chat-message');
+        if (!container) {
+            return;
+        }
+
+        let contentEl = container.querySelector('.chat-message-content');
+        let pre = contentEl ? contentEl.querySelector('pre') : null;
+        if ((!contentEl) || (!pre)) {
+            return;
+        }
+
+        let originalHtml = contentEl.innerHTML;
+        let originalText = pre.textContent;
+
+        contentEl.innerHTML = '';
+
+        let textarea = document.createElement('textarea');
+        textarea.className = 'textarea is-input-dark';
+        textarea.value = originalText;
+        contentEl.appendChild(textarea);
+
+        let actions = document.createElement('div');
+        actions.style.marginTop = '0.5rem';
+        actions.style.display = 'flex';
+        actions.style.gap = '0.5rem';
+
+        let saveBtn = document.createElement('a');
+        saveBtn.className = 'button is-success is-small';
+        saveBtn.href = 'javascript:void(0);';
+        saveBtn.textContent = CHAT_EDIT_SAVE_LABEL;
+        saveBtn.onclick = function() {
+            window.vue.ajaxRequest('post', window.location.origin + '/chat/message/edit', { message: id, newMessage: textarea.value }, function(response) {
+                if (response.code == 200) {
+                    contentEl.innerHTML = '<pre>' + response.message + '</pre>';
+                } else {
+                    alert(response.msg);
+                    contentEl.innerHTML = originalHtml;
+                }
+            });
+        };
+
+        let cancelBtn = document.createElement('a');
+        cancelBtn.className = 'button is-small';
+        cancelBtn.href = 'javascript:void(0);';
+        cancelBtn.textContent = CHAT_EDIT_CANCEL_LABEL;
+        cancelBtn.onclick = function() {
+            contentEl.innerHTML = originalHtml;
+        };
+
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        contentEl.appendChild(actions);
+
+        textarea.focus();
+    }
+
+    // Messages that arrive live via the periodic /chat/query poll are
+    // rendered by window.vue.renderNewChatMessage(), which lives in the
+    // compiled app.js bundle and has no edit/delete affordance built in.
+    // Rather than requiring a frontend rebuild to add one, wrap the
+    // existing function here and splice the right icons into the HTML it
+    // returns - an edit icon when the live message belongs to the current
+    // user, a delete icon when the current user is an admin - so
+    // live-polled messages get the same options as the ones rendered
+    // server-side above. If the bundle's markup for this ever changes
+    // shape, the string replace below just silently doesn't match - it
+    // never breaks the underlying chat feature.
+    document.addEventListener('DOMContentLoaded', function() {
+        if ((typeof window.vue === 'undefined') || (typeof window.vue.renderNewChatMessage !== 'function')) {
+            return;
+        }
+
+        let originalRenderNewChatMessage = window.vue.renderNewChatMessage;
+        let isAdmin = {!! json_encode(UserModel::isCurrentlyAdmin()) !!};
+        let authUserId = {{ (int)$user->get('id') }};
+
+        window.vue.renderNewChatMessage = function(elem, auth_user) {
+            let html = originalRenderNewChatMessage(elem, auth_user);
+            let actionLinks = '';
+
+            if ((elem.userId) && (parseInt(elem.userId) === authUserId)) {
+                actionLinks += '<a href="javascript:void(0);" onclick="chatEditMessage(' + elem.id + ', this);"><i class="fas fa-pen"></i></a>';
             }
 
-            let originalRenderNewChatMessage = window.vue.renderNewChatMessage;
+            if (isAdmin) {
+                actionLinks += '<a href="javascript:void(0);" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage(' + elem.id + ', this); }"><i class="fas fa-trash-alt"></i></a>';
+            }
 
-            window.vue.renderNewChatMessage = function(elem, auth_user) {
-                let html = originalRenderNewChatMessage(elem, auth_user);
-                let deleteLink = '<a href="javascript:void(0);" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage(' + elem.id + ', this); }"><i class="fas fa-trash-alt"></i></a>';
+            if ((actionLinks) && (/<\/div>\s*$/.test(html))) {
+                html = html.replace(/<\/div>(\s*)$/, actionLinks + '</div>$1');
+            }
 
-                // Insert right before the outermost wrapping div's closing
-                // tag, so it lands inside the message bubble regardless of
-                // the bundle's exact internal markup/whitespace. If the
-                // bundle's output ever doesn't match this shape, the regex
-                // just fails to match and the message renders exactly as
-                // it always has, minus the delete icon.
-                if (/<\/div>\s*$/.test(html)) {
-                    html = html.replace(/<\/div>(\s*)$/, deleteLink + '</div>$1');
-                }
-
-                return html;
-            };
-        });
-    @endif
+            return html;
+        };
+    });
 </script>
