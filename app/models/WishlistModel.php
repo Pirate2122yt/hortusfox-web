@@ -305,11 +305,22 @@ class WishlistModel extends \Asatru\Database\Model {
     }
 
     /**
+     * The DB column is DECIMAL(12, 2) - up to 10 digits before the
+     * decimal point. MySQL rejects an out-of-range insert outright
+     * (SQLSTATE 22003) instead of truncating it, which surfaces as a
+     * raw SQL error rather than a useful one - so this is checked here
+     * first, against the same bound, to fail with a message that
+     * actually says what's wrong.
+     */
+    const MAX_PRICE = 9999999999.99;
+
+    /**
      * Empty string/non-numeric input becomes NULL rather than 0, so an
      * item without a known price doesn't silently show up as "$0.00".
      *
      * @param $price
      * @return float|null
+     * @throws \Exception
      */
     private static function normalizePrice($price)
     {
@@ -317,6 +328,12 @@ class WishlistModel extends \Asatru\Database\Model {
             return null;
         }
 
-        return round((float)$price, 2);
+        $normalized = round((float)$price, 2);
+
+        if (($normalized < 0) || ($normalized > self::MAX_PRICE)) {
+            throw new \Exception('Price must be between 0 and ' . number_format(self::MAX_PRICE, 2));
+        }
+
+        return $normalized;
     }
 }

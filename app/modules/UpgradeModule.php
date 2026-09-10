@@ -7,6 +7,22 @@
  */
 class UpgradeModule {
     /**
+     * WishlistModel.price started out as DECIMAL(10, 2), which only
+     * allows 8 digits before the decimal point (max 99,999,999.99) -
+     * plenty in theory, but MySQL rejects the insert outright rather
+     * than truncating once a value doesn't fit, which surfaced as a raw
+     * SQLSTATE error to the user instead of a friendly one. Widened
+     * here rather than relying on validation alone, since the column
+     * itself was the more surprising part of that failure.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot39()
+    {
+        WishlistModel::raw('ALTER TABLE `@THIS` MODIFY COLUMN price DECIMAL(12, 2) NULL');
+    }
+
+    /**
      * Adds the plant Wishlist feature: a new WishlistModel table for
      * per-user wishlist entries, an admin-wide enable toggle (mirroring
      * tasks_enable/calendar_enable), and a per-user opt-in public
@@ -34,7 +50,7 @@ class UpgradeModule {
             photo VARCHAR(255) NULL,
             location INT NULL,
             source_url VARCHAR(1024) NULL,
-            price DECIMAL(10, 2) NULL,
+            price DECIMAL(12, 2) NULL,
             best_time_note VARCHAR(512) NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

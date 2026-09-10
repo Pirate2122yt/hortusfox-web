@@ -149,7 +149,7 @@
 				<div class="field">
 					<label class="label">{{ __('app.wishlist_price') }}</label>
 					<div class="control">
-						<input type="number" class="input" name="price" step="0.01" min="0">
+						<input type="number" class="input" name="price" step="0.01" min="0" max="9999999999.99">
 					</div>
 				</div>
 
@@ -248,7 +248,7 @@
 				<div class="field">
 					<label class="label">{{ __('app.wishlist_price') }}</label>
 					<div class="control">
-						<input type="number" class="input" name="price" id="inpEditWishlistPrice" step="0.01" min="0">
+						<input type="number" class="input" name="price" id="inpEditWishlistPrice" step="0.01" min="0" max="9999999999.99">
 					</div>
 				</div>
 

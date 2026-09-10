@@ -42,7 +42,7 @@ class WishlistModel_Migration {
         $this->database->add('photo VARCHAR(255) NULL');
         $this->database->add('location INT NULL');
         $this->database->add('source_url VARCHAR(1024) NULL');
-        $this->database->add('price DECIMAL(10, 2) NULL');
+        $this->database->add('price DECIMAL(12, 2) NULL');
         $this->database->add('best_time_note VARCHAR(512) NULL');
         $this->database->add('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
