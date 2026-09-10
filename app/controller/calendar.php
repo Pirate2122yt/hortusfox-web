@@ -116,8 +116,9 @@ class CalendarController extends BaseController {
             $date_from = $request->params()->query('date_from', null);
             $date_till = $request->params()->query('date_till', $date_from);
             $class = $request->params()->query('class', null);
+            $location = $request->params()->query('location', null);
 
-            CalendarModel::addItem($name, $date_from, $date_till, $class);
+            CalendarModel::addItem($name, $date_from, $date_till, $class, false, $location);
     
             FlashMessage::setMsg('success', __('app.calendar_item_added'));
     
@@ -143,8 +144,9 @@ class CalendarController extends BaseController {
             $date_from = $request->params()->query('date_from', null);
             $date_till = $request->params()->query('date_till', $date_from);
             $class = $request->params()->query('class', null);
+            $location = $request->params()->query('location', null);
 
-            CalendarModel::editItem($ident, $name, $date_from, $date_till, $class);
+            CalendarModel::editItem($ident, $name, $date_from, $date_till, $class, false, $location);
     
             FlashMessage::setMsg('success', __('app.calendar_item_edited'));
     

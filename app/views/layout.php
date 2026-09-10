@@ -1505,6 +1505,20 @@
 								</div>
 							</div>
 
+							<div class="field">
+								<label class="label">{{ __('app.location') }}</label>
+								<div class="control">
+									<select name="location" class="input">
+										<option value="">{{ __('app.location_label_none') }}</option>
+										@if (isset($locations))
+											@foreach ($locations as $calendar_location_option)
+												<option value="{{ $calendar_location_option->get('id') }}">{{ $calendar_location_option->get('name') }}</option>
+											@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+
 							<input type="submit" class="is-hidden" id="submit-add-calendar-item">
 						</form>
 					</section>
@@ -1562,6 +1576,20 @@
 										@foreach (CalendarClassModel::getAll() as $class_item)
 											<option value="{{ $class_item->get('ident') }}">{{ __($class_item->get('name')) }}</option>
 										@endforeach
+									</select>
+								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.location') }}</label>
+								<div class="control">
+									<select name="location" id="inpEditCalendarItemLocation" class="input">
+										<option value="">{{ __('app.location_label_none') }}</option>
+										@if (isset($locations))
+											@foreach ($locations as $calendar_location_option)
+												<option value="{{ $calendar_location_option->get('id') }}">{{ $calendar_location_option->get('name') }}</option>
+											@endforeach
+										@endif
 									</select>
 								</div>
 							</div>

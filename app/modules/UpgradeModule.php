@@ -7,6 +7,19 @@
  */
 class UpgradeModule {
     /**
+     * Calendar events can now optionally be tied to a Location, the same
+     * way Tasks are tied to one through a linked Plant. Used to filter
+     * calendar reminder pushes through the preferred-Locations filter and
+     * to scope the homepage's task/plant summary to those Locations too.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot35()
+    {
+        CalendarModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS location INT NULL');
+    }
+
+    /**
      * Adds push notifications for plant care reminders (email-only until
      * now) and a per-user preferred-Locations filter that narrows down
      * which Locations' push notifications (Tasks and Plant care) a user

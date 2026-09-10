@@ -65,6 +65,44 @@ class IndexController extends BaseController {
 
 		$upcoming_tasks_overview = TasksModel::getTasks(false, 4);
 
+		// Scope the homepage's reminder-ish widgets (warnings, care due,
+		// overdue/upcoming tasks) to the user's preferred Locations, same
+		// as their push notifications already are. A user with none
+		// selected (the default) sees everything, unchanged from before.
+		$preferred_location_ids = UserPreferredLocationModel::getLocationIdsForUser($user->get('id'));
+
+		if (count($preferred_location_ids) > 0) {
+			$plantLocationFilter = function($rows, $locationGetter) use ($preferred_location_ids) {
+				$filtered = [];
+				foreach ($rows as $row) {
+					$locationId = $locationGetter($row);
+					if (($locationId === null) || (in_array((int)$locationId, $preferred_location_ids, true))) {
+						$filtered[] = $row;
+					}
+				}
+				return $filtered;
+			};
+
+			$taskLocationGetter = function($task) {
+				if (!PlantTasksRefModel::hasPlantReference($task->get('id'))) {
+					return null;
+				}
+
+				$reference = PlantTasksRefModel::getForTask($task->get('id'));
+				if (!$reference) {
+					return null;
+				}
+
+				$plant = PlantsModel::getDetails($reference->get('plant_id'));
+				return ($plant) ? $plant->get('location') : null;
+			};
+
+			$warning_plants = $plantLocationFilter($warning_plants, function($plant) { return $plant->get('location'); });
+			$care_due_plants = $plantLocationFilter($care_due_plants, function($entry) { return $entry['plant']->get('location'); });
+			$overdue_tasks = $plantLocationFilter($overdue_tasks, $taskLocationGetter);
+			$upcoming_tasks_overview = $plantLocationFilter($upcoming_tasks_overview, $taskLocationGetter);
+		}
+
 		if ($user->get('show_plants_aoru')) {
 			$last_plants_list = PlantsModel::getLastAddedPlants();
 		} else {

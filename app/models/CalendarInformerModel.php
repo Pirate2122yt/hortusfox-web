@@ -42,6 +42,12 @@ class CalendarInformerModel extends \Asatru\Database\Model {
                 $wantsEmail = (bool)$user->get('notify_calendar_reminder');
                 $wantsPush = (bool)$user->get('push_calendar_reminder');
 
+                // An event with no Location of its own has nothing to
+                // filter on, so it always reaches whoever opted into push.
+                if (($wantsPush) && ($item->get('location'))) {
+                    $wantsPush = UserPreferredLocationModel::wantsLocation($user->get('id'), $item->get('location'));
+                }
+
                 if ((($wantsEmail) || ($wantsPush)) && (!static::userInformed($user->get('id'), $item->get('id')))) {
                     if ($count < $limit) {
                         $lang = $user->get('lang');

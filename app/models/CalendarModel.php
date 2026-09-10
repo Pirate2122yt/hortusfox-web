@@ -34,10 +34,11 @@ class CalendarModel extends \Asatru\Database\Model {
      * @param $date_till
      * @param $class
      * @param $api
+     * @param $location
      * @return int
      * @throws \Exception
      */
-    public static function addItem($name, $date_from = null, $date_till = null, $class = null, $api = false)
+    public static function addItem($name, $date_from = null, $date_till = null, $class = null, $api = false, $location = null)
     {
         try {
             $user = UserModel::getAuthUser();
@@ -52,8 +53,8 @@ class CalendarModel extends \Asatru\Database\Model {
                 $class_item = $class_item->asArray();
             }
 
-            static::raw('INSERT INTO `@THIS` (name, date_from, date_till, class_name, color_background, color_border, last_edited_user, last_edited_date) VALUES(?, ?, ?, ?, ?, ?, ?, ?)', [
-                $name, $date_from, $date_till, $class, $class_item['color_background'], $class_item['color_border'], (($user) ? $user->get('id') : 0), date('Y-m-d H:i:s')
+            static::raw('INSERT INTO `@THIS` (name, date_from, date_till, class_name, color_background, color_border, last_edited_user, last_edited_date, location) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+                $name, $date_from, $date_till, $class, $class_item['color_background'], $class_item['color_border'], (($user) ? $user->get('id') : 0), date('Y-m-d H:i:s'), (is_numeric($location) ? (int)$location : null)
             ]);
 
             if (!$api) {
@@ -79,10 +80,11 @@ class CalendarModel extends \Asatru\Database\Model {
      * @param $date_till
      * @param $class
      * @param $api
+     * @param $location
      * @return void
      * @throws \Exception
      */
-    public static function editItem($ident, $name, $date_from = null, $date_till = null, $class = null, $api = false)
+    public static function editItem($ident, $name, $date_from = null, $date_till = null, $class = null, $api = false, $location = null)
     {
         try {
             $user = UserModel::getAuthUser();
@@ -97,8 +99,8 @@ class CalendarModel extends \Asatru\Database\Model {
                 $class_item = $class_item->asArray();
             }
 
-            static::raw('UPDATE `@THIS` SET name = ?, date_from = ?, date_till = ?, class_name = ?, color_background = ?, color_border = ?, last_edited_user = ?, last_edited_date = ? WHERE id = ?', [
-                $name, $date_from, $date_till, $class, $class_item['color_background'], $class_item['color_border'], (($user) ? $user->get('id') : 0), date('Y-m-d H:i:s'), $ident
+            static::raw('UPDATE `@THIS` SET name = ?, date_from = ?, date_till = ?, class_name = ?, color_background = ?, color_border = ?, last_edited_user = ?, last_edited_date = ?, location = ? WHERE id = ?', [
+                $name, $date_from, $date_till, $class, $class_item['color_background'], $class_item['color_border'], (($user) ? $user->get('id') : 0), date('Y-m-d H:i:s'), (is_numeric($location) ? (int)$location : null), $ident
             ]);
 
             if (!$api) {

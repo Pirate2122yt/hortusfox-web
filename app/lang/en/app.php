@@ -34,6 +34,7 @@ return [
 	'attribute' => 'Attribute',
 	'value' => 'Value',
 	'location' => 'Location',
+	'location_label_none' => 'No location',
 	'last_watered' => 'Last watered',
 	'last_repotted' => 'Last repotted',
 	'last_fertilised' => 'Last fertilised',

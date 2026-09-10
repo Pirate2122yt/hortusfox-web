@@ -20,3 +20,27 @@
 <div class="calendar-legend" id="calendar-legend"></div>
 
 <div class="calendar-month-grid" id="calendar-month-grid" data-add-hint="{{ __('app.calendar_add_for_day') }}"></div>
+
+<script>
+    // The Location field is new and the compiled bundle's
+    // editCalendarItemFromData() (app.js) doesn't know to populate it, so
+    // wrap it here rather than requiring a frontend rebuild for this. If
+    // the bundle's markup/behavior ever changes shape, the extra field
+    // just doesn't get pre-filled - it never breaks opening the edit form.
+    document.addEventListener('DOMContentLoaded', function() {
+        if ((typeof window.vue === 'undefined') || (typeof window.vue.editCalendarItemFromData !== 'function')) {
+            return;
+        }
+
+        let originalEditCalendarItemFromData = window.vue.editCalendarItemFromData;
+
+        window.vue.editCalendarItemFromData = function(item) {
+            originalEditCalendarItemFromData(item);
+
+            let locationSelect = document.getElementById('inpEditCalendarItemLocation');
+            if (locationSelect) {
+                locationSelect.value = ((item.location !== undefined) && (item.location !== null)) ? item.location : '';
+            }
+        };
+    });
+</script>
