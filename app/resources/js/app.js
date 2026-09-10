@@ -2009,6 +2009,8 @@ window.createVueInstance = function(element) {
                                     contentInner.querySelector('.calendar-empty-hint').textContent = emptyHint;
                                 }
 
+                                window.vue.reapplyHashScroll();
+
                                 return;
                             }
 
@@ -2020,6 +2022,8 @@ window.createVueInstance = function(element) {
                             if (contentInner) {
                                 contentInner.style.height = Math.max(320, 70 + (data.length * 42)) + 'px';
                             }
+
+                            window.vue.reapplyHashScroll();
 
                             if (legendElem) {
                                 let seenClasses = {};
@@ -3061,6 +3065,31 @@ window.createVueInstance = function(element) {
                 let elem = document.querySelector(target);
                 if (elem) {
                     elem.scrollIntoView({ behavior: 'smooth' });
+                }
+            },
+
+            /**
+             * If the page was loaded with a #anchor in the URL (e.g. the
+             * homepage's "Locations" stat tile linking to /#locations),
+             * the browser jumps to it once on initial load. Content that
+             * loads or resizes asynchronously above that anchor afterwards
+             * - like the dashboard's calendar widget, whose height changes
+             * once its data finishes loading - shifts the anchor's actual
+             * position without the scroll position following it, leaving
+             * the page scrolled to the wrong spot. Call this right after
+             * anything above an anchor target changes size, to correct
+             * the scroll position for wherever the anchor really ended up.
+             */
+            reapplyHashScroll: function() {
+                if (!window.location.hash) {
+                    return;
+                }
+
+                let name = window.location.hash.substring(1);
+                let target = document.querySelector('a[name="' + name + '"]') || document.getElementById(name);
+
+                if (target) {
+                    target.scrollIntoView();
                 }
             },
 
