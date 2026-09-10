@@ -36,7 +36,7 @@
 			<input type="hidden" name="enable" value="0">
 			<button type="submit" class="button is-small">{{ __('app.wishlist_share_disable') }}</button>
 		</form>&nbsp;
-		<form method="POST" action="{{ url('/wishlist/share/regenerate') }}" class="is-inline-block" onsubmit="return confirm('{{ __('app.confirm_wishlist_share_regenerate') }}');">
+		<form method="POST" action="{{ url('/wishlist/share/regenerate') }}" class="is-inline-block" onsubmit="return confirm(window.WISHLIST_SHARE_REGENERATE_CONFIRM);">
 			@csrf
 			<button type="submit" class="button is-small">{{ __('app.wishlist_share_regenerate') }}</button>
 		</form>
@@ -283,6 +283,13 @@
 </div>
 
 <script>
+	// json_encode (not a plain {{ }} interpolation) so an apostrophe in the
+	// translated text - "can't be undone", say - can't break out of the
+	// single-quoted JS string it's used in below. Same reasoning as
+	// chat.php's CHAT_DELETE_CONFIRM.
+	window.WISHLIST_REMOVE_CONFIRM = {!! json_encode(__('app.confirm_remove_wishlist_item')) !!};
+	window.WISHLIST_SHARE_REGENERATE_CONFIRM = {!! json_encode(__('app.confirm_wishlist_share_regenerate')) !!};
+
 	window.showAddWishlistItem = function() {
 		document.getElementById('frmAddWishlistItem').reset();
 		document.getElementById('wishlistAddModal').classList.add('is-active');

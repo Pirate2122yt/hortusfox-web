@@ -58,7 +58,7 @@
 			@if ($is_owner)
 				<span class="plant-journal-entry-actions">
 					<a href="javascript:void(0);" title="{{ __('app.move_to_collection') }}" onclick="window.moveWishlistItemToCollection('{{ $wishlist_item->get('id') }}');"><i class="fas fa-seedling is-color-darker"></i></a>&nbsp;
-					<a href="javascript:void(0);" title="{{ __('app.edit') }}" onclick="let el = document.getElementById('wishlist-title-{{ $wishlist_item->get('id') }}'); window.showEditWishlistItem('{{ $wishlist_item->get('id') }}', el.dataset);"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" title="{{ __('app.remove') }}" onclick="if (confirm('{{ __('app.confirm_remove_wishlist_item') }}')) { document.getElementById('frmRemoveWishlistItem-{{ $wishlist_item->get('id') }}').submit(); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
+					<a href="javascript:void(0);" title="{{ __('app.edit') }}" onclick="let el = document.getElementById('wishlist-title-{{ $wishlist_item->get('id') }}'); window.showEditWishlistItem('{{ $wishlist_item->get('id') }}', el.dataset);"><i class="fas fa-edit is-color-darker"></i></a>&nbsp;<a href="javascript:void(0);" title="{{ __('app.remove') }}" onclick="if (confirm(window.WISHLIST_REMOVE_CONFIRM)) { document.getElementById('frmRemoveWishlistItem-{{ $wishlist_item->get('id') }}').submit(); }"><i class="fas fa-trash-alt is-color-darker"></i></a>
 
 					<form id="frmRemoveWishlistItem-{{ $wishlist_item->get('id') }}" method="POST" action="{{ url('/wishlist/remove') }}" class="is-hidden">
 						@csrf
