@@ -197,4 +197,30 @@ class ChatMsgModel extends \Asatru\Database\Model {
             throw $e;
         }
     }
+
+    /**
+     * Deletes a single chat entry - a user-typed message or a system
+     * message (activity log entry) alike, since both are rows in this
+     * same table distinguished only by the sysmsg flag. Admin-only,
+     * enforced by the caller (ChatController::remove_message).
+     *
+     * @param $id
+     * @return bool true if a row was actually removed
+     * @throws \Exception
+     */
+    public static function removeMessage($id)
+    {
+        try {
+            $row = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$id])->first();
+            if (!$row) {
+                return false;
+            }
+
+            static::raw('DELETE FROM `@THIS` WHERE id = ?', [$id]);
+
+            return true;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

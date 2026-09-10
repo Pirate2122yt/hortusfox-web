@@ -242,4 +242,40 @@ class ChatController extends BaseController {
 			]);
 		}
 	}
+
+	/**
+	 * Handles URL: /chat/message/remove
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\JsonHandler
+	 */
+	public function remove_message($request)
+	{
+		try {
+			if (!UserModel::isCurrentlyAdmin()) {
+				return json([
+					'code' => 403,
+					'msg' => __('app.access_denied')
+				]);
+			}
+
+			$id = $request->params()->query('message', null);
+
+			if (!is_numeric($id)) {
+				throw new \Exception('Invalid message');
+			}
+
+			$removed = ChatMsgModel::removeMessage((int)$id);
+
+			return json([
+				'code' => 200,
+				'removed' => $removed
+			]);
+		} catch (\Exception $e) {
+			return json([
+				'code' => 500,
+				'msg' => $e->getMessage()
+			]);
+		}
+	}
 }

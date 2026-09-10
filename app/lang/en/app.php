@@ -681,5 +681,7 @@ return [
 	'push_tasks_tomorrow' => 'Also send a push notification',
 	'push_tasks_recurring' => 'Also send a push notification',
 	'push_calendar_reminder' => 'Also send a push notification',
-	'push_chat_message' => 'Send a push notification for new chat messages when I\'m not active in the app'
+	'push_chat_message' => 'Send a push notification for new chat messages when I\'m not active in the app',
+	'access_denied' => 'Access denied.',
+	'confirm_remove_chat_message' => 'Delete this message? This can\'t be undone.'
 ];

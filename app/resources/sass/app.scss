@@ -85,6 +85,17 @@ body {
     color: var(--hf-text-primary);
 }
 
+/* Bulma also gives <strong> its own dedicated color (#363636, even
+   darker than the body default above) which overrides the inherited
+   body color rather than following it. Any plain <strong> with no
+   class of its own - most commonly an empty-state hint like "There
+   are no feature requests yet" - was rendering nearly invisible
+   against the darker themes (e.g. Ember). Make it follow body text
+   like every other unstyled element does. */
+strong {
+    color: inherit;
+}
+
 /* Bulma's stock button colors (is-success, is-info, is-danger, is-link)
    are tuned for white text at a ratio well below WCAG AA - e.g.
    is-success's white-on-#23d160 is only ~2:1. These are darkened

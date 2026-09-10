@@ -61,6 +61,10 @@
 
                             <div class="chat-message-info">
                                 {{ (new Carbon($message->get('created_at')))->diffForHumans() }}
+
+                                @if (UserModel::isCurrentlyAdmin())
+                                    &nbsp;<a href="javascript:void(0);" title="{{ __('app.remove') }}" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage({{ $message->get('id') }}, this); }"><i class="fas fa-trash-alt"></i></a>
+                                @endif
                             </div>
                         </div>
                     @else
@@ -69,13 +73,19 @@
                         <div class="system-message">
                             <div class="system-message-left {{ ($isNewMessage) ? 'system-message-left-new' : '' }}">
                                 <div class="system-message-context" title="{{ date('Y-m-d H:i:s', strtotime($message->get('created_at'))) }}">{{ ($message->get('display_name') ?: (($message->get('userId')) ? UserModel::getNameById($message->get('userId')) : 'System')) . ' @ ' . (new Carbon(strtotime($message->get('created_at'))))->diffForHumans() }}</div>
-                                
+
                                 <div class="system-message-content">{!! UtilsModule::purify($message->get('message')) !!}</div>
                             </div>
 
-                            @if ($isNewMessage)
+                            @if (($isNewMessage) || (UserModel::isCurrentlyAdmin()))
                                 <div class="system-message-right">
-                                    <div class="system-message-new chat-message-new">{{ __('app.new') }}</div>
+                                    @if ($isNewMessage)
+                                        <div class="system-message-new chat-message-new">{{ __('app.new') }}</div>
+                                    @endif
+
+                                    @if (UserModel::isCurrentlyAdmin())
+                                        <a href="javascript:void(0);" title="{{ __('app.remove') }}" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage({{ $message->get('id') }}, this); }"><i class="fas fa-trash-alt"></i></a>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -87,3 +97,56 @@
 
     <div class="column is-1"></div>
 </div>
+
+<script>
+    const CHAT_DELETE_CONFIRM = {!! json_encode(__('app.confirm_remove_chat_message')) !!};
+
+    function chatDeleteMessage(id, el) {
+        window.vue.ajaxRequest('post', window.location.origin + '/chat/message/remove', { message: id }, function(response) {
+            if (response.code == 200) {
+                let container = el.closest('.chat-message') || el.closest('.system-message');
+                if (container) {
+                    container.remove();
+                }
+            } else {
+                alert(response.msg);
+            }
+        });
+    }
+
+    @if (UserModel::isCurrentlyAdmin())
+        // Messages that arrive live via the periodic /chat/query poll are
+        // rendered by window.vue.renderNewChatMessage(), which lives in the
+        // compiled app.js bundle and has no delete affordance built in.
+        // Rather than requiring a frontend rebuild to add one, wrap the
+        // existing function here and splice a delete icon into the HTML it
+        // returns, so live-polled messages get the same delete option as
+        // the ones rendered server-side above. If the bundle's markup for
+        // this ever changes shape, the string replace below just silently
+        // doesn't match - it never breaks the underlying chat feature.
+        document.addEventListener('DOMContentLoaded', function() {
+            if ((typeof window.vue === 'undefined') || (typeof window.vue.renderNewChatMessage !== 'function')) {
+                return;
+            }
+
+            let originalRenderNewChatMessage = window.vue.renderNewChatMessage;
+
+            window.vue.renderNewChatMessage = function(elem, auth_user) {
+                let html = originalRenderNewChatMessage(elem, auth_user);
+                let deleteLink = '<a href="javascript:void(0);" onclick="if (confirm(CHAT_DELETE_CONFIRM)) { chatDeleteMessage(' + elem.id + ', this); }"><i class="fas fa-trash-alt"></i></a>';
+
+                // Insert right before the outermost wrapping div's closing
+                // tag, so it lands inside the message bubble regardless of
+                // the bundle's exact internal markup/whitespace. If the
+                // bundle's output ever doesn't match this shape, the regex
+                // just fails to match and the message renders exactly as
+                // it always has, minus the delete icon.
+                if (/<\/div>\s*$/.test(html)) {
+                    html = html.replace(/<\/div>(\s*)$/, deleteLink + '</div>$1');
+                }
+
+                return html;
+            };
+        });
+    @endif
+</script>
