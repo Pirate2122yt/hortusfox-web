@@ -9,6 +9,14 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot28()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS feature_request_notify_user INT NULL');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot27()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS color_scheme VARCHAR(512) NULL');

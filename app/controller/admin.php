@@ -96,6 +96,7 @@ class AdminController extends BaseController {
 			$enabletasks = (bool)$request->params()->query('enabletasks', 0);
 			$enableinventory = (bool)$request->params()->query('enableinventory', 0);
 			$enablecalendar = (bool)$request->params()->query('enablecalendar', 0);
+			$feature_request_notify_user = (int)$request->params()->query('feature_request_notify_user', app('feature_request_notify_user', 0));
 			$enablechat = (bool)$request->params()->query('enablechat', 0);
 			$enablesysmsgs = (bool)$request->params()->query('enablesysmsgs', 0);
 			$system_message_plant_log = (bool)$request->params()->query('system_message_plant_log', 0);
@@ -128,6 +129,7 @@ class AdminController extends BaseController {
 				'tasks_enable' => $enabletasks,
 				'inventory_enable' => $enableinventory,
 				'calendar_enable' => $enablecalendar,
+				'feature_request_notify_user' => ($feature_request_notify_user > 0) ? $feature_request_notify_user : null,
 				'chat_enable' => $enablechat,
 				'chat_system' => $enablesysmsgs,
 				'system_message_plant_log' => $system_message_plant_log,

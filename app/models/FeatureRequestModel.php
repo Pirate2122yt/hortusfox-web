@@ -60,9 +60,74 @@ class FeatureRequestModel extends \Asatru\Database\Model {
 
             $item = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
 
+            if ($item) {
+                try {
+                    static::notifyNewRequest($item, $user);
+                } catch (\Exception $e) {
+                    // A failed notification email shouldn't turn a successfully
+                    // saved feature request into an error for the requester -
+                    // but it shouldn't vanish silently either.
+                    addLog(ASATRU_LOG_ERROR, 'Failed to send feature request notification email: ' . $e->getMessage());
+                }
+            }
+
             return ($item) ? $item->get('id') : 0;
         } catch (\Exception $e) {
             throw $e;
+        }
+    }
+
+    /**
+     * Emails the admin-configured recipient about a newly submitted
+     * feature request, if notifications are enabled. Does nothing if no
+     * recipient is configured, the configured user no longer exists, or
+     * the recipient is the same person who just submitted the request.
+     *
+     * @param $item
+     * @param $requester
+     * @return void
+     * @throws \Exception
+     */
+    private static function notifyNewRequest($item, $requester)
+    {
+        $notify_user_id = app('feature_request_notify_user');
+        if (!$notify_user_id) {
+            return;
+        }
+
+        if ((int)$notify_user_id === (int)$requester->get('id')) {
+            return;
+        }
+
+        $notify_user = UserModel::getUserById($notify_user_id);
+        if ((!$notify_user) || (!$notify_user->get('email'))) {
+            return;
+        }
+
+        // Rendering the email in the recipient's language switches the
+        // active locale, which also sets a cookie on the current HTTP
+        // response - fine for a cronjob response nobody reads, but this
+        // runs inside the requester's own request, so restore it
+        // afterwards rather than leaking the recipient's language
+        // preference onto the requester's browser.
+        $original_lang = getLocale();
+
+        try {
+            $lang = $notify_user->get('lang');
+            if ($lang === null) {
+                $lang = env('APP_LANG', 'en');
+            }
+
+            setLanguage($lang);
+
+            $mailobj = new Asatru\SMTPMailer\SMTPMailer();
+            $mailobj->setRecipient($notify_user->get('email'));
+            $mailobj->setSubject('[' . __('app.mail_info_feature_request_new') . '] ' . $item->get('title'));
+            $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/feature_request_new']], ['item' => $item, 'requester' => $requester]);
+            $mailobj->setProperties(mail_properties());
+            $mailobj->send();
+        } finally {
+            setLanguage($original_lang);
         }
     }
 

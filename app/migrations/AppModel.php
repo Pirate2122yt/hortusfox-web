@@ -84,6 +84,7 @@ class AppModel_Migration {
         $this->database->add('public_captcha_sitekey VARCHAR(512) NULL');
         $this->database->add('public_captcha_secretkey VARCHAR(512) NULL');
         $this->database->add('color_scheme VARCHAR(512) NULL');
+        $this->database->add('feature_request_notify_user INT NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

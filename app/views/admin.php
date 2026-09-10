@@ -100,6 +100,19 @@
             </div>
         </div>
 
+        <div class="field">
+            <label class="label">{{ __('app.feature_request_notify_user') }}</label>
+            <div class="control">
+                <select class="input" name="feature_request_notify_user">
+                    <option value="0" {{ (!app('feature_request_notify_user')) ? 'selected' : ''}}>{{ __('app.feature_request_notify_user_label_none') }}</option>
+                    @foreach ($user_accounts as $notify_user_option)
+                        <option value="{{ $notify_user_option->get('id') }}" {{ ((string)app('feature_request_notify_user') === (string)$notify_user_option->get('id')) ? 'selected' : ''}}>{{ $notify_user_option->get('name') }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <p class="help">{{ __('app.feature_request_notify_user_hint') }}</p>
+        </div>
+
         <div><hr></div>
 
         <div class="field">
