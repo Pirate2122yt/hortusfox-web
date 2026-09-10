@@ -34,6 +34,26 @@
 	<div class="plant-warning">{{ __('app.plant_warning', ['reason' => __('app.' . $plant->get('health_state'))]) }}</div>
 @endif
 
+<div class="log">
+	<h3>{{ __('app.health_history') }}</h3>
+
+	@if (count($health_segments) > 0)
+		<div style="display: flex; height: 28px; border-radius: 4px; overflow: hidden; margin-top: 10px; margin-bottom: 12px;">
+			@foreach ($health_segments as $segment)
+				<div style="flex-grow: {{ $segment['days'] }}; flex-shrink: 1; flex-basis: 0; background-color: {{ ($segment['is_good']) ? 'rgb(115, 214, 103)' : 'rgb(212, 67, 67)' }}; border-right: 2px solid rgb(50, 54, 59);" title="{{ __('app.health_history_segment', ['state' => __('app.' . $segment['health_state']), 'from' => $segment['from_label'], 'till' => $segment['till_label']]) }}"></div>
+			@endforeach
+		</div>
+
+		<div class="is-default-text-color">
+			<span><span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background-color: rgb(115, 214, 103);"></span>&nbsp;{{ __('app.in_good_standing') }}</span>
+			&nbsp;&nbsp;
+			<span><span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background-color: rgb(212, 67, 67);"></span>&nbsp;{{ __('app.health_history_problem') }}</span>
+		</div>
+	@else
+		<div class="is-not-available">{{ __('app.health_history_empty') }}</div>
+	@endif
+</div>
+
 <div class="columns plant-column">
 	<div class="column is-two-third">
 		@if (app('plantrec_enable'))

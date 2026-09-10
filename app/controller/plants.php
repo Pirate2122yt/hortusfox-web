@@ -366,7 +366,9 @@ class PlantsController extends BaseController {
 		}
 
 		$offspring = PlantsModel::findOffspring($plant_id);
-		
+
+		$health_segments = PlantHealthLogModel::getSegmentsForPlant($plant_id);
+
 		return parent::view(['content', 'details'], [
 			'user' => $user,
 			'plant' => $plant_data,
@@ -382,7 +384,8 @@ class PlantsController extends BaseController {
 			'plant_log_entry_comments' => $plant_log_entry_comments,
 			'offspring' => $offspring,
 			'edit_user_name' => $edit_user_name,
-			'edit_user_when' => $edit_user_when
+			'edit_user_when' => $edit_user_when,
+			'health_segments' => $health_segments
 		]);
 	}
 

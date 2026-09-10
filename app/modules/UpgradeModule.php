@@ -9,6 +9,22 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot30()
+    {
+        PlantHealthLogModel::raw('CREATE TABLE IF NOT EXISTS PlantHealthLogModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            plant INT NOT NULL,
+            health_state VARCHAR(512) NOT NULL,
+            recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        //Seed a starting data point for every plant that predates this feature, so their timeline isn't empty
+        PlantHealthLogModel::raw('INSERT INTO `@THIS` (plant, health_state, recorded_at) SELECT id, health_state, created_at FROM `PlantsModel` WHERE id NOT IN (SELECT DISTINCT plant FROM `@THIS`)');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot29()
     {
         PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS water_interval_days INT NULL');

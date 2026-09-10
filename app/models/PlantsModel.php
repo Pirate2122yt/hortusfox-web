@@ -484,6 +484,8 @@ class PlantsModel extends \Asatru\Database\Model {
             
             $query = static::raw('SELECT * FROM `@THIS` ORDER BY id DESC LIMIT 1')->first();
 
+            PlantHealthLogModel::addEntry($query->get('id'), self::PLANT_STATE_GOOD);
+
             if (!$api) {
                 TextBlockModule::newPlant($name, url('/plants/details/' . $query->get('id')));
                 LogModel::addLog($user->get('id'), $location, 'add_plant', $name, url('/plants/details/' . $query->get('id')));
@@ -516,15 +518,25 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             static::validateAttribute($attribute);
-            
+
+            $previous_health_state = null;
+            if ($attribute === 'health_state') {
+                $current_plant = static::raw('SELECT health_state FROM `@THIS` WHERE id = ?', [$plantId])->first();
+                $previous_health_state = ($current_plant) ? $current_plant->get('health_state') : null;
+            }
+
             static::raw('UPDATE `@THIS` SET ' . $attribute . ' = ?, last_edited_user = ?, last_edited_date = CURRENT_TIMESTAMP WHERE id = ?', [($value !== '#null') ? $value : null, $user?->get('id'), $plantId]);
-        
+
             if (!$api) {
                 LogModel::addLog($user->get('id'), $plantId, $attribute, $value, url('/plants/details/' . $plantId));
             }
 
             if (app('system_message_plant_log')) {
                 PlantLogModel::addEntry($plantId, $attribute . ' = ' . $value, '', '', true, true);
+            }
+
+            if (($attribute === 'health_state') && ($value !== $previous_health_state)) {
+                PlantHealthLogModel::addEntry($plantId, $value);
             }
         } catch (\Exception $e) {
             throw $e;
