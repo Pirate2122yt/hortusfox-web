@@ -1204,14 +1204,19 @@
 								<p class="settings-subsection-label">{{ __('app.preferred_locations') }}</p>
 
 								<div class="field">
-									<div class="control">
-										<select class="input" name="preferred_locations[]" multiple>
-											@if (isset($locations))
-												@foreach ($locations as $preferred_location_option)
-													<option value="{{ $preferred_location_option->get('id') }}" {{ (in_array((int)$preferred_location_option->get('id'), $user_preferred_location_ids ?? [])) ? 'selected' : '' }}>{{ $preferred_location_option->get('name') }}</option>
-												@endforeach
-											@endif
-										</select>
+									<!-- A plain <select multiple> needs ctrl/cmd-click to pick more
+									     than one option, which most people don't know to do and
+									     which gives no visual list of what's currently selected -
+									     a checkbox list is both more obvious and easier to scan. -->
+									<div class="control" style="display: flex; flex-wrap: wrap; gap: 6px 20px; max-height: 220px; overflow-y: auto; padding: 4px 2px;">
+										@if (isset($locations))
+											@foreach ($locations as $preferred_location_option)
+												<label class="checkbox" style="flex: 0 0 auto;">
+													<input type="checkbox" name="preferred_locations[]" value="{{ $preferred_location_option->get('id') }}" {{ (in_array((int)$preferred_location_option->get('id'), $user_preferred_location_ids ?? [])) ? 'checked' : '' }}>
+													{{ $preferred_location_option->get('name') }}
+												</label>
+											@endforeach
+										@endif
 									</div>
 									<p class="help">{{ __('app.preferred_locations_hint') }}</p>
 								</div>
