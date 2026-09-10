@@ -114,16 +114,8 @@ class CalendarController extends BaseController {
     
             $name = $request->params()->query('name', null);
             $date_from = $request->params()->query('date_from', null);
-            $date_till = $request->params()->query('date_till', null);
+            $date_till = $request->params()->query('date_till', $date_from);
             $class = $request->params()->query('class', null);
-
-            if ($date_till === null) {
-                $date_till = date('Y-m-d', strtotime('+1 day', strtotime($date_from)));
-            }
-
-            if ($date_from === $date_till) {
-                $date_till = date('Y-m-d', strtotime('+1 day', strtotime($date_from)));
-            }
 
             CalendarModel::addItem($name, $date_from, $date_till, $class);
     
@@ -149,17 +141,9 @@ class CalendarController extends BaseController {
             $ident = $request->params()->query('ident', null);
             $name = $request->params()->query('name', null);
             $date_from = $request->params()->query('date_from', null);
-            $date_till = $request->params()->query('date_till', null);
+            $date_till = $request->params()->query('date_till', $date_from);
             $class = $request->params()->query('class', null);
 
-            if ($date_till === null) {
-                $date_till = date('Y-m-d', strtotime('+1 day', strtotime($date_from)));
-            }
-
-            if ($date_from === $date_till) {
-                $date_till = date('Y-m-d', strtotime('+1 day', strtotime($date_from)));
-            }
-            
             CalendarModel::editItem($ident, $name, $date_from, $date_till, $class);
     
             FlashMessage::setMsg('success', __('app.calendar_item_edited'));
