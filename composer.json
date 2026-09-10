@@ -26,7 +26,8 @@
         "tecnickcom/tcpdf": "^6.8",
         "ezyang/htmlpurifier": "^4.18",
         "erusev/parsedown": "^1.8",
-        "minishlink/web-push": "^11.0"
+        "minishlink/web-push": "^11.0",
+        "guzzlehttp/guzzle": "^7.9"
     },
 	"scripts": {
 		"post-root-package-install": [
