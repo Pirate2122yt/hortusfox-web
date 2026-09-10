@@ -7,6 +7,21 @@
  */
 class UpgradeModule {
     /**
+     * Lets the admin narrow the "email admins about new public comments"
+     * notification down to specific admin accounts instead of always
+     * broadcasting to every admin. Stored as a comma-separated list of
+     * UserModel ids, the same shape already used elsewhere in the app for
+     * a handful of selected ids (see e.g. PlantsController::apply_plants);
+     * NULL/empty keeps the original "notify every admin" behavior.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot37()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS public_comment_notify_admin_ids TEXT NULL');
+    }
+
+    /**
      * @return void
      */
     private static function upgradeTo5dot36()

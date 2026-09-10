@@ -183,6 +183,20 @@
             <p class="help">{{ __('app.public_comment_notify_admins_hint') }}</p>
         </div>
 
+        <div class="field">
+            <label class="label">{{ __('app.public_comment_notify_admin_ids_label') }}</label>
+            <div class="control">
+                <select class="input" name="public_comment_notify_admin_ids[]" multiple>
+                    @foreach ($user_accounts as $notify_admin_option)
+                        @if ($notify_admin_option->get('admin'))
+                            <option value="{{ $notify_admin_option->get('id') }}" {{ (in_array((int)$notify_admin_option->get('id'), $notify_admin_selected_ids ?? [])) ? 'selected' : '' }}>{{ $notify_admin_option->get('name') }}</option>
+                        @endif
+                    @endforeach
+                </select>
+            </div>
+            <p class="help">{{ __('app.public_comment_notify_admin_ids_hint') }}</p>
+        </div>
+
         <div><hr></div>
 
         <div class="field">

@@ -563,11 +563,21 @@ class UserModel extends \Asatru\Database\Model {
     }
 
     /**
+     * @param array|null $ids When given, narrows the result down to admins
+     *                        whose id is in this list (any id that isn't
+     *                        actually an admin is silently ignored). A
+     *                        null or empty list returns every admin.
      * @return mixed
      */
-    public static function getAdmins()
+    public static function getAdmins($ids = null)
     {
         try {
+            if ((is_array($ids)) && (count($ids) > 0)) {
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+                return static::raw('SELECT * FROM `@THIS` WHERE admin = 1 AND id IN (' . $placeholders . ')', $ids);
+            }
+
             return static::raw('SELECT * FROM `@THIS` WHERE admin = 1');
         } catch (\Exception $e) {
             throw $e;

@@ -657,6 +657,8 @@ return [
 	'public_plantid_enable_hint' => 'Lets anonymous visitors on /public/identify upload a photo and get a species suggestion, using the Pl@ntNet key configured above. Capped at 10 identifications per visitor per day.',
 	'public_comment_notify_admins_label' => 'Email admins about new public comments',
 	'public_comment_notify_admins_hint' => 'When a visitor comments on a shared plant\'s journal entry, email every admin account so it doesn\'t go unnoticed.',
+	'public_comment_notify_admin_ids_label' => 'Only notify these admins',
+	'public_comment_notify_admin_ids_hint' => 'Leave empty to email every admin account. Select one or more admins here to only notify them instead.',
 	'public_captcha_sitekey_label' => 'Cloudflare Turnstile site key (optional)',
 	'public_captcha_secretkey_label' => 'Cloudflare Turnstile secret key (optional)',
 	'public_captcha_hint' => 'Recommended when the public identifier is enabled. Leave both blank to skip the CAPTCHA challenge (the daily limit and upload checks still apply). Get free keys at dash.cloudflare.com/?to=/:account/turnstile.',

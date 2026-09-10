@@ -59,12 +59,16 @@ class AdminController extends BaseController {
 		$plant_attributes = PlantDefAttrModel::getAll();
 
 		$bulk_cmds = CustBulkCmdModel::getCmdList();
-		
+
+		$notify_admin_ids_raw = trim((string)app('public_comment_notify_admin_ids', ''));
+		$notify_admin_selected_ids = ($notify_admin_ids_raw === '') ? [] : array_values(array_filter(array_map('intval', explode(',', $notify_admin_ids_raw))));
+
 		return parent::view(['content', 'admin'], [
 			'user' => $user,
 			'locations' => $locs,
 			'places' => $places,
 			'user_accounts' => $user_accounts,
+			'notify_admin_selected_ids' => $notify_admin_selected_ids,
 			'calendar_classes' => $calendar_classes,
 			'mail_encryption_types' => $mail_encryption_types,
 			'themes' => $themes,
@@ -107,6 +111,9 @@ class AdminController extends BaseController {
 			$history_name = $request->params()->query('history_name', app('history_name'));
 			$public_catalog_enable = (bool)$request->params()->query('public_catalog_enable', 0);
 			$public_comment_notify_admins = (bool)$request->params()->query('public_comment_notify_admins', 0);
+			$public_comment_notify_admin_ids_raw = $request->params()->query('public_comment_notify_admin_ids', []);
+			$public_comment_notify_admin_ids_raw = is_array($public_comment_notify_admin_ids_raw) ? $public_comment_notify_admin_ids_raw : [];
+			$public_comment_notify_admin_ids = implode(',', array_values(array_filter(array_map('intval', $public_comment_notify_admin_ids_raw))));
 			$enablephotoshare = (bool)$request->params()->query('enablephotoshare', 0);
 			$custom_media_share_host = $request->params()->query('custom_media_share_host', share_api_host());
 			$cronpw = $request->params()->query('cronpw', app('cronjob_pw'));
@@ -145,6 +152,7 @@ class AdminController extends BaseController {
 				'history_name' => $history_name,
 				'public_catalog_enable' => $public_catalog_enable,
 				'public_comment_notify_admins' => $public_comment_notify_admins,
+				'public_comment_notify_admin_ids' => ($public_comment_notify_admin_ids !== '') ? $public_comment_notify_admin_ids : null,
 				'enable_media_share' => $enablephotoshare,
 				'custom_media_share_host' => rtrim($custom_media_share_host, '/'),
 				'cronjob_pw' => $cronpw,

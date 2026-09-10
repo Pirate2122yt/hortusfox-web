@@ -119,11 +119,15 @@ class PlantLogCommentModel extends \Asatru\Database\Model {
     }
 
     /**
-     * Emails every admin user when a new public comment is posted. These
-     * come from anonymous visitors, so without this admins would only
-     * find out by noticing the internal chat notification (itself only
-     * shown if chat_system is enabled) or by happening to revisit the
-     * plant. A failed send for one admin never blocks the others.
+     * Emails admin users when a new public comment is posted. These come
+     * from anonymous visitors, so without this admins would only find out
+     * by noticing the internal chat notification (itself only shown if
+     * chat_system is enabled) or by happening to revisit the plant. A
+     * failed send for one admin never blocks the others.
+     *
+     * By default every admin is emailed; the admin settings screen can
+     * narrow this down to specific admin accounts (public_comment_notify_admin_ids) -
+     * an empty selection there keeps the "notify everyone" default.
      *
      * @param $plant
      * @param $entry
@@ -135,7 +139,10 @@ class PlantLogCommentModel extends \Asatru\Database\Model {
     public static function notifyAdmins($plant, $entry, $authorName, $comment)
     {
         try {
-            $admins = UserModel::getAdmins();
+            $selected_admin_ids_raw = trim((string)app('public_comment_notify_admin_ids', ''));
+            $selected_admin_ids = ($selected_admin_ids_raw === '') ? [] : array_values(array_filter(array_map('intval', explode(',', $selected_admin_ids_raw))));
+
+            $admins = UserModel::getAdmins($selected_admin_ids);
 
             $authorName = trim((string)$authorName);
             if ($authorName === '') {
