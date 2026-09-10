@@ -1125,10 +1125,34 @@
 							</div>
 
 							@if (app('push_enable'))
+							<div class="field belongs-to-previous-field">
+								<div class="control">
+									<input type="checkbox" name="push_plant_care" value="1" {{ ($user->get('push_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_plant_care') }}
+								</div>
+							</div>
+							@endif
+
+							@if (app('push_enable'))
 							<div class="field">
 								<div class="control">
 									<input type="checkbox" name="push_chat_message" value="1" {{ ($user->get('push_chat_message')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_chat_message') }}
 								</div>
+							</div>
+							@endif
+
+							@if (app('push_enable'))
+							<div class="field">
+								<label class="label">{{ __('app.preferred_locations') }}</label>
+								<div class="control">
+									<select class="input" name="preferred_locations[]" multiple>
+										@if (isset($locations))
+											@foreach ($locations as $preferred_location_option)
+												<option value="{{ $preferred_location_option->get('id') }}" {{ (in_array((int)$preferred_location_option->get('id'), $user_preferred_location_ids ?? [])) ? 'selected' : '' }}>{{ $preferred_location_option->get('name') }}</option>
+											@endforeach
+										@endif
+									</select>
+								</div>
+								<p class="help">{{ __('app.preferred_locations_hint') }}</p>
 							</div>
 							@endif
 

@@ -65,10 +65,13 @@ class PlantCareInformerModel extends \Asatru\Database\Model {
     }
 
     /**
-     * Emails every user who has opted in to plant care reminders and
-     * hasn't already been informed about this particular due occurrence.
-     * A failed send for one user never blocks the others, since this is
-     * only ever invoked from the cron job.
+     * Emails and/or pushes to every user who has opted in to plant care
+     * reminders and hasn't already been informed about this particular due
+     * occurrence. A push is further narrowed by the user's preferred-
+     * Locations filter, since (unlike a Task) a plant care reminder is
+     * always tied to exactly one Plant's Location. A failed send for one
+     * user never blocks the others, since this is only ever invoked from
+     * the cron job.
      *
      * @param $plant
      * @param $action one of 'water', 'fertilise', 'repot'
@@ -84,7 +87,14 @@ class PlantCareInformerModel extends \Asatru\Database\Model {
             $count = 0;
 
             foreach ($users as $user) {
-                if (($user->get('notify_plant_care')) && (!static::alreadyInformed($plant->get('id'), $user->get('id'), $action, $dueSince))) {
+                $wantsEmail = (bool)$user->get('notify_plant_care');
+                $wantsPush = (bool)$user->get('push_plant_care');
+
+                if ($wantsPush) {
+                    $wantsPush = UserPreferredLocationModel::wantsLocation($user->get('id'), $plant->get('location'));
+                }
+
+                if ((($wantsEmail) || ($wantsPush)) && (!static::alreadyInformed($plant->get('id'), $user->get('id'), $action, $dueSince))) {
                     if ($count < $limit) {
                         $lang = $user->get('lang');
                         if ($lang === null) {
@@ -93,12 +103,18 @@ class PlantCareInformerModel extends \Asatru\Database\Model {
 
                         setLanguage($lang);
 
-                        $mailobj = new Asatru\SMTPMailer\SMTPMailer();
-                        $mailobj->setRecipient($user->get('email'));
-                        $mailobj->setSubject('[' . __('app.mail_info_plant_care_due') . '] ' . $plant->get('name') . ' - ' . __('app.care_action_' . $action));
-                        $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/plant_care_due']], ['plant' => $plant, 'action' => $action, 'user' => $user]);
-                        $mailobj->setProperties(mail_properties());
-                        $mailobj->send();
+                        if ($wantsEmail) {
+                            $mailobj = new Asatru\SMTPMailer\SMTPMailer();
+                            $mailobj->setRecipient($user->get('email'));
+                            $mailobj->setSubject('[' . __('app.mail_info_plant_care_due') . '] ' . $plant->get('name') . ' - ' . __('app.care_action_' . $action));
+                            $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/plant_care_due']], ['plant' => $plant, 'action' => $action, 'user' => $user]);
+                            $mailobj->setProperties(mail_properties());
+                            $mailobj->send();
+                        }
+
+                        if ($wantsPush) {
+                            PushNotificationModule::sendToUser($user->get('id'), __('app.mail_info_plant_care_due'), $plant->get('name') . ' - ' . __('app.care_action_' . $action), url('/plants/details/' . $plant->get('id')));
+                        }
 
                         static::markInformed($plant->get('id'), $user->get('id'), $action, $dueSince);
 

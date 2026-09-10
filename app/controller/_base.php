@@ -123,6 +123,15 @@ class BaseController extends Asatru\Controller\Controller {
 			$attr['places'] = PlacesModel::getAll();
 		}
 
+		// The preferences modal's preferred-Locations picker (for push
+		// notification filtering) needs to know which Locations the
+		// current user already has selected, regardless of which
+		// controller renders the layout.
+		if ((!isset($attr['user_preferred_location_ids'])) && ($this->layout === 'layout')) {
+			$preferences_user = UserModel::getAuthUser();
+			$attr['user_preferred_location_ids'] = ($preferences_user) ? UserPreferredLocationModel::getLocationIdsForUser($preferences_user->get('id')) : [];
+		}
+
 		return view($this->layout, $yields, $attr);
 	}
 }

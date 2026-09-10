@@ -682,6 +682,9 @@ return [
 	'push_tasks_recurring' => 'Also send a push notification',
 	'push_calendar_reminder' => 'Also send a push notification',
 	'push_chat_message' => 'Send a push notification for new chat messages when I\'m not active in the app',
+	'push_plant_care' => 'Also send a push notification',
+	'preferred_locations' => 'Preferred locations for push notifications',
+	'preferred_locations_hint' => 'Only get Task and plant care push notifications for these locations. Leave empty to get them for every location.',
 	'access_denied' => 'Access denied.',
 	'confirm_remove_chat_message' => 'Delete this message? This can\'t be undone.'
 ];

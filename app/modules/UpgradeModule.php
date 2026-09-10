@@ -7,6 +7,26 @@
  */
 class UpgradeModule {
     /**
+     * Adds push notifications for plant care reminders (email-only until
+     * now) and a per-user preferred-Locations filter that narrows down
+     * which Locations' push notifications (Tasks and Plant care) a user
+     * actually wants to receive.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot34()
+    {
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_plant_care BOOLEAN NOT NULL DEFAULT 1');
+
+        UserPreferredLocationModel::raw('CREATE TABLE IF NOT EXISTS UserPreferredLocationModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user INT NOT NULL,
+            location INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
      * Weather is now configured per-Place instead of per-Location, since a
      * Place (e.g. a house) is the more natural unit for "where is this" than
      * an individual Location (a room) inside it. Moves the coordinate

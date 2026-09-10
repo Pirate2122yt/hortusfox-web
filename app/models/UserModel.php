@@ -263,10 +263,13 @@ class UserModel extends \Asatru\Database\Model {
      * @param $push_tasks_recurring
      * @param $push_calendar_reminder
      * @param $push_chat_message
+     * @param $push_plant_care
+     * @param $preferred_locations array of Location ids, or null to leave
+     *                              the user's existing filter untouched
      * @return void
      * @throws \Exception
      */
-    public static function editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_place = null, $color_scheme = null, $notify_plant_care = false, $push_tasks_overdue = false, $push_tasks_tomorrow = false, $push_tasks_recurring = false, $push_calendar_reminder = false, $push_chat_message = false)
+    public static function editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_place = null, $color_scheme = null, $notify_plant_care = false, $push_tasks_overdue = false, $push_tasks_tomorrow = false, $push_tasks_recurring = false, $push_calendar_reminder = false, $push_chat_message = false, $push_plant_care = false, $preferred_locations = null)
     {
         try {
             $user = static::getAuthUser();
@@ -274,9 +277,13 @@ class UserModel extends \Asatru\Database\Model {
                 throw new \Exception('User not authenticated');
             }
 
-            static::raw('UPDATE `@THIS` SET name = ?, email = ?, lang = ?, theme = ?, chatcolor = ?, show_log = ?, show_calendar_view = ?, show_plant_id = ?, notify_tasks_overdue = ?, notify_tasks_tomorrow = ?, notify_tasks_recurring = ?, notify_calendar_reminder = ?, show_plants_aoru = ?, remember_location_sorting = ?, weather_place = ?, color_scheme = ?, notify_plant_care = ?, push_tasks_overdue = ?, push_tasks_tomorrow = ?, push_tasks_recurring = ?, push_calendar_reminder = ?, push_chat_message = ? WHERE id = ?', [
-                trim($name), trim($email), $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, (int)$show_plants_aoru, $remember_location_sorting, (is_numeric($weather_place) ? (int)$weather_place : null), (($color_scheme) && (array_key_exists($color_scheme, AppearanceModule::$available_themes)) ? $color_scheme : null), $notify_plant_care, $push_tasks_overdue, $push_tasks_tomorrow, $push_tasks_recurring, $push_calendar_reminder, $push_chat_message, $user->get('id')
+            static::raw('UPDATE `@THIS` SET name = ?, email = ?, lang = ?, theme = ?, chatcolor = ?, show_log = ?, show_calendar_view = ?, show_plant_id = ?, notify_tasks_overdue = ?, notify_tasks_tomorrow = ?, notify_tasks_recurring = ?, notify_calendar_reminder = ?, show_plants_aoru = ?, remember_location_sorting = ?, weather_place = ?, color_scheme = ?, notify_plant_care = ?, push_tasks_overdue = ?, push_tasks_tomorrow = ?, push_tasks_recurring = ?, push_calendar_reminder = ?, push_chat_message = ?, push_plant_care = ? WHERE id = ?', [
+                trim($name), trim($email), $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, (int)$show_plants_aoru, $remember_location_sorting, (is_numeric($weather_place) ? (int)$weather_place : null), (($color_scheme) && (array_key_exists($color_scheme, AppearanceModule::$available_themes)) ? $color_scheme : null), $notify_plant_care, $push_tasks_overdue, $push_tasks_tomorrow, $push_tasks_recurring, $push_calendar_reminder, $push_chat_message, $push_plant_care, $user->get('id')
             ]);
+
+            if ($preferred_locations !== null) {
+                UserPreferredLocationModel::setForUser($user->get('id'), $preferred_locations);
+            }
         } catch (\Exception $e) {
             throw $e;
         }

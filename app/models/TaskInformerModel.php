@@ -45,6 +45,13 @@ class TaskInformerModel extends \Asatru\Database\Model {
                 $wantsEmail = (bool)$user->get('notify_tasks_' . $what);
                 $wantsPush = (bool)$user->get('push_tasks_' . $what);
 
+                // A task linked to a Plant carries that Plant's Location;
+                // a task with no linked Plant has no Location to filter
+                // on, so it always reaches whoever opted into push.
+                if (($wantsPush) && ($plant)) {
+                    $wantsPush = UserPreferredLocationModel::wantsLocation($user->get('id'), $plant->get('location'));
+                }
+
                 if ((($wantsEmail) || ($wantsPush)) && (!static::userInformed($user->get('id'), $task->get('id'), $what))) {
                     if ($count < $limit) {
                         $lang = $user->get('lang');
