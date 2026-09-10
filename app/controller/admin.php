@@ -119,6 +119,10 @@ class AdminController extends BaseController {
 			$public_plantid_enable = (bool)$request->params()->query('public_plantid_enable', 0);
 			$public_captcha_sitekey = $request->params()->query('public_captcha_sitekey', app('public_captcha_sitekey'));
 			$public_captcha_secretkey = $request->params()->query('public_captcha_secretkey', app('public_captcha_secretkey'));
+			$push_enable = (bool)$request->params()->query('push_enable', 0);
+			$vapid_subject = $request->params()->query('vapid_subject', app('vapid_subject'));
+			$vapid_public_key = $request->params()->query('vapid_public_key', app('vapid_public_key'));
+			$vapid_private_key = $request->params()->query('vapid_private_key', app('vapid_private_key'));
 
 			$set = [
 				'workspace' => $workspace,
@@ -151,7 +155,11 @@ class AdminController extends BaseController {
 				'plantrec_quickscan' => $plantrec_quickscan,
 				'public_plantid_enable' => $public_plantid_enable,
 				'public_captcha_sitekey' => $public_captcha_sitekey,
-				'public_captcha_secretkey' => $public_captcha_secretkey
+				'public_captcha_secretkey' => $public_captcha_secretkey,
+				'push_enable' => $push_enable,
+				'vapid_subject' => $vapid_subject,
+				'vapid_public_key' => $vapid_public_key,
+				'vapid_private_key' => $vapid_private_key
 			];
 
 			AppModel::updateSet($set);
@@ -965,6 +973,30 @@ class AdminController extends BaseController {
 			return json([
 				'code' => 200,
 				'token' => $token
+			]);
+		} catch (\Exception $e) {
+			return json([
+				'code' => 500,
+				'msg' => $e->getMessage()
+			]);
+		}
+	}
+
+	/**
+	 * Handles URL: /admin/push/vapid/generate
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\JsonHandler
+	 */
+	public function generate_vapid_keys($request)
+	{
+		try {
+			$keys = \Minishlink\WebPush\VAPID::createVapidKeys();
+
+			return json([
+				'code' => 200,
+				'publicKey' => $keys['publicKey'],
+				'privateKey' => $keys['privateKey']
 			]);
 		} catch (\Exception $e) {
 			return json([

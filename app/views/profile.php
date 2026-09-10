@@ -32,6 +32,39 @@
 
 <div><hr/></div>
 
+@if (app('push_enable'))
+<div class="margin-vertical">
+	<h2 class="smaller-headline">{{ __('app.push_notifications') }}</h2>
+
+	<p>{{ __('app.push_notifications_hint') }}</p>
+
+	<p id="push-status">{{ __('app.push_status_unsupported') }}</p>
+
+	<div class="field">
+		<div class="control">
+			<a id="push-subscribe-btn" class="button is-success" href="javascript:void(0);">{{ __('app.subscribe') }}</a>
+			<a id="push-unsubscribe-btn" class="button is-hidden" href="javascript:void(0);">{{ __('app.unsubscribe') }}</a>
+			&nbsp;
+			<a id="push-test-btn" class="button is-info is-hidden" href="javascript:void(0);">{{ __('app.send_test_notification') }}</a>
+		</div>
+	</div>
+</div>
+
+<div><hr/></div>
+
+<script>
+	window.pushVapidPublicKey = {!! json_encode(app('vapid_public_key', '')) !!};
+	window.pushLang = {
+		subscribed: {!! json_encode(__('app.push_status_subscribed')) !!},
+		notSubscribed: {!! json_encode(__('app.push_status_not_subscribed')) !!},
+		unsupported: {!! json_encode(__('app.push_status_unsupported')) !!},
+		notConfigured: {!! json_encode(__('app.push_not_configured')) !!},
+		subscribeFailed: {!! json_encode(__('app.push_subscribe_failed')) !!}
+	};
+</script>
+<script src="{{ asset('js/push-notifications.js', true) }}"></script>
+@endif
+
 @if ((app('enable_media_share')) && (count($sharelog) > 0))
 <div class="margin-vertical profile-shared-photos">
 	<h2 class="smaller-headline">{{ __('app.shared_photos') }}</h2>

@@ -180,6 +180,12 @@ return [
     array('/admin/api/{token}/remove', 'ANY', 'admin@remove_api_key'),
     array('/admin/api/{id}/toggle', 'ANY', 'admin@toggle_api_key'),
     array('/admin/cache/clear', 'ANY', 'admin@clear_cache'),
+    array('/admin/push/vapid/generate', 'POST', 'admin@generate_vapid_keys'),
+
+    /** Push Controller */
+    array('/push/subscribe', 'POST', 'push@subscribe'),
+    array('/push/unsubscribe', 'POST', 'push@unsubscribe'),
+    array('/push/test', 'POST', 'push@test'),
 
     /** Cronjob Controller */
     array('/cronjob/tasks/overdue', 'ANY', 'cronjobs@overdue_tasks'),

@@ -2455,12 +2455,16 @@
 		</div>
 
 		<script>
-			@if (app('pwa_enable'))
+			@if ((app('pwa_enable')) || (app('push_enable')))
 			window.onload = function() {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('./serviceworker.js', { scope: '/' })
                         .then(function(registration){
                             window.serviceWorkerEnabled = true;
+
+                            if (window.pushNotificationsInit) {
+                                window.pushNotificationsInit(registration);
+                            }
                         }).catch(function(err){
                             window.serviceWorkerEnabled = false;
                             console.error(err);

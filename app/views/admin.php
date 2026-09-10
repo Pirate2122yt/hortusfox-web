@@ -286,12 +286,67 @@
             <small>{{ __('app.custom_head_code_hint') }}</small>
         </div>
 
+        <div><hr></div>
+
+        <div class="field">
+            <div class="control">
+                <input type="checkbox" class="checkbox" name="push_enable" value="1" {{ (app('push_enable')) ? 'checked': '' }}>&nbsp;<span>{{ __('app.enable_push_notifications_admin') }}</span>
+            </div>
+            <p class="help">{{ __('app.push_enable_hint') }}</p>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ __('app.vapid_subject') }}</label>
+            <div class="control">
+                <input type="text" class="input" name="vapid_subject" placeholder="mailto:you@example.com" value="{{ app('vapid_subject', '') }}">
+            </div>
+            <p class="help">{{ __('app.vapid_subject_hint') }}</p>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ __('app.vapid_public_key') }}</label>
+            <div class="control">
+                <input type="text" class="input" name="vapid_public_key" id="vapid_public_key" value="{{ app('vapid_public_key', '') }}">
+            </div>
+        </div>
+
+        <div class="field has-addons">
+            <div class="control is-stretched">
+                <input type="text" class="input" name="vapid_private_key" id="vapid_private_key" value="{{ app('vapid_private_key', '') }}">
+            </div>
+            <div class="control">
+                <a class="button is-info" href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_generate_vapid_keys') }}')) { adminGenerateVapidKeys(this); }">{{ __('app.generate') }}</a>
+            </div>
+        </div>
+
+        <div class="field belongs-to-previous-field">
+            <small>{{ __('app.vapid_keys_hint') }}</small>
+        </div>
+
         <div class="field">
             <div class="control">
                 <input type="submit" class="button is-success" value="{{ __('app.save') }}"/>
             </div>
         </div>
     </form>
+
+    <script>
+        function adminGenerateVapidKeys(button) {
+            let oldTxt = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            window.vue.ajaxRequest('post', window.location.origin + '/admin/push/vapid/generate', {}, function(response) {
+                button.innerHTML = oldTxt;
+
+                if (response.code == 200) {
+                    document.getElementById('vapid_public_key').value = response.publicKey;
+                    document.getElementById('vapid_private_key').value = response.privateKey;
+                } else {
+                    alert(response.msg);
+                }
+            });
+        }
+    </script>
 </div>
 
 <div class="admin-media {{ ((!isset($_GET['tab'])) || ($_GET['tab'] !== 'media')) ? 'is-hidden' : ''}}">

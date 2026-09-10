@@ -9,6 +9,27 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot31()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_enable BOOLEAN NOT NULL DEFAULT 0');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS vapid_subject VARCHAR(255) NULL');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS vapid_public_key VARCHAR(255) NULL');
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS vapid_private_key VARCHAR(255) NULL');
+
+        PushSubscriptionModel::raw('CREATE TABLE IF NOT EXISTS PushSubscriptionModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user INT NOT NULL,
+            endpoint VARCHAR(1024) NOT NULL,
+            p256dh VARCHAR(255) NOT NULL,
+            auth_token VARCHAR(255) NOT NULL,
+            user_agent VARCHAR(512) NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot30()
     {
         PlantHealthLogModel::raw('CREATE TABLE IF NOT EXISTS PlantHealthLogModel (
