@@ -283,10 +283,10 @@
 </div>
 
 <script>
-	// json_encode (not a plain {{ }} interpolation) so an apostrophe in the
-	// translated text - "can't be undone", say - can't break out of the
-	// single-quoted JS string it's used in below. Same reasoning as
-	// chat.php's CHAT_DELETE_CONFIRM.
+	// json_encode (not a plain double-curly interpolation) so an
+	// apostrophe in the translated text - "can't be undone", say - can't
+	// break out of the single-quoted JS string it's used in below. Same
+	// reasoning as chat.php's CHAT_DELETE_CONFIRM.
 	window.WISHLIST_REMOVE_CONFIRM = {!! json_encode(__('app.confirm_remove_wishlist_item')) !!};
 	window.WISHLIST_SHARE_REGENERATE_CONFIRM = {!! json_encode(__('app.confirm_wishlist_share_regenerate')) !!};
 
