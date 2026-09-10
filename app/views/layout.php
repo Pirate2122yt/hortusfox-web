@@ -50,7 +50,7 @@
 							<div class="field">
 								<label class="label">{{ __('app.name') }}</label>
 								<div class="control">
-									<input type="text" class="input" name="name" required>
+									<input type="text" class="input" name="name" id="inpAddPlantName" required>
 								</div>
 							</div>
 
@@ -64,6 +64,13 @@
 									</select>
 								</div>
 							</div>
+
+							<!-- Populated by window.addNewPlant() when opened from a wishlist
+							     item's "move to collection" action (see wishlist.php) - left
+							     empty otherwise, in which case add_plant() ignores them. -->
+							<input type="hidden" name="wishlist_species" id="inpAddPlantWishlistSpecies">
+							<input type="hidden" name="wishlist_notes" id="inpAddPlantWishlistNotes">
+							<input type="hidden" name="wishlist_item" id="inpAddPlantWishlistItem">
 
 							<input type="submit" class="is-hidden" id="submit-add-plant">
 						</form>
@@ -2590,9 +2597,25 @@
             };
 			@endif
 
-			window.addNewPlant = function() {
+			window.addNewPlant = function(prefill) {
 				@if (LocationsModel::getCount() > 0)
-                	document.getElementById('inpLocationId').value = {{ ((isset($location)) && (is_numeric($location)) ? $location : '0') }}; window.vue.bShowAddPlant = true;
+                	document.getElementById('inpLocationId').value = {{ ((isset($location)) && (is_numeric($location)) ? $location : '0') }};
+
+                	// "prefill" is only ever passed by a wishlist item's "move to
+                	// collection" button (see wishlist.php's window.moveWishlistItemToCollection) -
+                	// every other caller (the navbar's plain "Add Plant" button)
+                	// calls this with no arguments, in which case the fields are
+                	// simply left at their normal defaults.
+                	prefill = prefill || {};
+                	document.getElementById('inpAddPlantName').value = prefill.name || '';
+                	document.getElementById('inpAddPlantWishlistSpecies').value = prefill.species || '';
+                	document.getElementById('inpAddPlantWishlistNotes').value = prefill.notes || '';
+                	document.getElementById('inpAddPlantWishlistItem').value = prefill.wishlistItem || '';
+                	if (prefill.location) {
+                		document.getElementById('inpLocationId').value = prefill.location;
+                	}
+
+                	window.vue.bShowAddPlant = true;
                 @else
                 	window.vue.bShowAddFirstLocation = true;
                 @endif

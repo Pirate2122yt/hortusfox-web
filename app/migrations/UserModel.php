@@ -54,6 +54,8 @@ class UserModel_Migration {
         $this->database->add('push_plant_care BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('remember_location_sorting BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('weather_place INT NULL');
+        $this->database->add('wishlist_share_enable BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('wishlist_share_token VARCHAR(64) NULL');
         $this->database->add('color_scheme VARCHAR(512) NULL');
         $this->database->add('last_seen_msg INT NULL');
         $this->database->add('last_typing TIMESTAMP NULL');

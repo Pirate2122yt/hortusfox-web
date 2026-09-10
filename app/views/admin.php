@@ -101,6 +101,12 @@
         </div>
 
         <div class="field">
+            <div class="control">
+                <input type="checkbox" class="checkbox" name="enablewishlist" value="1" {{ (app('wishlist_enable')) ? 'checked': '' }}>&nbsp;<span>{{ __('app.enable_wishlist') }}</span>
+            </div>
+        </div>
+
+        <div class="field">
             <label class="label">{{ __('app.feature_request_notify_user') }}</label>
             <div class="control">
                 <select class="input" name="feature_request_notify_user">

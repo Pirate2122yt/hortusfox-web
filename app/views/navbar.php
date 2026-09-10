@@ -53,6 +53,14 @@
                 </a>
             </div>
 
+            @if (app('wishlist_enable'))
+            <div class="navbar-item">
+                <a href="{{ url('/wishlist') }}">
+                    <i class="fas fa-gift" title="{{ __('app.wishlist') }}"></i><span class="navbar-item-only-mobile">&nbsp;{{ __('app.wishlist') }}</span>
+                </a>
+            </div>
+            @endif
+
             @if (app('calendar_enable'))
             <div class="navbar-item">
                 <a href="{{ url('/calendar') }}">

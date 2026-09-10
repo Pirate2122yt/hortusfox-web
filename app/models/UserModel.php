@@ -563,6 +563,101 @@ class UserModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Turns on the current user's public wishlist share link, generating
+     * a fresh opaque token the first time (or reusing the existing one on
+     * a later call, so re-enabling doesn't invalidate a link someone
+     * already has). Mirrors the password-reset token already used on
+     * this table (see restorePassword) rather than using the user's
+     * plain id, so the link can't be used to enumerate/guess other
+     * users' wishlists.
+     *
+     * @return string The share token
+     * @throws \Exception
+     */
+    public static function enableWishlistShare()
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $token = $user->get('wishlist_share_token');
+            if (!$token) {
+                $token = md5(random_bytes(55) . date('Y-m-d H:i:s'));
+            }
+
+            static::raw('UPDATE `@THIS` SET wishlist_share_enable = 1, wishlist_share_token = ? WHERE id = ?', [$token, $user->get('id')]);
+
+            return $token;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public static function disableWishlistShare()
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            static::raw('UPDATE `@THIS` SET wishlist_share_enable = 0 WHERE id = ?', [$user->get('id')]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Replaces the current user's wishlist share token with a new one,
+     * invalidating any previously shared link, without changing whether
+     * sharing is enabled.
+     *
+     * @return string The new share token
+     * @throws \Exception
+     */
+    public static function regenerateWishlistShareToken()
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $token = md5(random_bytes(55) . date('Y-m-d H:i:s'));
+
+            static::raw('UPDATE `@THIS` SET wishlist_share_token = ? WHERE id = ?', [$token, $user->get('id')]);
+
+            return $token;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getByWishlistShareToken($token)
+    {
+        try {
+            if ((!is_string($token)) || (strlen($token) === 0)) {
+                return null;
+            }
+
+            return static::raw('SELECT * FROM `@THIS` WHERE wishlist_share_token = ? AND wishlist_share_enable = 1', [$token])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param array|null $ids When given, narrows the result down to admins
      *                        whose id is in this list (any id that isn't
      *                        actually an admin is silently ignored). A

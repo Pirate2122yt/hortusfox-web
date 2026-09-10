@@ -117,6 +117,17 @@ return [
     array('/feature-requests/status', 'ANY', 'featurerequests@set_feature_request_status'),
     array('/feature-requests/vote', 'ANY', 'featurerequests@vote_feature_request'),
 
+    /** Wishlist Controller */
+    array('/wishlist', 'GET', 'wishlist@index'),
+    array('/wishlist/add', 'POST', 'wishlist@add_item'),
+    array('/wishlist/edit', 'POST', 'wishlist@edit_item'),
+    array('/wishlist/remove', 'ANY', 'wishlist@remove_item'),
+    array('/wishlist/share/toggle', 'POST', 'wishlist@toggle_share'),
+    array('/wishlist/share/regenerate', 'ANY', 'wishlist@regenerate_share'),
+
+    /** Wishlist Public Controller */
+    array('/wishlist/share/{token}', 'GET', 'wishlistpublic@view_shared'),
+
     /** Calendar Controller */
     array('/calendar', 'GET', 'calendar@view_calendar'),
     array('/calendar/query', 'POST', 'calendar@query_items'),

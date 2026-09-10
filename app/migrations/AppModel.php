@@ -36,6 +36,7 @@ class AppModel_Migration {
         $this->database->add('tasks_enable BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('inventory_enable BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('calendar_enable BOOLEAN NOT NULL DEFAULT 1');
+        $this->database->add('wishlist_enable BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('chat_enable BOOLEAN NOT NULL DEFAULT 1');
         $this->database->add('chat_timelimit INT NOT NULL DEFAULT 5');
         $this->database->add('chat_showusers BOOLEAN NOT NULL DEFAULT 1');

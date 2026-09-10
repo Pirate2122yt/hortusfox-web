@@ -418,6 +418,43 @@ class PlantsController extends BaseController {
 
 		$plant_id = PlantsModel::addPlant($name, $location);
 
+		// Optional prefill, used by "move to collection" on a wishlist
+		// item (see WishlistController) - the Add Plant form only ever
+		// collects name/location itself, so anything else is filled in
+		// as a follow-up attribute edit right after creation, same as a
+		// user would do by hand on the new plant's details page.
+		$wishlist_species = $request->params()->query('wishlist_species', '');
+		$wishlist_notes = $request->params()->query('wishlist_notes', '');
+		$wishlist_item = $request->params()->query('wishlist_item', null);
+
+		if (strlen(trim((string)$wishlist_species)) > 0) {
+			try {
+				PlantsModel::editPlantAttribute($plant_id, 'scientific_name', trim($wishlist_species));
+			} catch (\Exception $e) {
+				addLog(ASATRU_LOG_ERROR, 'Failed to prefill scientific_name from wishlist item: ' . $e->getMessage());
+			}
+		}
+
+		if (strlen(trim((string)$wishlist_notes)) > 0) {
+			try {
+				PlantsModel::editPlantAttribute($plant_id, 'notes', trim($wishlist_notes));
+			} catch (\Exception $e) {
+				addLog(ASATRU_LOG_ERROR, 'Failed to prefill notes from wishlist item: ' . $e->getMessage());
+			}
+		}
+
+		if (($wishlist_item) && (is_numeric($wishlist_item))) {
+			try {
+				WishlistModel::removeItem($wishlist_item);
+			} catch (\Exception $e) {
+				// The plant was still created successfully even if the
+				// wishlist item couldn't be cleaned up (e.g. it was
+				// already removed, or no longer belongs to this user) -
+				// not worth failing the whole request over.
+				addLog(ASATRU_LOG_ERROR, 'Failed to remove wishlist item after moving it to the collection: ' . $e->getMessage());
+			}
+		}
+
 		return redirect('/plants/details/' . $plant_id);
 	}
 

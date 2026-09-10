@@ -57,7 +57,19 @@ class BaseController extends Asatru\Controller\Controller {
 			// other page.
 			$is_public_url = (strpos($url, '/public') === 0) && (app('public_catalog_enable', true));
 
-			if ((!in_array($url, $allowed_urls)) && (!$is_public_url)) {
+			// Same idea for a single user's shared wishlist link (see
+			// WishlistPublicController) - reachable without a session by
+			// its opaque token, unless wishlist_enable is off. The two
+			// /wishlist/share/... actions that require a session
+			// (toggling/regenerating a user's own share link) are
+			// deliberately excluded so an anonymous request there still
+			// fails on "Invalid user" inside the controller rather than
+			// being treated as a public route.
+			$is_public_wishlist_url = (strpos($url, '/wishlist/share/') === 0)
+				&& (!in_array($url, ['/wishlist/share/toggle', '/wishlist/share/regenerate']))
+				&& (app('wishlist_enable', true));
+
+			if ((!in_array($url, $allowed_urls)) && (!$is_public_url) && (!$is_public_wishlist_url)) {
 				header('Location: /auth?redirect=' . urlencode($_SERVER['REQUEST_URI']));
 				exit();
 			}

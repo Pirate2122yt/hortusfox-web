@@ -7,6 +7,41 @@
  */
 class UpgradeModule {
     /**
+     * Adds the plant Wishlist feature: a new WishlistModel table for
+     * per-user wishlist entries, an admin-wide enable toggle (mirroring
+     * tasks_enable/calendar_enable), and a per-user opt-in public
+     * share link (mirroring the password-reset token pattern already
+     * used on this table) so a user can hand out a gift-registry-style
+     * link to their own wishlist without anyone logging in.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot38()
+    {
+        AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS wishlist_enable BOOLEAN NOT NULL DEFAULT 1');
+
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS wishlist_share_enable BOOLEAN NOT NULL DEFAULT 0');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS wishlist_share_token VARCHAR(64) NULL');
+
+        WishlistModel::raw('CREATE TABLE IF NOT EXISTS WishlistModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            species VARCHAR(512) NULL,
+            cultivar VARCHAR(512) NULL,
+            notes TEXT NULL,
+            priority VARCHAR(32) NOT NULL DEFAULT \'would_like\',
+            photo VARCHAR(255) NULL,
+            location INT NULL,
+            source_url VARCHAR(1024) NULL,
+            price DECIMAL(10, 2) NULL,
+            best_time_note VARCHAR(512) NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
      * Lets the admin narrow the "email admins about new public comments"
      * notification down to specific admin accounts instead of always
      * broadcasting to every admin. Stored as a comma-separated list of
