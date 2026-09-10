@@ -338,10 +338,8 @@ class AdminController extends BaseController {
 			$name = $request->params()->query('name', null);
 			$active = $request->params()->query('active', 0);
 			$place = $request->params()->query('place', null);
-			$weather_latitude = $request->params()->query('weather_latitude', null);
-			$weather_longitude = $request->params()->query('weather_longitude', null);
 
-			LocationsModel::editLocation($id, $name, (int)$active, $place, $weather_latitude, $weather_longitude);
+			LocationsModel::editLocation($id, $name, (int)$active, $place);
 
 			FlashMessage::setMsg('success', __('app.location_updated_successfully'));
 
@@ -385,8 +383,10 @@ class AdminController extends BaseController {
 		try {
 			$id = $request->params()->query('id');
 			$name = $request->params()->query('name', null);
+			$weather_latitude = $request->params()->query('weather_latitude', null);
+			$weather_longitude = $request->params()->query('weather_longitude', null);
 
-			PlacesModel::editPlace($id, $name);
+			PlacesModel::editPlace($id, $name, $weather_latitude, $weather_longitude);
 
 			FlashMessage::setMsg('success', __('app.place_updated_successfully'));
 

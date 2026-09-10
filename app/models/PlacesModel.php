@@ -83,17 +83,21 @@ class PlacesModel extends \Asatru\Database\Model {
     /**
      * @param $id
      * @param $name
+     * @param $weather_latitude
+     * @param $weather_longitude
      * @return void
      * @throws \Exception
      */
-    public static function editPlace($id, $name)
+    public static function editPlace($id, $name, $weather_latitude = null, $weather_longitude = null)
     {
         try {
             if ((!is_string($name)) || (strlen(trim($name)) === 0)) {
                 throw new \Exception('A name is required');
             }
 
-            static::raw('UPDATE `@THIS` SET name = ? WHERE id = ?', [trim($name), $id]);
+            static::raw('UPDATE `@THIS` SET name = ?, weather_latitude = ?, weather_longitude = ? WHERE id = ?', [
+                trim($name), (is_numeric($weather_latitude) ? $weather_latitude : null), (is_numeric($weather_longitude) ? $weather_longitude : null), $id
+            ]);
         } catch (\Exception $e) {
             throw $e;
         }

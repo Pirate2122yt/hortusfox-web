@@ -7,6 +7,52 @@
  */
 class UpgradeModule {
     /**
+     * Weather is now configured per-Place instead of per-Location, since a
+     * Place (e.g. a house) is the more natural unit for "where is this" than
+     * an individual Location (a room) inside it. Moves the coordinate
+     * columns from LocationsModel to PlacesModel, folding any existing
+     * per-Location coordinates up to their Place (first Location with
+     * coordinates wins if a Place has several), and carries each user's
+     * previously-chosen weather Location forward as that Location's Place.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot33()
+    {
+        PlacesModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_latitude DECIMAL(10, 8) NULL');
+        PlacesModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_longitude DECIMAL(11, 8) NULL');
+
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS weather_place INT NULL');
+
+        $locations_with_weather = LocationsModel::raw('SELECT * FROM `LocationsModel` WHERE weather_latitude IS NOT NULL AND weather_longitude IS NOT NULL');
+        foreach ($locations_with_weather as $location) {
+            if (!$location->get('place')) {
+                continue;
+            }
+
+            $place = PlacesModel::getById($location->get('place'));
+            if (($place) && ($place->get('weather_latitude') === null) && ($place->get('weather_longitude') === null)) {
+                PlacesModel::raw('UPDATE `@THIS` SET weather_latitude = ?, weather_longitude = ? WHERE id = ?', [
+                    $location->get('weather_latitude'), $location->get('weather_longitude'), $place->get('id')
+                ]);
+            }
+        }
+
+        $users_with_weather_location = UserModel::raw('SELECT * FROM `@THIS` WHERE weather_location IS NOT NULL');
+        foreach ($users_with_weather_location as $weather_user) {
+            $location = LocationsModel::getLocationById($weather_user->get('weather_location'));
+            if (($location) && ($location->get('place'))) {
+                UserModel::raw('UPDATE `@THIS` SET weather_place = ? WHERE id = ?', [$location->get('place'), $weather_user->get('id')]);
+            }
+        }
+
+        UserModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS weather_location');
+
+        LocationsModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS weather_latitude');
+        LocationsModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS weather_longitude');
+    }
+
+    /**
      * @return void
      */
     private static function upgradeTo5dot32()

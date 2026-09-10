@@ -544,6 +544,20 @@
                         </div>
                     </div>
 
+                    <div class="admin-location-item admin-location-item-input">
+                        <div class="field has-addons">
+                            <div class="control admin-location-control-weather">
+                                <input type="text" class="input" id="geo-latitude-place-{{ $place->get('id') }}" name="weather_latitude" placeholder="{{ __('app.weather_latitude') }}" value="{{ $place->get('weather_latitude') ?? '' }}"/>
+                            </div>
+                            <div class="control admin-location-control-weather">
+                                <input type="text" class="input" id="geo-longitude-place-{{ $place->get('id') }}" name="weather_longitude" placeholder="{{ __('app.weather_longitude') }}" value="{{ $place->get('weather_longitude') ?? '' }}"/>
+                            </div>
+                            <div class="control">
+                                <a class="button is-link" href="javascript:void(0);" title="{{ __('app.weather_autodetect_latlong') }}" onclick="window.vue.acquireGeoPosition(document.getElementById('geo-latitude-place-{{ $place->get('id') }}'), document.getElementById('geo-longitude-place-{{ $place->get('id') }}'), this);"><i class="fas fa-crosshairs"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="admin-location-actions">
                         <span class="admin-location-action-item"><input type="submit" class="button is-success" value="{{ __('app.update') }}"/></span>
                         <span class="admin-location-action-item"><a class="button is-danger" href="javascript:void(0);" onclick="document.getElementById('remove-place-id').value = {{ $place->get('id') }}; document.querySelectorAll('.remove-place-item-option').forEach((el) => { el.classList.remove('is-hidden') }); document.querySelector('#remove-place-item-{{ $place->get('id') }}').classList.add('is-hidden'); window.vue.bShowRemovePlace = true;">{{ __('app.remove') }}</a></span>
@@ -600,20 +614,6 @@
                             </div>
                             <div class="control">
                                 <a class="button is-warning" id="admin-location-item-icon-input-{{ $location->get('id') }}" href="javascript:void(0);" onclick="document.getElementById('location-image-upload-ident').value = '{{ $location->get('id') }}'; document.getElementById('location-image-upload-input').click();"><i class="fas fa-image"></i></a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="admin-location-item admin-location-item-input">
-                        <div class="field has-addons">
-                            <div class="control admin-location-control-weather">
-                                <input type="text" class="input" id="geo-latitude-{{ $location->get('id') }}" name="weather_latitude" placeholder="{{ __('app.weather_latitude') }}" value="{{ $location->get('weather_latitude') ?? '' }}"/>
-                            </div>
-                            <div class="control admin-location-control-weather">
-                                <input type="text" class="input" id="geo-longitude-{{ $location->get('id') }}" name="weather_longitude" placeholder="{{ __('app.weather_longitude') }}" value="{{ $location->get('weather_longitude') ?? '' }}"/>
-                            </div>
-                            <div class="control">
-                                <a class="button is-link" href="javascript:void(0);" title="{{ __('app.weather_autodetect_latlong') }}" onclick="window.vue.acquireGeoPosition(document.getElementById('geo-latitude-{{ $location->get('id') }}'), document.getElementById('geo-longitude-{{ $location->get('id') }}'), this);"><i class="fas fa-crosshairs"></i></a>
                             </div>
                         </div>
                     </div>

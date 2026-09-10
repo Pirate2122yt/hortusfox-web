@@ -1029,18 +1029,18 @@
 							</div>
 
 							<div class="field {{ ((!app('owm_enable')) ? 'is-hidden' : '') }}">
-								<label class="label">{{ __('app.weather_default_location') }}</label>
+								<label class="label">{{ __('app.weather_default_place') }}</label>
 								<div class="control">
-									<select class="input" name="weather_location" id="selEditCombo">
-										<option value="0" {{ (!$user->get('weather_location')) ? 'selected' : ''}}>{{ __('app.weather_location_label_none') }}</option>
-										@if (isset($locations))
-											@foreach ($locations as $weather_loc_option)
-												<option value="{{ $weather_loc_option->get('id') }}" {{ ((string)$user->get('weather_location') === (string)$weather_loc_option->get('id')) ? 'selected' : ''}}>{{ $weather_loc_option->get('name') }}</option>
+									<select class="input" name="weather_place" id="selEditCombo">
+										<option value="0" {{ (!$user->get('weather_place')) ? 'selected' : ''}}>{{ __('app.weather_place_label_none') }}</option>
+										@if (isset($places))
+											@foreach ($places as $weather_place_option)
+												<option value="{{ $weather_place_option->get('id') }}" {{ ((string)$user->get('weather_place') === (string)$weather_place_option->get('id')) ? 'selected' : ''}}>{{ $weather_place_option->get('name') }}</option>
 											@endforeach
 										@endif
 									</select>
 								</div>
-								<p class="help">{{ __('app.weather_default_location_hint') }}</p>
+								<p class="help">{{ __('app.weather_default_place_hint') }}</p>
 							</div>
 
 							<div class="field {{ ((!app('chat_enable')) ? 'is-hidden': '') }}">

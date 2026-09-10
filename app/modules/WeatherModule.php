@@ -38,23 +38,23 @@ class WeatherModule {
 
     /**
      * Resolves the lat/lon to use for a given user: their chosen default
-     * weather location if they have one set and an admin has configured
+     * weather Place if they have one set and an admin has configured
      * coordinates for it, falling back to the global workspace weather
      * coordinates otherwise.
      *
      * @param $user
-     * @return array [latitude, longitude, location id or null]
+     * @return array [latitude, longitude, place id or null]
      */
     public static function resolveCoordinates($user)
     {
         if ($user) {
-            $location_id = $user->get('weather_location');
+            $place_id = $user->get('weather_place');
 
-            if ($location_id) {
-                $location = LocationsModel::getLocationById($location_id);
+            if ($place_id) {
+                $place = PlacesModel::getById($place_id);
 
-                if (($location) && ($location->get('weather_latitude') !== null) && ($location->get('weather_longitude') !== null)) {
-                    return [$location->get('weather_latitude'), $location->get('weather_longitude'), $location_id];
+                if (($place) && ($place->get('weather_latitude') !== null) && ($place->get('weather_longitude') !== null)) {
+                    return [$place->get('weather_latitude'), $place->get('weather_longitude'), $place_id];
                 }
             }
         }

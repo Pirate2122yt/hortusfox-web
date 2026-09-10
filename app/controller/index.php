@@ -75,8 +75,8 @@ class IndexController extends BaseController {
 
 		if (app('owm_enable')) {
 			try {
-				[$weather_lat, $weather_lon, $weather_loc_id] = WeatherModule::resolveCoordinates($user);
-				$weather = WeatherModule::today($weather_lat, $weather_lon, ($weather_loc_id) ? ('weather_today_loc_' . $weather_loc_id) : 'weather_today');
+				[$weather_lat, $weather_lon, $weather_place_id] = WeatherModule::resolveCoordinates($user);
+				$weather = WeatherModule::today($weather_lat, $weather_lon, ($weather_place_id) ? ('weather_today_place_' . $weather_place_id) : 'weather_today');
 			} catch (\Exception $e) {
 				$weather = null;
 			}

@@ -33,8 +33,8 @@ class WeatherController extends BaseController {
 		try {
 			$user = UserModel::getAuthUser();
 
-			[$weather_lat, $weather_lon, $weather_loc_id] = WeatherModule::resolveCoordinates($user);
-			$forecast = WeatherModule::forecast($weather_lat, $weather_lon, ($weather_loc_id) ? ('weather_forecast_loc_' . $weather_loc_id) : 'weather_forecast');
+			[$weather_lat, $weather_lon, $weather_place_id] = WeatherModule::resolveCoordinates($user);
+			$forecast = WeatherModule::forecast($weather_lat, $weather_lon, ($weather_place_id) ? ('weather_forecast_place_' . $weather_place_id) : 'weather_forecast');
 
 			$weekdays = [];
 			for ($i = 0; $i < 5; $i++) {

@@ -30,6 +30,8 @@ class PlacesModel_Migration {
         $this->database->add('id INT NOT NULL AUTO_INCREMENT PRIMARY KEY');
         $this->database->add('name VARCHAR(512) NOT NULL');
         $this->database->add('icon VARCHAR(512) NULL');
+        $this->database->add('weather_latitude DECIMAL(10, 8) NULL');
+        $this->database->add('weather_longitude DECIMAL(11, 8) NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

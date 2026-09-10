@@ -116,6 +116,13 @@ class BaseController extends Asatru\Controller\Controller {
 			$attr['locations'] = LocationsModel::getAll();
 		}
 
+		// Same for $places - the preferences modal's default weather Place
+		// picker needs the full list regardless of which controller renders
+		// the layout, unless one was already supplied.
+		if ((!isset($attr['places'])) && ($this->layout === 'layout')) {
+			$attr['places'] = PlacesModel::getAll();
+		}
+
 		return view($this->layout, $yields, $attr);
 	}
 }
