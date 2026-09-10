@@ -111,6 +111,11 @@ class UserController extends BaseController {
 			$notify_tasks_recurring = $request->params()->query('notify_tasks_recurring', false);
 			$notify_calendar_reminder = $request->params()->query('notify_calendar_reminder', false);
 			$notify_plant_care = $request->params()->query('notify_plant_care', false);
+			$push_tasks_overdue = $request->params()->query('push_tasks_overdue', false);
+			$push_tasks_tomorrow = $request->params()->query('push_tasks_tomorrow', false);
+			$push_tasks_recurring = $request->params()->query('push_tasks_recurring', false);
+			$push_calendar_reminder = $request->params()->query('push_calendar_reminder', false);
+			$push_chat_message = $request->params()->query('push_chat_message', false);
 			$show_plants_aoru = $request->params()->query('show_plants_aoru', 'added');
 			$remember_location_sorting = $request->params()->query('remember_location_sorting', false);
 			$weather_location = $request->params()->query('weather_location', null);
@@ -128,7 +133,7 @@ class UserController extends BaseController {
 				$color_scheme = null;
 			}
 
-			UserModel::editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location, $color_scheme, $notify_plant_care);
+			UserModel::editPreferences($name, $email, $lang, $theme, $chatcolor, $show_log, $show_calendar_view, $show_plant_id, $notify_tasks_overdue, $notify_tasks_tomorrow, $notify_tasks_recurring, $notify_calendar_reminder, $show_plants_aoru, $remember_location_sorting, $weather_location, $color_scheme, $notify_plant_care, $push_tasks_overdue, $push_tasks_tomorrow, $push_tasks_recurring, $push_calendar_reminder, $push_chat_message);
 
 			UserModel::updateListSortingPreferences($remember_location_sorting);
 

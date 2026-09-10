@@ -42,7 +42,10 @@ class TaskInformerModel extends \Asatru\Database\Model {
             $count = 0;
 
             foreach ($users as $user) {
-                if (($user->get('notify_tasks_' . $what)) && (!static::userInformed($user->get('id'), $task->get('id'), $what))) {
+                $wantsEmail = (bool)$user->get('notify_tasks_' . $what);
+                $wantsPush = (bool)$user->get('push_tasks_' . $what);
+
+                if ((($wantsEmail) || ($wantsPush)) && (!static::userInformed($user->get('id'), $task->get('id'), $what))) {
                     if ($count < $limit) {
                         $lang = $user->get('lang');
                         if ($lang === null) {
@@ -51,15 +54,21 @@ class TaskInformerModel extends \Asatru\Database\Model {
 
                         setLanguage($lang);
 
-                        $mailobj = new Asatru\SMTPMailer\SMTPMailer();
-                        $mailobj->setRecipient($user->get('email'));
-                        $mailobj->setSubject('[' . __('app.mail_info_task_' . $what) . '] ' . $task->get('title'));
-                        $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/task_' . $what]], ['task' => $task, 'plant' => $plant, 'user' => $user]);
-                        $mailobj->setProperties(mail_properties());
-                        $mailobj->send();
+                        if ($wantsEmail) {
+                            $mailobj = new Asatru\SMTPMailer\SMTPMailer();
+                            $mailobj->setRecipient($user->get('email'));
+                            $mailobj->setSubject('[' . __('app.mail_info_task_' . $what) . '] ' . $task->get('title'));
+                            $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/task_' . $what]], ['task' => $task, 'plant' => $plant, 'user' => $user]);
+                            $mailobj->setProperties(mail_properties());
+                            $mailobj->send();
+                        }
+
+                        if ($wantsPush) {
+                            PushNotificationModule::sendToUser($user->get('id'), __('app.mail_info_task_' . $what), $task->get('title'), url('/tasks'));
+                        }
 
                         static::raw('INSERT INTO `@THIS` (user, task, what) VALUES(?, ?, ?)', [$user->get('id'), $task->get('id'), $what]);
-                        
+
                         $count++;
                     }
                 }

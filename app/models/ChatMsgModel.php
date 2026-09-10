@@ -24,8 +24,49 @@ class ChatMsgModel extends \Asatru\Database\Model {
             static::raw('INSERT INTO `@THIS` (userId, message) VALUES(?, ?)', [
                 $user->get('id'), $message
             ]);
+
+            try {
+                static::notifyChatSubscribers($user, $message);
+            } catch (\Exception $e) {
+                // A failed push notification shouldn't turn a successfully
+                // posted chat message into an error for the sender.
+                addLog(ASATRU_LOG_ERROR, 'Failed to send chat push notifications: ' . $e->getMessage());
+            }
         } catch (\Exception $e) {
             throw $e;
+        }
+    }
+
+    /**
+     * Pushes a notification to every user who has opted in, other than
+     * whoever just sent the message. Skips users who are currently online
+     * (per the same chat_timelimit-based presence check the chat UI itself
+     * uses), since they'll see the new message live without a push.
+     *
+     * @param $sender
+     * @param $message
+     * @return void
+     * @throws \Exception
+     */
+    private static function notifyChatSubscribers($sender, $message)
+    {
+        $preview = preg_replace('/\s+/', ' ', $message);
+        if (strlen($preview) > 120) {
+            $preview = substr($preview, 0, 117) . '...';
+        }
+
+        $users = UserModel::getAll();
+
+        foreach ($users as $user) {
+            if ($user->get('id') == $sender->get('id')) {
+                continue;
+            }
+
+            if ((!$user->get('push_chat_message')) || (UserModel::isUserOnline($user->get('id')))) {
+                continue;
+            }
+
+            PushNotificationModule::sendToUser($user->get('id'), $sender->get('name'), $preview, url('/chat'));
         }
     }
 

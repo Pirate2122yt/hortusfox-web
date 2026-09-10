@@ -1068,11 +1068,27 @@
 								</div>
 							</div>
 
+							@if (app('push_enable'))
+							<div class="field belongs-to-previous-field">
+								<div class="control">
+									<input type="checkbox" name="push_tasks_overdue" value="1" {{ ($user->get('push_tasks_overdue')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_overdue') }}
+								</div>
+							</div>
+							@endif
+
 							<div class="field">
 								<div class="control">
 									<input type="checkbox" name="notify_tasks_tomorrow" value="1" {{ ($user->get('notify_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_tasks_tomorrow') }}
 								</div>
 							</div>
+
+							@if (app('push_enable'))
+							<div class="field belongs-to-previous-field">
+								<div class="control">
+									<input type="checkbox" name="push_tasks_tomorrow" value="1" {{ ($user->get('push_tasks_tomorrow')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_tomorrow') }}
+								</div>
+							</div>
+							@endif
 
 							<div class="field">
 								<div class="control">
@@ -1080,17 +1096,41 @@
 								</div>
 							</div>
 
+							@if (app('push_enable'))
+							<div class="field belongs-to-previous-field">
+								<div class="control">
+									<input type="checkbox" name="push_tasks_recurring" value="1" {{ ($user->get('push_tasks_recurring')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_tasks_recurring') }}
+								</div>
+							</div>
+							@endif
+
 							<div class="field">
 								<div class="control">
 									<input type="checkbox" name="notify_calendar_reminder" value="1" {{ ($user->get('notify_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_calendar_reminder') }}
 								</div>
 							</div>
 
+							@if (app('push_enable'))
+							<div class="field belongs-to-previous-field">
+								<div class="control">
+									<input type="checkbox" name="push_calendar_reminder" value="1" {{ ($user->get('push_calendar_reminder')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_calendar_reminder') }}
+								</div>
+							</div>
+							@endif
+
 							<div class="field">
 								<div class="control">
 									<input type="checkbox" name="notify_plant_care" value="1" {{ ($user->get('notify_plant_care')) ? 'checked' : ''}}>&nbsp;{{ __('app.notify_plant_care') }}
 								</div>
 							</div>
+
+							@if (app('push_enable'))
+							<div class="field">
+								<div class="control">
+									<input type="checkbox" name="push_chat_message" value="1" {{ ($user->get('push_chat_message')) ? 'checked' : ''}}>&nbsp;{{ __('app.push_chat_message') }}
+								</div>
+							</div>
+							@endif
 
 							<div class="field">
 								<div class="control">

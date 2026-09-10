@@ -39,7 +39,10 @@ class CalendarInformerModel extends \Asatru\Database\Model {
             $count = 0;
 
             foreach ($users as $user) {
-                if (($user->get('notify_calendar_reminder')) && (!static::userInformed($user->get('id'), $item->get('id')))) {
+                $wantsEmail = (bool)$user->get('notify_calendar_reminder');
+                $wantsPush = (bool)$user->get('push_calendar_reminder');
+
+                if ((($wantsEmail) || ($wantsPush)) && (!static::userInformed($user->get('id'), $item->get('id')))) {
                     if ($count < $limit) {
                         $lang = $user->get('lang');
                         if ($lang === null) {
@@ -47,16 +50,22 @@ class CalendarInformerModel extends \Asatru\Database\Model {
                         }
 
                         setLanguage($lang);
-                        
-                        $mailobj = new Asatru\SMTPMailer\SMTPMailer();
-                        $mailobj->setRecipient($user->get('email'));
-                        $mailobj->setSubject(__('app.mail_info_calendar_reminder'));
-                        $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/calendar_reminder']], ['item' => $item, 'user' => $user]);
-                        $mailobj->setProperties(mail_properties());
-                        $mailobj->send();
+
+                        if ($wantsEmail) {
+                            $mailobj = new Asatru\SMTPMailer\SMTPMailer();
+                            $mailobj->setRecipient($user->get('email'));
+                            $mailobj->setSubject(__('app.mail_info_calendar_reminder'));
+                            $mailobj->setView('mail/mail_layout', [['mail_content', 'mail/calendar_reminder']], ['item' => $item, 'user' => $user]);
+                            $mailobj->setProperties(mail_properties());
+                            $mailobj->send();
+                        }
+
+                        if ($wantsPush) {
+                            PushNotificationModule::sendToUser($user->get('id'), __('app.mail_info_calendar_reminder'), $item->get('name'), url('/calendar'));
+                        }
 
                         static::raw('INSERT INTO `@THIS` (user, item) VALUES(?, ?)', [$user->get('id'), $item->get('id')]);
-                        
+
                         $count++;
                     }
                 }

@@ -676,5 +676,10 @@ return [
 	'push_not_configured' => 'Push notifications aren\'t configured yet.',
 	'push_subscribe_failed' => 'Couldn\'t subscribe to push notifications. Please try again.',
 	'push_test_title' => 'Test notification',
-	'push_test_body' => 'Push notifications are working.'
+	'push_test_body' => 'Push notifications are working.',
+	'push_tasks_overdue' => 'Also send a push notification',
+	'push_tasks_tomorrow' => 'Also send a push notification',
+	'push_tasks_recurring' => 'Also send a push notification',
+	'push_calendar_reminder' => 'Also send a push notification',
+	'push_chat_message' => 'Send a push notification for new chat messages when I\'m not active in the app'
 ];

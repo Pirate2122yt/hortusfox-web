@@ -9,6 +9,18 @@ class UpgradeModule {
     /**
      * @return void
      */
+    private static function upgradeTo5dot32()
+    {
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_tasks_overdue BOOLEAN NOT NULL DEFAULT 1');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_tasks_tomorrow BOOLEAN NOT NULL DEFAULT 1');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_tasks_recurring BOOLEAN NOT NULL DEFAULT 1');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_calendar_reminder BOOLEAN NOT NULL DEFAULT 1');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_chat_message BOOLEAN NOT NULL DEFAULT 1');
+    }
+
+    /**
+     * @return void
+     */
     private static function upgradeTo5dot31()
     {
         AppModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS push_enable BOOLEAN NOT NULL DEFAULT 0');
