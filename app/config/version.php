@@ -1,3 +1,3 @@
 <?php
 
-return '5.48';
+return '5.49';

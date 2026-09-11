@@ -3707,48 +3707,13 @@ fieldset .field {
     position: relative;
 }
 
-.auth-form input[type=email], .auth-form input[type=password], .auth-form input[type=text] {
+.auth-form input[type=email], .auth-form input[type=password] {
     color: var(--hf-text-primary);
     background-color: var(--hf-bg-surface);
 }
 
-.auth-form input[type=email]::placeholder, .auth-form input[type=password]::placeholder, .auth-form input[type=text]::placeholder {
+.auth-form input[type=email]::placeholder, .auth-form input[type=password]::placeholder {
     color: rgb(170, 170, 170);
-}
-
-.totp-code-input {
-    text-align: center;
-    letter-spacing: 0.3em;
-    font-size: 1.2em;
-}
-
-.totp-setup-qr {
-    margin: 14px 0;
-}
-
-.totp-setup-qr img {
-    background-color: #fff;
-    padding: 8px;
-    border-radius: 4px;
-}
-
-.totp-recovery-code-list {
-    list-style: none;
-    margin: 14px 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    max-width: 320px;
-}
-
-.totp-recovery-code-list code {
-    display: block;
-    padding: 6px 10px;
-    background-color: rgba(123, 123, 123, 0.2);
-    color: var(--hf-text-primary);
-    border-radius: 4px;
-    text-align: center;
 }
 
 .auth-form input[type=submit] {

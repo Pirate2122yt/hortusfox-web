@@ -172,15 +172,7 @@ class IndexController extends BaseController {
 			$password = $request->params()->query('password', null);
 			$redirect = $request->params()->query('redirect', null);
 
-			$totp_required = UserModel::login($email, $password);
-
-			if ($totp_required) {
-				if ((is_string($redirect)) && (strlen($redirect) > 0)) {
-					$_SESSION['pending_totp_redirect'] = $redirect;
-				}
-
-				return redirect('/login/2fa');
-			}
+			UserModel::login($email, $password);
 
 			if ((is_string($redirect)) && (strlen($redirect) > 0)) {
 				return redirect($redirect);
@@ -190,55 +182,6 @@ class IndexController extends BaseController {
 		} catch (\Exception $e) {
 			FlashMessage::setMsg('error', $e->getMessage());
 			return back();
-		}
-	}
-
-	/**
-	 * Handles URL: /login/2fa
-	 *
-	 * @param Asatru\Controller\ControllerArg $request
-	 * @return Asatru\View\ViewHandler|Asatru\View\RedirectHandler
-	 */
-	public function view_totp_login($request)
-	{
-		if (auth()) {
-			return redirect('/');
-		}
-
-		if (!isset($_SESSION['pending_totp_user'])) {
-			return redirect('/auth');
-		}
-
-		$view = new Asatru\View\ViewHandler();
-		$view->setLayout('auth_2fa');
-
-		return $view;
-	}
-
-	/**
-	 * Handles URL: /login/2fa
-	 *
-	 * @param Asatru\Controller\ControllerArg $request
-	 * @return Asatru\View\RedirectHandler
-	 */
-	public function verify_totp($request)
-	{
-		try {
-			$code = $request->params()->query('code', null);
-
-			UserModel::verifyTotpLogin($code);
-
-			$redirect = $_SESSION['pending_totp_redirect'] ?? null;
-			unset($_SESSION['pending_totp_redirect']);
-
-			if ((is_string($redirect)) && (strlen($redirect) > 0)) {
-				return redirect($redirect);
-			}
-
-			return redirect('/');
-		} catch (\Exception $e) {
-			FlashMessage::setMsg('error', $e->getMessage());
-			return redirect('/login/2fa');
 		}
 	}
 

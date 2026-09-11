@@ -7,6 +7,28 @@
  */
 class UpgradeModule {
     /**
+     * Removes two-factor login (TOTP), which was pulled shortly after
+     * being added. Drops the totp_* columns if they're present (an
+     * install that ran upgradeTo5dot42() before this had a chance to
+     * ship would have them; a fresh install or one that never got that
+     * far won't, and DROP COLUMN IF EXISTS is a no-op there).
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot49()
+    {
+        UserModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS totp_secret');
+        UserModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS totp_enabled');
+        UserModel::raw('ALTER TABLE `@THIS` DROP COLUMN IF EXISTS totp_recovery_codes');
+
+        ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+            'Two-factor authentication removed',
+            'Two-factor login (TOTP) has been removed.',
+            date('Y-m-d')
+        ]);
+    }
+
+    /**
      * Adds changelog entries for the dashboard Favorites theming fix
      * and the new bulk QR print layouts.
      *
@@ -115,20 +137,6 @@ class UpgradeModule {
     private static function upgradeTo5dot43()
     {
         PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS parent_plant INT NULL');
-    }
-
-    /**
-     * Adds optional two-factor login (TOTP): a secret, an enabled flag,
-     * and a JSON blob of hashed one-time recovery codes, all on the
-     * user's own row.
-     *
-     * @return void
-     */
-    private static function upgradeTo5dot42()
-    {
-        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64) NULL');
-        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT 0');
-        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_recovery_codes TEXT NULL');
     }
 
     /**

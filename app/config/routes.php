@@ -20,8 +20,6 @@ return [
     array('/', 'GET', 'index@index'),
     array('/auth', 'GET', 'index@auth'),
     array('/login', 'POST', 'index@login'),
-    array('/login/2fa', 'GET', 'index@view_totp_login'),
-    array('/login/2fa', 'POST', 'index@verify_totp'),
     array('/logout', 'ANY', 'index@logout'),
     array('/password/restore', 'POST', 'index@restore_password'),
     array('/password/reset', 'GET', 'index@view_reset_password'),
@@ -88,10 +86,6 @@ return [
     /** User controller Controller */
     array('/profile', 'GET', 'user@view_profile'),
     array('/profile/preferences', 'POST', 'user@edit_preferences'),
-    array('/profile/2fa', 'GET', 'user@view_totp'),
-    array('/profile/2fa/begin', 'POST', 'user@begin_totp'),
-    array('/profile/2fa/confirm', 'POST', 'user@confirm_totp'),
-    array('/profile/2fa/disable', 'POST', 'user@disable_totp'),
     array('/profile/notes/save', 'POST', 'user@save_notes'),
     array('/profile/sharelog/fetch', 'ANY', 'user@fetch_share_log'),
 
