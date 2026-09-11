@@ -1293,9 +1293,13 @@ class PlantsController extends BaseController {
 			foreach ($plants as $plant) {
 				$code = PlantsModel::generateQRCode($plant[0]);
 				if ($code) {
+					$plant_data = PlantsModel::getDetails($plant[0]);
+
 					$result[] = [
 						'plantid' => $plant[0],
 						'plantname' => $plant[1],
+						'scientificname' => ($plant_data) ? $plant_data->get('scientific_name') : null,
+						'location' => ($plant_data) ? LocationsModel::getNameById($plant_data->get('location')) : null,
 						'qrcode' => $code
 					];
 				}

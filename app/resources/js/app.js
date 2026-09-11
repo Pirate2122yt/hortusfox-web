@@ -2569,7 +2569,7 @@ window.createVueInstance = function(element) {
                 }
             },
 
-            bulkPrintQRCodes: function(target, location) {
+            bulkPrintQRCodes: function(target, location, layout) {
                 let plantIds = [];
 
                 let elems = document.getElementsByClassName(target);
@@ -2583,13 +2583,7 @@ window.createVueInstance = function(element) {
                     if (plantIds.length > 0) {
                         window.vue.ajaxRequest('post', window.location.origin + '/plants/qrcode/bulk', { list: JSON.stringify(plantIds) }, function(response) {
                             if (response.code == 200) {
-                                let html = '<html><head><title>' + location + '</title></head><body>';
-
-                                response.list.forEach(function(elem, index) {
-                                    html += '<div style="position: relative; display: inline-block; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">#' + elem.plantid + ' ' + elem.plantname + '<br/><img src="' + elem.qrcode + '" width="152" height="152"/></div>';
-                                });
-
-                                html += '</body></html>';
+                                let html = window.vue.buildQRPrintHtml(response.list, location, layout);
 
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
@@ -2600,7 +2594,7 @@ window.createVueInstance = function(element) {
                                     wnd.close();
                                     URL.revokeObjectURL(url);
                                 };
-                                
+
                                 wnd.onload = function() {
                                     wnd.print();
                                 };
@@ -2609,9 +2603,68 @@ window.createVueInstance = function(element) {
                             }
                         });
                     } else {
-                    alert(window.vue.noListItemsSelected); 
+                    alert(window.vue.noListItemsSelected);
                     }
                 }
+            },
+
+            /**
+             * Builds the print window's HTML for a bulk QR print job, in
+             * one of a few layouts: a plain wrapped list (the original,
+             * default behavior), a "Plant label" card per plant (name,
+             * scientific name, QR, location - sized for a stake/tag),
+             * or a "Label sheet" (a tighter, uniform grid meant for
+             * printing many QR codes per page, e.g. onto sticker sheets).
+             */
+            buildQRPrintHtml: function(list, title, layout) {
+                let style = '';
+                let body = '';
+
+                const esc = function(str) {
+                    return (str || '').toString()
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;');
+                };
+
+                if (layout === 'label') {
+                    style = '.qr-label { display: inline-block; box-sizing: border-box; width: 2.5in; padding: 10px; margin: 6px; border: 1px solid #333; border-radius: 6px; text-align: center; vertical-align: top; page-break-inside: avoid; font-family: sans-serif; }' +
+                        '.qr-label-name { font-weight: bold; font-size: 14px; margin-bottom: 2px; overflow-wrap: break-word; }' +
+                        '.qr-label-sci { font-style: italic; font-size: 11px; color: #555; margin-bottom: 6px; overflow-wrap: break-word; }' +
+                        '.qr-label-loc { font-size: 10px; color: #777; margin-top: 6px; }';
+
+                    list.forEach(function(elem) {
+                        body += '<div class="qr-label">' +
+                            '<div class="qr-label-name">' + esc(elem.plantname) + '</div>' +
+                            (elem.scientificname ? '<div class="qr-label-sci">' + esc(elem.scientificname) + '</div>' : '') +
+                            '<img src="' + elem.qrcode + '" width="120" height="120"/>' +
+                            (elem.location ? '<div class="qr-label-loc">' + esc(elem.location) + '</div>' : '') +
+                            '</div>';
+                    });
+                } else if (layout === 'sheet') {
+                    style = '@page { margin: 0.3in; }' +
+                        '.qr-sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }' +
+                        '.qr-sheet-cell { box-sizing: border-box; border: 1px dashed #999; border-radius: 4px; padding: 8px; text-align: center; page-break-inside: avoid; font-family: sans-serif; font-size: 10px; }' +
+                        '.qr-sheet-cell img { width: 90px; height: 90px; }' +
+                        '.qr-sheet-cell-name { font-weight: bold; margin-top: 4px; overflow-wrap: break-word; }';
+
+                    body += '<div class="qr-sheet-grid">';
+                    list.forEach(function(elem) {
+                        body += '<div class="qr-sheet-cell">' +
+                            '<img src="' + elem.qrcode + '"/>' +
+                            '<div class="qr-sheet-cell-name">' + esc(elem.plantname) + '</div>' +
+                            '</div>';
+                    });
+                    body += '</div>';
+                } else {
+                    // Simple list (default) - unchanged from the original behavior.
+                    list.forEach(function(elem) {
+                        body += '<div style="position: relative; display: inline-block; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">#' + elem.plantid + ' ' + esc(elem.plantname) + '<br/><img src="' + elem.qrcode + '" width="152" height="152"/></div>';
+                    });
+                }
+
+                return '<html><head><title>' + esc(title) + '</title><style>' + style + '</style></head><body>' + body + '</body></html>';
             },
 
             queryInvQrCode: function(item) {

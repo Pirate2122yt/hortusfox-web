@@ -1793,6 +1793,17 @@
 							</div>
 						</div>
 
+						<div class="field">
+							<label class="label">{{ __('app.qr_print_layout') }}</label>
+							<div class="control">
+								<select class="select input" id="plant-bulk-print-layout">
+									<option value="simple">{{ __('app.qr_layout_simple') }}</option>
+									<option value="label">{{ __('app.qr_layout_label') }}</option>
+									<option value="sheet">{{ __('app.qr_layout_sheet') }}</option>
+								</select>
+							</div>
+						</div>
+
 						@if ((isset($plants)) && (is_countable($plants)) && (is_object($plants)) && (count($plants) > 0))
 							@foreach ($plants as $plant_item)
 								<div class="field">
@@ -1804,7 +1815,7 @@
 						@endif
 					</section>
 					<footer class="modal-card-foot is-stretched">
-						<button class="button is-success" onclick="window.vue.bulkPrintQRCodes('plant-bulk-print-qrcode', '{{ ((isset($location_data)) ? $location_data->get('name') : '') }}');">{{ __('app.print') }}</button>
+						<button class="button is-success" onclick="window.vue.bulkPrintQRCodes('plant-bulk-print-qrcode', '{{ ((isset($location_data)) ? $location_data->get('name') : '') }}', document.getElementById('plant-bulk-print-layout').value);">{{ __('app.print') }}</button>
 						<button class="button" onclick="window.vue.bShowPlantBulkPrint = false;">{{ __('app.close') }}</button>
 					</footer>
 				</div>
