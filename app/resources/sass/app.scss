@@ -1048,7 +1048,11 @@ fieldset .field {
     margin-left: -20px;
     margin-right: -20px;
     padding-bottom: 5px;
-    background-color: rgb(55, 59, 62);
+    /* Follows the selected color scheme (Appearance settings) instead of
+       a fixed dark gray - this wraps both the "last added/authored
+       plants" section and the dashboard Favorites section, so both
+       read correctly against light themes like Sandstone too. */
+    background-color: var(--hf-bg-surface);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     text-align: center;
 }
@@ -1056,7 +1060,7 @@ fieldset .field {
 .last-added-or-authored-plants h3 {
     padding-top: 15px;
     font-size: 2.0em;
-    color: rgb(190, 190, 190);
+    color: var(--hf-text-primary);
 }
 
 .favorites-view-all-link {
