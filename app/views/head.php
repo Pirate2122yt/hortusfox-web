@@ -23,3 +23,6 @@
 @if (is_string(app('custom_head_code')))
 {!! app('custom_head_code') !!}
 @endif
+
+<!-- Temporary theme-consistency overrides until public/js/app.js is rebuilt from app.scss - see public/css/theme-fixes.css -->
+<link rel="stylesheet" type="text/css" href="{{ asset('css/theme-fixes.css') }}"/>

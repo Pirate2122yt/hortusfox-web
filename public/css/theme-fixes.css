@@ -1,0 +1,47 @@
+/*
+ * Temporary theme-consistency overrides.
+ *
+ * app.scss is bundled into public/js/app.js at build time (webpack +
+ * style-loader), and that compiled bundle is what's actually
+ * committed/served - editing app.scss alone does NOT change what the
+ * browser loads until `npm run build` is run and the rebuilt
+ * public/js/app.js is committed.
+ *
+ * The rules below duplicate a couple of small SCSS fixes (making the
+ * plant-journal-entry cards - used by the Recycle Bin, Favorites,
+ * Journal, Changelog, Feature Requests and Wishlist - and the
+ * dashboard's "last added/authored plants" / Favorites widget follow
+ * the selected Appearance color scheme instead of a fixed dark gray)
+ * so they take effect immediately, without needing a rebuild. The
+ * --hf-* custom properties they reference are already defined by the
+ * existing compiled bundle.
+ *
+ * Once public/js/app.js is rebuilt from the current app.scss (which
+ * already contains these same rules) and committed, this file's
+ * overrides become redundant and it can be deleted, along with its
+ * <link> tag in app/views/head.php.
+ */
+
+.plant-journal-entry {
+    background-color: var(--hf-bg-surface) !important;
+}
+
+.plant-journal-entry-title,
+.plant-journal-entry-content,
+.plant-journal-entry-tag,
+.plant-journal-entry-footer,
+.plant-journal-entry-actions a,
+.plant-journal-entry-comment-header,
+.plant-journal-entry-comment-header a,
+.plant-journal-entry-comment-date,
+.plant-journal-entry-comment-text {
+    color: var(--hf-text-primary) !important;
+}
+
+.last-added-or-authored-plants {
+    background-color: var(--hf-bg-surface) !important;
+}
+
+.last-added-or-authored-plants h3 {
+    color: var(--hf-text-primary) !important;
+}
