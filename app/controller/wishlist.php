@@ -4,10 +4,11 @@
  * Class WishlistController
  *
  * The plant wishlist: per-user entries for things a user wants to get
- * but doesn't own yet. Every signed-in user can browse three views -
- * their own ("mine"), everyone's combined ("overall"), and grouped by
- * intended Place ("place") - but only an entry's owner (or an admin) may
- * edit, remove, or move it into the real Plants collection.
+ * but doesn't own yet. Every signed-in user can browse three separate
+ * views - their own ("mine"), everyone's combined ("overall"), and one
+ * chosen Place's items only ("place", which requires picking a Place
+ * first) - but only an entry's owner (or an admin) may edit, remove, or
+ * move it into the real Plants collection.
  */
 class WishlistController extends BaseController {
     const INDEX_LAYOUT = 'layout';
@@ -37,46 +38,31 @@ class WishlistController extends BaseController {
 			$view = 'mine';
 		}
 
-		$places_grouped = [];
+		$places = [];
+		$selected_place = null;
+		$items = [];
 
 		if ($view === 'mine') {
 			$items = WishlistModel::getForUser($user->get('id'));
 		} else if ($view === 'overall') {
 			$items = WishlistModel::getAll();
 		} else {
-			$located_items = WishlistModel::getWithLocation();
-			$unplaced_items = [];
+			$places = PlacesModel::getAll();
 
-			if (is_countable($located_items)) {
-				foreach ($located_items as $located_item) {
-					$location = LocationsModel::getLocationById($located_item->get('location'));
-					$place_id = ($location) ? $location->get('place') : null;
+			$place_id = $request->params()->query('place', null);
 
-					if (!$place_id) {
-						$unplaced_items[] = $located_item;
-						continue;
+			if ($place_id) {
+				$selected_place = PlacesModel::getById($place_id);
+
+				if ($selected_place) {
+					$location_ids = [];
+
+					foreach (LocationsModel::getByPlace($selected_place->get('id')) as $location) {
+						$location_ids[] = $location->get('id');
 					}
 
-					if (!isset($places_grouped[$place_id])) {
-						$place = PlacesModel::getById($place_id);
-
-						$places_grouped[$place_id] = [
-							'place' => $place,
-							'items' => []
-						];
-					}
-
-					$places_grouped[$place_id]['items'][] = $located_item;
+					$items = WishlistModel::getByLocationIds($location_ids);
 				}
-			}
-
-			$items = $located_items;
-
-			if (count($unplaced_items) > 0) {
-				$places_grouped[0] = [
-					'place' => null,
-					'items' => $unplaced_items
-				];
 			}
 		}
 
@@ -101,7 +87,8 @@ class WishlistController extends BaseController {
 			'user' => $user,
 			'view' => $view,
 			'items' => $items,
-			'places_grouped' => $places_grouped,
+			'places' => $places,
+			'selected_place' => $selected_place,
 			'owners' => $owners,
 			'locations_by_id' => $locations_by_id,
 			'locations' => LocationsModel::getAll(),

@@ -728,6 +728,8 @@ return [
 	'wishlist_best_time_note_placeholder' => 'e.g. "Spring, after last frost"',
 	'wishlist_notes' => 'Notes',
 	'wishlist_no_place' => 'No place decided yet',
+	'wishlist_select_place' => 'Select a house...',
+	'wishlist_no_places' => 'No places have been set up yet.',
 	'wishlist_empty' => 'Nothing on the wishlist yet.',
 	'wishlist_wanted_by' => 'Wanted by',
 	'wishlist_photo_replace_hint' => 'Leave empty to keep the current photo.',

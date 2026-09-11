@@ -268,18 +268,27 @@ class WishlistModel extends \Asatru\Database\Model {
     }
 
     /**
-     * "Per-Place" - every entry with an intended Location, regardless of
-     * owner (grouping by the Location's Place is done by the caller,
-     * same as the homepage's places_overview - a Place is a derived
-     * grouping, not something queried directly here).
+     * "House Wishlist" - every entry whose Location falls within the
+     * given set of Location ids (i.e. all the Locations belonging to one
+     * chosen Place). The caller resolves the Place's Location ids first
+     * (via LocationsModel::getByPlace) - a Place is a derived grouping,
+     * not something queried directly here, same as the homepage's
+     * places_overview.
      *
+     * @param $locationIds
      * @return mixed
      * @throws \Exception
      */
-    public static function getWithLocation()
+    public static function getByLocationIds($locationIds)
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE location IS NOT NULL ORDER BY FIELD(priority, \'must_have\', \'would_like\', \'someday\'), created_at DESC');
+            if ((!is_array($locationIds)) || (count($locationIds) === 0)) {
+                return [];
+            }
+
+            $placeholders = implode(',', array_fill(0, count($locationIds), '?'));
+
+            return static::raw('SELECT * FROM `@THIS` WHERE location IN (' . $placeholders . ') ORDER BY FIELD(priority, \'must_have\', \'would_like\', \'someday\'), created_at DESC', $locationIds);
         } catch (\Exception $e) {
             throw $e;
         }

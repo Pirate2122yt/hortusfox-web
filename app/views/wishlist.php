@@ -53,24 +53,33 @@
 </div>
 
 @if ($view === 'place')
-	@if (count($places_grouped) > 0)
-		@foreach ($places_grouped as $place_group)
-			<h2 class="subtitle margin-vertical">
-				@if ($place_group['place'])
-					{{ $place_group['place']->get('name') }}
-				@else
-					{{ __('app.wishlist_no_place') }}
-				@endif
-			</h2>
-
-			<div class="plant-journal-entries">
-				@foreach ($place_group['items'] as $wishlist_item)
-					@include('wishlist_entry.php')
-				@endforeach
-			</div>
-		@endforeach
+	@if (count($places) === 0)
+		<strong>{{ __('app.wishlist_no_places') }}</strong>
 	@else
-		<strong>{{ __('app.wishlist_empty') }}</strong>
+		<div class="margin-vertical">
+			<div class="is-inline-block is-action-button-margin sorting-control select is-rounded is-small">
+				<select onchange="if (this.value) { location.href = this.value; }">
+					<option value="">{{ __('app.wishlist_select_place') }}</option>
+					@foreach ($places as $place_option)
+						<option value="{{ url('/wishlist?view=place&place=' . $place_option->get('id')) }}" {{ (($selected_place) && ($selected_place->get('id') == $place_option->get('id'))) ? 'selected' : '' }}>{{ $place_option->get('name') }}</option>
+					@endforeach
+				</select>
+			</div>
+		</div>
+
+		@if ($selected_place)
+			<h2 class="subtitle margin-vertical">{{ $selected_place->get('name') }}</h2>
+
+			@if ((is_countable($items)) && (count($items) > 0))
+				<div class="plant-journal-entries" id="wishlist-entries">
+					@foreach ($items as $wishlist_item)
+						@include('wishlist_entry.php')
+					@endforeach
+				</div>
+			@else
+				<strong>{{ __('app.wishlist_empty') }}</strong>
+			@endif
+		@endif
 	@endif
 @else
 	@if ((is_countable($items)) && (count($items) > 0))
