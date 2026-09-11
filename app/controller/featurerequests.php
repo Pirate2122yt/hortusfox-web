@@ -56,6 +56,39 @@ class FeatureRequestsController extends BaseController {
 	}
 
 	/**
+	 * Handles URL: /feature-requests/changelog
+	 *
+	 * A read-only history of every feature request that has actually
+	 * shipped, for people who just want to see what's new rather than
+	 * browse the whole board.
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_changelog($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$entries = FeatureRequestModel::getChangelog();
+
+		$requesters = [];
+		if (is_countable($entries)) {
+			foreach ($entries as $entry) {
+				if (!isset($requesters[$entry->get('user')])) {
+					$requester = UserModel::getUserById($entry->get('user'));
+					$requesters[$entry->get('user')] = $requester ? $requester->get('name') : null;
+				}
+			}
+		}
+
+		return parent::view(['content', 'changelog'], [
+			'user' => $user,
+			'entries' => $entries,
+			'requesters' => $requesters
+		]);
+	}
+
+	/**
 	 * Handles URL: /feature-requests/add
 	 *
 	 * @param Asatru\Controller\ControllerArg $request

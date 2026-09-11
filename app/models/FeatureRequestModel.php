@@ -298,4 +298,23 @@ class FeatureRequestModel extends \Asatru\Database\Model {
             throw $e;
         }
     }
+
+    /**
+     * The public changelog - every request that has actually shipped
+     * (status "added"), newest first. Ordered by updated_at rather than
+     * created_at because setStatus() bumps updated_at whenever a
+     * request's status changes, so it reflects when the request was
+     * added rather than when it was first suggested.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getChangelog()
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE status = ? ORDER BY updated_at DESC', [self::STATUS_ADDED]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

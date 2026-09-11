@@ -4,6 +4,8 @@
 	<div class="action-strip action-strip-left">
 		<div class="is-inline-block is-action-button-margin"><a class="button is-success" href="javascript:void(0);" onclick="window.vue.showAddFeatureRequest();">{{ __('app.add_feature_request') }}</a></div>
 
+		<div class="is-inline-block is-action-button-margin"><a class="button is-link" href="{{ url('/feature-requests/changelog') }}"><i class="fas fa-list"></i>&nbsp;{{ __('app.view_changelog') }}</a></div>
+
 		<div class="is-inline-block is-action-button-margin sorting-control select is-rounded is-small">
 			<select onchange="location.href = '{{ url('/feature-requests') }}' + (this.value ? '?status=' + this.value : '');">
 				<option value="">{{ __('app.feature_request_status_all') }}</option>

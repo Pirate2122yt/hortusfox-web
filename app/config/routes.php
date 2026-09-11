@@ -111,6 +111,7 @@ return [
 
     /** Feature Requests Controller */
     array('/feature-requests', 'GET', 'featurerequests@view_feature_requests'),
+    array('/feature-requests/changelog', 'GET', 'featurerequests@view_changelog'),
     array('/feature-requests/add', 'POST', 'featurerequests@add_feature_request'),
     array('/feature-requests/edit', 'POST', 'featurerequests@edit_feature_request'),
     array('/feature-requests/remove', 'ANY', 'featurerequests@remove_feature_request'),
