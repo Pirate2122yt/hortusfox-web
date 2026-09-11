@@ -325,6 +325,23 @@ class PlantsController extends BaseController {
 			$orig_plant = PlantsModel::getDetails($plant_data->get('clone_origin'));
 		}
 
+		$parent_plant = null;
+		if ($plant_data->get('parent_plant')) {
+			$parent_plant = PlantsModel::getDetails($plant_data->get('parent_plant'));
+		}
+
+		$propagated_children = PlantsModel::getPropagatedChildren($plant_id);
+
+		$parent_plant_options = [];
+		foreach (PlantsModel::getAllPlants('name', 'asc') as $selectable_plant) {
+			if ((int)$selectable_plant->get('id') === (int)$plant_id) {
+				// Can't be its own parent.
+				continue;
+			}
+
+			$parent_plant_options[] = $selectable_plant;
+		}
+
 		$tagstr = $plant_data->get('tags');
 		if (substr($tagstr, strlen($tagstr) - 1, 1) !== ' ') {
 			$tagstr .= ' ';
@@ -378,6 +395,9 @@ class PlantsController extends BaseController {
 			'user' => $user,
 			'plant' => $plant_data,
 			'orig_plant' => $orig_plant,
+			'parent_plant' => $parent_plant,
+			'propagated_children' => $propagated_children,
+			'parent_plant_options' => $parent_plant_options,
 			'plant_ident' => $plant_ident,
 			'photos' => $photos,
 			'tags' => $tags,

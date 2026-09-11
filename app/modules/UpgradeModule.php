@@ -7,6 +7,20 @@
  */
 class UpgradeModule {
     /**
+     * Adds a parent-plant reference, separate from the existing
+     * clone_origin/clone_num duplication feature: parent_plant just
+     * links an independently-added plant to the plant it was
+     * propagated from, with no field copying and no effect on the
+     * "(2)" clone-suffix naming.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot43()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS parent_plant INT NULL');
+    }
+
+    /**
      * Adds optional two-factor login (TOTP): a secret, an enabled flag,
      * and a JSON blob of hashed one-time recovery codes, all on the
      * user's own row.

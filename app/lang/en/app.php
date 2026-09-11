@@ -430,6 +430,8 @@ return [
 	'calendar_class_edited_successfully' => 'Calendar class was successfully edited',
 	'confirm_remove_calendar_class' => 'Are you sure you want to remove this calendar class?',
 	'clone_plant' => 'Clone plant',
+	'parent_plant' => 'Parent plant',
+	'propagated_children_title' => 'Propagated from this plant:',
 	'show_qr_code' => 'Show QR-Code',
 	'qr_code' => 'QR-Code',
 	'print' => 'Print',

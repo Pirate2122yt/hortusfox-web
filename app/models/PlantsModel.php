@@ -58,7 +58,8 @@ class PlantsModel extends \Asatru\Database\Model {
         'is_public',
         'water_interval_days',
         'fertilise_interval_days',
-        'repot_interval_days'
+        'repot_interval_days',
+        'parent_plant'
     ];
 
     static $care_actions = [
@@ -1487,6 +1488,26 @@ class PlantsModel extends \Asatru\Database\Model {
     {
         try {
             return (int)static::raw('SELECT COUNT(*) AS `count` FROM `@THIS` WHERE clone_origin = ? AND deleted_at IS NULL', [$id])?->first()?->get('count');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Plants that list this one as their parent_plant - i.e. propagated
+     * from it. Separate from findOffspring()/offspringCount() above,
+     * which walk clone_origin (the full-record "Clone Plant" feature)
+     * instead - a plant can be a propagation child here without being a
+     * clone at all.
+     *
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getPropagatedChildren($id)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE parent_plant = ? AND history = 0 AND deleted_at IS NULL ORDER BY name ASC', [$id]);
         } catch (\Exception $e) {
             throw $e;
         }

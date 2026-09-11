@@ -30,6 +30,17 @@
 	</div>
 @endif
 
+@if (($propagated_children) && (is_countable($propagated_children)) && (count($propagated_children) > 0))
+	<div class="margin-vertical is-default-text-color">
+		<strong>{{ __('app.propagated_children_title') }}</strong>
+		@foreach ($propagated_children as $child)
+			<div>
+				<i class="fas fa-seedling"></i>&nbsp;<a class="is-default-link" href="{{ url('/plants/details/' . $child->get('id')) }}">{{ $child->get('name') }}</a>
+			</div>
+		@endforeach
+	</div>
+@endif
+
 @if ($plant->get('health_state') !== 'in_good_standing')
 	<div class="plant-warning">{{ __('app.plant_warning', ['reason' => __('app.' . $plant->get('health_state'))]) }}</div>
 @endif
@@ -101,6 +112,47 @@
 				<tr>
 					<td><strong>{{ __('app.location') }}</strong></td>
 					<td>{{ ((!$plant->get('history')) ? LocationsModel::getNameById($plant->get('location')) : app('history_name')) }} <span class="float-right"><a href="javascript:void(0);" onclick="window.vue.showEditCombo({{ $plant->get('id') }}, 'location', window.vue.comboLocation, {{ $plant->get('location') }});"><i class="fas fa-edit is-color-darker"></i></a></span></td>
+				</tr>
+
+				<tr>
+					<td><a name="plant-parent-attribute-anchor"></a><strong>{{ __('app.parent_plant') }}</strong></td>
+					<td>
+						@if ($parent_plant)
+							<a class="is-default-link" href="{{ url('/plants/details/' . $parent_plant->get('id')) }}">{{ $parent_plant->get('name') }}</a>
+						@else
+							<span class="is-not-available">N/A</span>
+						@endif
+
+						<span class="float-right"><a href="javascript:void(0);" onclick="window.toggleEditParentPlant({{ $plant->get('id') }});"><i class="fas fa-edit is-color-darker"></i></a></span>
+					</td>
+				</tr>
+
+				<tr id="edit-parent-plant-row-{{ $plant->get('id') }}" class="is-hidden">
+					<td colspan="2">
+						<form id="frmEditParentPlant-{{ $plant->get('id') }}" method="POST" action="{{ url('/plants/details/edit') }}">
+							@csrf
+							<input type="hidden" name="plant" value="{{ $plant->get('id') }}"/>
+							<input type="hidden" name="attribute" value="parent_plant"/>
+							<input type="hidden" name="anchor" value="plant-parent-attribute-anchor"/>
+
+							<div class="field has-addons">
+								<div class="control is-expanded">
+									<select class="input" name="value">
+										<option value="#null">{{ __('app.none') }}</option>
+										@foreach ($parent_plant_options as $parent_plant_option)
+											<option value="{{ $parent_plant_option->get('id') }}" {{ ((int)$plant->get('parent_plant') === (int)$parent_plant_option->get('id')) ? 'selected' : '' }}>{{ $parent_plant_option->get('name') }}</option>
+										@endforeach
+									</select>
+								</div>
+								<div class="control">
+									<button type="submit" class="button is-success">{{ __('app.save') }}</button>
+								</div>
+								<div class="control">
+									<button type="button" class="button" onclick="window.toggleEditParentPlant({{ $plant->get('id') }});">{{ __('app.cancel') }}</button>
+								</div>
+							</div>
+						</form>
+					</td>
 				</tr>
 
 				@if (plant_attr('last_watered'))
@@ -669,3 +721,16 @@
 		</span>
 	</div>
 </div>
+
+<script>
+	// Plain toggle (not a Vue modal, unlike the other attribute edit
+	// icons on this page) - there's no pre-existing Vue combo data for
+	// "every other plant", so this field is a small server-rendered
+	// form shown/hidden with vanilla JS instead.
+	window.toggleEditParentPlant = function(plantId) {
+		var row = document.getElementById('edit-parent-plant-row-' + plantId);
+		if (row) {
+			row.classList.toggle('is-hidden');
+		}
+	};
+</script>
