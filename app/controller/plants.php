@@ -987,6 +987,43 @@ class PlantsController extends BaseController {
 	}
 
 	/**
+	 * Handles URL: /plants/favorites
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_favorites($request)
+	{
+		return parent::view(['content', 'favorites'], [
+			'favorite_plants' => PlantsModel::getFavorites()
+		]);
+	}
+
+	/**
+	 * Handles URL: /plants/favorites/remove
+	 *
+	 * Unfavorites a plant and redirects back to the favorites list
+	 * (rather than reusing the generic edit_plant_details endpoint,
+	 * which would redirect to the plant's own details page instead -
+	 * not what someone removing a card from this list would expect).
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function unfavorite_plant($request)
+	{
+		try {
+			$plant = $request->params()->query('plant', null);
+
+			PlantsModel::editPlantAttribute($plant, 'is_favorite', 0);
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/favorites');
+	}
+
+	/**
 	 * Handles URL: /plants/trash/restore
 	 *
 	 * Any signed-in user may restore a plant - undoing a delete is safe,

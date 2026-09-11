@@ -696,6 +696,16 @@
 
 <div class="columns plant-column">
 	<div class="column is-full plant-button-group">
+		<span>
+			<form id="frmToggleFavorite-{{ $plant->get('id') }}" method="POST" action="{{ url('/plants/details/edit') }}" class="is-inline-block">
+				@csrf
+				<input type="hidden" name="plant" value="{{ $plant->get('id') }}">
+				<input type="hidden" name="attribute" value="is_favorite">
+				<input type="hidden" name="value" value="{{ ($plant->get('is_favorite')) ? '0' : '1' }}">
+				<button type="submit" class="button {{ ($plant->get('is_favorite')) ? 'is-warning' : '' }}"><i class="{{ ($plant->get('is_favorite')) ? 'fas' : 'far' }} fa-star"></i>&nbsp;{{ ($plant->get('is_favorite')) ? __('app.unfavorite') : __('app.favorite') }}</button>
+			</form>&nbsp;
+		</span>
+
 		@if (app('history_enable'))
 			@if (!$plant->get('history'))
 				<span>

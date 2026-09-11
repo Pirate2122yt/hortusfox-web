@@ -59,6 +59,7 @@ class IndexController extends BaseController {
 
 		$warning_plants = PlantsModel::getWarningPlants();
 		$care_due_plants = PlantsModel::getCareDuePlants();
+		$favorite_plants = PlantsModel::getFavorites(8);
 		$overdue_tasks = TasksModel::getOverdueTasks();
 		$log = LogModel::getHistory();
 		$stats = UtilsModule::getStats();
@@ -124,6 +125,7 @@ class IndexController extends BaseController {
 			'user' => $user,
 			'warning_plants' => $warning_plants,
 			'care_due_plants' => $care_due_plants,
+			'favorite_plants' => $favorite_plants,
 			'overdue_tasks' => $overdue_tasks,
 			'locations' => $locs,
 			'places' => $places,

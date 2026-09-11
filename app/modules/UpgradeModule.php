@@ -7,6 +7,17 @@
  */
 class UpgradeModule {
     /**
+     * Adds a favorite flag for plants, so a handful of plants can be
+     * pinned and surfaced without digging through every location.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot44()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS is_favorite BOOLEAN NOT NULL DEFAULT 0');
+    }
+
+    /**
      * Adds a parent-plant reference, separate from the existing
      * clone_origin/clone_num duplication feature: parent_plant just
      * links an independently-added plant to the plant it was

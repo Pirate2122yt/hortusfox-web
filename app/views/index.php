@@ -52,6 +52,34 @@
 	</div>
 </div>
 
+@if (count($favorite_plants) > 0)
+<div class="last-added-or-authored-plants">
+	<h3><i class="fas fa-star"></i>&nbsp;{{ __('app.favorites') }} <a class="is-default-link favorites-view-all-link" href="{{ url('/plants/favorites') }}">{{ __('app.view_all') }}</a></h3>
+
+	<div class="plants">
+		@foreach ($favorite_plants as $plant)
+			<a href="{{ url('/plants/details/' . $plant->get('id')) }}">
+				<div class="plant-card">
+					<div class="plant-card-image" style="background-image: url('{{ abs_photo($plant->get('photo')) }}');">
+						<div class="plant-card-overlay"></div>
+					</div>
+
+					<div class="plant-card-health-state">
+						@if ($plant->get('health_state') !== 'in_good_standing')
+							<i class="{{ PlantsModel::$plant_health_states[$plant->get('health_state')]['icon'] }} plant-state-{{ $plant->get('health_state') }}"></i>
+						@endif
+					</div>
+
+					<div class="plant-card-title {{ ((strlen($plant->get('name')) > PlantsModel::PLANT_LONG_TEXT_THRESHOLD) ? 'plant-card-title-longtext' : '') }}">
+						<span>{{ $plant->get('name') }}</span>
+					</div>
+				</div>
+			</a>
+		@endforeach
+	</div>
+</div>
+@endif
+
 <div class="line-up-frames">
 	@if (count($warning_plants) > 0)
 		<div class="warning-plants has-warnings">

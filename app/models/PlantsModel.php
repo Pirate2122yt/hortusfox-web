@@ -59,7 +59,8 @@ class PlantsModel extends \Asatru\Database\Model {
         'water_interval_days',
         'fertilise_interval_days',
         'repot_interval_days',
-        'parent_plant'
+        'parent_plant',
+        'is_favorite'
     ];
 
     static $care_actions = [
@@ -360,6 +361,30 @@ class PlantsModel extends \Asatru\Database\Model {
     {
         try {
             return static::raw('SELECT * FROM `@THIS` WHERE health_state <> \'in_good_standing\' AND history = 0 AND deleted_at IS NULL ORDER BY last_edited_date DESC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Pinned plants, most recently favorited first - shown on the
+     * dashboard and on their own page for quick access without digging
+     * through locations.
+     *
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getFavorites($limit = null)
+    {
+        try {
+            $query = 'SELECT * FROM `@THIS` WHERE is_favorite = 1 AND history = 0 AND deleted_at IS NULL ORDER BY last_edited_date DESC';
+
+            if (($limit !== null) && (is_numeric($limit))) {
+                $query .= ' LIMIT ' . (int)$limit;
+            }
+
+            return static::raw($query);
         } catch (\Exception $e) {
             throw $e;
         }

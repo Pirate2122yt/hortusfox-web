@@ -48,6 +48,7 @@ class PlantsModel_Migration {
         $this->database->add('history BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('history_date TIMESTAMP NULL');
         $this->database->add('is_public BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('is_favorite BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('last_edited_user INT NULL');
         $this->database->add('last_edited_date DATETIME NULL');
         $this->database->add('last_photo_date DATETIME NULL');

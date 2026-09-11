@@ -54,6 +54,8 @@ return [
     array('/plants/attributes/remove', 'ANY', 'plants@remove_custom_attribute'),
     array('/plants/remove', 'ANY', 'plants@remove_plant'),
     array('/plants/trash', 'GET', 'plants@view_trash'),
+    array('/plants/favorites', 'GET', 'plants@view_favorites'),
+    array('/plants/favorites/remove', 'ANY', 'plants@unfavorite_plant'),
     array('/plants/trash/restore', 'ANY', 'plants@restore_plant'),
     array('/plants/trash/purge', 'ANY', 'plants@purge_plant'),
     array('/plants/trash/empty', 'ANY', 'plants@empty_trash'),
