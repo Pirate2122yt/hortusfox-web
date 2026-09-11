@@ -7,6 +7,24 @@
  */
 class UpgradeModule {
     /**
+     * Makes harvest tracking opt-in per plant (default off), so the
+     * Harvests section doesn't show up on every plant's details page
+     * unless it's specifically turned on.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot47()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS harvest_tracking_enabled BOOLEAN NOT NULL DEFAULT 0');
+
+        ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+            'Harvest tracking is now opt-in',
+            'Harvest tracking is now off by default and per plant - turn it on with the checkbox in the Harvests section on a plant\'s details page.',
+            date('Y-m-d')
+        ]);
+    }
+
+    /**
      * Adds changelog entries for the batch of features that shipped
      * alongside/after the harvest tracker (recycle bin theming, 2FA,
      * parent plant, cross-location bulk label printing, the Insights

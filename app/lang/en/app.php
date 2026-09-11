@@ -106,6 +106,7 @@ return [
 	'health_history' => 'Health History',
 	'health_history_empty' => 'No health history recorded yet',
 	'harvest_log' => 'Harvests',
+	'harvest_tracking_enable' => 'Track harvests for this plant',
 	'harvest_totals' => 'Total harvested',
 	'harvest_quantity' => 'Amount',
 	'harvest_unit' => 'Unit (g, pieces...)',

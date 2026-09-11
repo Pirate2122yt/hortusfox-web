@@ -60,7 +60,8 @@ class PlantsModel extends \Asatru\Database\Model {
         'fertilise_interval_days',
         'repot_interval_days',
         'parent_plant',
-        'is_favorite'
+        'is_favorite',
+        'harvest_tracking_enabled'
     ];
 
     static $care_actions = [

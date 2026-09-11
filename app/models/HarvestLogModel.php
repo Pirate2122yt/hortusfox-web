@@ -31,6 +31,10 @@ class HarvestLogModel extends \Asatru\Database\Model {
                 throw new \Exception('Plant not found: ' . $plantId);
             }
 
+            if (!$plant->get('harvest_tracking_enabled')) {
+                throw new \Exception('Harvest tracking is not enabled for this plant');
+            }
+
             static::raw('INSERT INTO `@THIS` (plant, harvest_date, quantity, unit, notes) VALUES(?, ?, ?, ?, ?)', [
                 $plantId,
                 $harvestDate,
