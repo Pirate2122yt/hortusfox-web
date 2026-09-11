@@ -1003,6 +1003,18 @@
 								</div>
 
 								<div class="field">
+									<label class="label">{{ __('app.two_factor_auth') }}</label>
+									<div class="control">
+										@if ($user->get('totp_enabled'))
+											<span class="tag is-success">{{ __('app.two_factor_enabled') }}</span>
+										@else
+											<span class="tag is-light">{{ __('app.two_factor_disabled') }}</span>
+										@endif
+										&nbsp;<a class="button is-small" href="{{ url('/profile/2fa') }}">{{ __('app.manage_two_factor') }}</a>
+									</div>
+								</div>
+
+								<div class="field">
 									<label class="label">{{ __('app.language') }}</label>
 									<div class="control">
 										<select class="input" name="lang" id="selEditCombo">

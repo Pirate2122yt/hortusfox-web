@@ -91,7 +91,9 @@ class UserModel extends \Asatru\Database\Model {
     /**
      * @param $email
      * @param $password
-     * @return void
+     * @return bool True if a second factor (TOTP) is still needed before
+     *              the session is actually logged in, false if login is
+     *              already complete.
      * @throws \Exception
      */
     public static function login($email, $password)
@@ -106,10 +108,200 @@ class UserModel extends \Asatru\Database\Model {
                 throw new \Exception(__('app.password_mismatch'));
             }
 
+            if ($data->get('totp_enabled')) {
+                // Password is correct, but two-factor is on - hold the
+                // user ID in a plain session var (not SessionModel, so
+                // getAuthUser()/auth() still see them as logged out)
+                // until verifyTotpLogin() below actually completes the
+                // login.
+                $_SESSION['pending_totp_user'] = $data->get('id');
+
+                return true;
+            }
+
             SessionModel::loginSession($data->get('id'), session_id());
+
+            return false;
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Generates and stores a fresh TOTP secret for the signed-in user,
+     * without enabling two-factor yet - it only takes effect once
+     * confirmTotpSetup() below verifies the user actually scanned it
+     * correctly.
+     *
+     * @return array{secret: string, uri: string}
+     * @throws \Exception
+     */
+    public static function beginTotpSetup()
+    {
+        try {
+            $user = static::getAuthUser();
+            if (!$user) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $secret = TOTPModule::generateSecret();
+
+            static::raw('UPDATE `@THIS` SET totp_secret = ?, totp_enabled = 0, totp_recovery_codes = NULL WHERE id = ?', [$secret, $user->get('id')]);
+
+            return [
+                'secret' => $secret,
+                'uri' => TOTPModule::getProvisioningUri($secret, $user->get('email'))
+            ];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Confirms a pending TOTP setup with a code from the authenticator
+     * app, turns two-factor on, and issues a fresh set of recovery
+     * codes (returned in plaintext for one-time display - only their
+     * hashes are stored).
+     *
+     * @param $code
+     * @return array
+     * @throws \Exception
+     */
+    public static function confirmTotpSetup($code)
+    {
+        try {
+            $user = static::getAuthUser();
+            if (!$user) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $secret = $user->get('totp_secret');
+            if (!$secret) {
+                throw new \Exception(__('app.totp_setup_not_started'));
+            }
+
+            if (!TOTPModule::verifyCode($secret, $code)) {
+                throw new \Exception(__('app.totp_code_invalid'));
+            }
+
+            $recovery_codes = TOTPModule::generateRecoveryCodes();
+            $hashed = array_map(function ($recovery_code) {
+                return password_hash($recovery_code, PASSWORD_BCRYPT);
+            }, $recovery_codes);
+
+            static::raw('UPDATE `@THIS` SET totp_enabled = 1, totp_recovery_codes = ? WHERE id = ?', [json_encode($hashed), $user->get('id')]);
+
+            return $recovery_codes;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Turns two-factor off after re-checking the current password, and
+     * clears the stored secret and recovery codes.
+     *
+     * @param $password
+     * @return void
+     * @throws \Exception
+     */
+    public static function disableTotp($password)
+    {
+        try {
+            $user = static::getAuthUser();
+            if (!$user) {
+                throw new \Exception('User not authenticated');
+            }
+
+            if (!password_verify($password, $user->get('password'))) {
+                throw new \Exception(__('app.password_mismatch'));
+            }
+
+            static::raw('UPDATE `@THIS` SET totp_enabled = 0, totp_secret = NULL, totp_recovery_codes = NULL WHERE id = ?', [$user->get('id')]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Completes a login that was held pending a second factor by
+     * login() above: verifies the code (a live TOTP code, or falls back
+     * to a one-time recovery code) against the pending user and, only
+     * on success, actually opens the session.
+     *
+     * @param $code
+     * @return void
+     * @throws \Exception
+     */
+    public static function verifyTotpLogin($code)
+    {
+        try {
+            $userId = $_SESSION['pending_totp_user'] ?? null;
+            if (!$userId) {
+                throw new \Exception(__('app.totp_login_expired'));
+            }
+
+            $user = static::getUserById($userId);
+            if (!$user) {
+                throw new \Exception(__('app.totp_login_expired'));
+            }
+
+            $secret = $user->get('totp_secret');
+            $verified = (($secret) && (TOTPModule::verifyCode($secret, $code)));
+
+            if (!$verified) {
+                $verified = static::consumeRecoveryCode($user, $code);
+            }
+
+            if (!$verified) {
+                throw new \Exception(__('app.totp_code_invalid'));
+            }
+
+            unset($_SESSION['pending_totp_user']);
+
+            SessionModel::loginSession($user->get('id'), session_id());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Checks a code against the user's remaining hashed recovery codes
+     * and, on a match, removes that one code so it can't be reused.
+     *
+     * @param $user
+     * @param $code
+     * @return bool
+     */
+    private static function consumeRecoveryCode($user, $code)
+    {
+        if ((!is_string($code)) || (strlen(trim($code)) === 0)) {
+            return false;
+        }
+
+        $stored = $user->get('totp_recovery_codes');
+        if (!$stored) {
+            return false;
+        }
+
+        $hashes = json_decode($stored, true);
+        if (!is_array($hashes)) {
+            return false;
+        }
+
+        $code = trim($code);
+
+        foreach ($hashes as $key => $hash) {
+            if (password_verify($code, $hash)) {
+                unset($hashes[$key]);
+
+                static::raw('UPDATE `@THIS` SET totp_recovery_codes = ? WHERE id = ?', [json_encode(array_values($hashes)), $user->get('id')]);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

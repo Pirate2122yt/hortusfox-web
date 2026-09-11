@@ -57,6 +57,9 @@ class UserModel_Migration {
         $this->database->add('wishlist_share_enable BOOLEAN NOT NULL DEFAULT 0');
         $this->database->add('wishlist_share_token VARCHAR(64) NULL');
         $this->database->add('color_scheme VARCHAR(512) NULL');
+        $this->database->add('totp_secret VARCHAR(64) NULL');
+        $this->database->add('totp_enabled BOOLEAN NOT NULL DEFAULT 0');
+        $this->database->add('totp_recovery_codes TEXT NULL');
         $this->database->add('last_seen_msg INT NULL');
         $this->database->add('last_typing TIMESTAMP NULL');
         $this->database->add('last_seen_sysmsg INT NULL');

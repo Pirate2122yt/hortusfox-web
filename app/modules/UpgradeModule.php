@@ -7,6 +7,20 @@
  */
 class UpgradeModule {
     /**
+     * Adds optional two-factor login (TOTP): a secret, an enabled flag,
+     * and a JSON blob of hashed one-time recovery codes, all on the
+     * user's own row.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot42()
+    {
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64) NULL');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT 0');
+        UserModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS totp_recovery_codes TEXT NULL');
+    }
+
+    /**
      * Adds a recycle bin for plants: removing a plant now just sets
      * deleted_at instead of erasing it outright, so it can be restored
      * or, once someone empties the bin, permanently purged.

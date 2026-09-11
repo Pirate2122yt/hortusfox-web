@@ -162,8 +162,106 @@ class UserController extends BaseController {
 	}
 
 	/**
+	 * Handles URL: /profile/2fa
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_totp($request)
+	{
+		$user = UserModel::getAuthUser();
+
+		$setup = null;
+		$setup_qr = null;
+		if (($user->get('totp_secret')) && (!$user->get('totp_enabled'))) {
+			// A setup was started but never confirmed - show the same
+			// QR/secret again instead of silently generating a new one
+			// on every page load, which would invalidate whatever the
+			// user already scanned.
+			$uri = TOTPModule::getProvisioningUri($user->get('totp_secret'), $user->get('email'));
+
+			$setup = [
+				'secret' => $user->get('totp_secret'),
+				'uri' => $uri
+			];
+			$setup_qr = TOTPModule::getQrCodeDataUri($uri);
+		}
+
+		$recovery_codes = $_SESSION['totp_recovery_codes_display'] ?? null;
+		unset($_SESSION['totp_recovery_codes_display']);
+
+		return parent::view(['content', 'totp'], [
+			'user' => $user,
+			'setup' => $setup,
+			'setup_qr' => $setup_qr,
+			'recovery_codes' => $recovery_codes
+		]);
+	}
+
+	/**
+	 * Handles URL: /profile/2fa/begin
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function begin_totp($request)
+	{
+		try {
+			UserModel::beginTotpSetup();
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/profile/2fa');
+	}
+
+	/**
+	 * Handles URL: /profile/2fa/confirm
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function confirm_totp($request)
+	{
+		try {
+			$code = $request->params()->query('code', null);
+
+			$recovery_codes = UserModel::confirmTotpSetup($code);
+
+			$_SESSION['totp_recovery_codes_display'] = $recovery_codes;
+
+			FlashMessage::setMsg('success', __('app.totp_enabled_successfully'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/profile/2fa');
+	}
+
+	/**
+	 * Handles URL: /profile/2fa/disable
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function disable_totp($request)
+	{
+		try {
+			$password = $request->params()->query('password', null);
+
+			UserModel::disableTotp($password);
+
+			FlashMessage::setMsg('success', __('app.totp_disabled_successfully'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/profile/2fa');
+	}
+
+	/**
 	 * Handles URL: /profile/notes/save
-	 * 
+	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\RedirectHandler
 	 */
