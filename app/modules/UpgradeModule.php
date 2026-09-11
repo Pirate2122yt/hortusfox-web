@@ -7,6 +7,18 @@
  */
 class UpgradeModule {
     /**
+     * Adds a recycle bin for plants: removing a plant now just sets
+     * deleted_at instead of erasing it outright, so it can be restored
+     * or, once someone empties the bin, permanently purged.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot41()
+    {
+        PlantsModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL');
+    }
+
+    /**
      * Adds the Changelog feature: a new ChangelogModel table for a
      * short, admin-curated history of notable changes (separate from
      * FeatureRequestModel so an entry here has no requester/votes and

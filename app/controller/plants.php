@@ -304,6 +304,11 @@ class PlantsController extends BaseController {
 			return redirect('/');
 		}
 
+		if ($plant_data->get('deleted_at')) {
+			FlashMessage::setMsg('error', __('app.plant_in_trash'));
+			return redirect('/plants/trash');
+		}
+
 		$plant_ident = '#' . sprintf('%04d', $plant_data->get('id'));
 		
 		$edit_user_name = '';
@@ -935,6 +940,8 @@ class PlantsController extends BaseController {
 				PlantTasksRefModel::removeForPlant($plant);
 			}
 
+			FlashMessage::setMsg('success', __('app.plant_moved_to_trash'));
+
 			if ($location == 0) {
 				return back();
 			}
@@ -944,6 +951,87 @@ class PlantsController extends BaseController {
 			FlashMessage::setMsg('error', $e->getMessage());
 			return back();
 		}
+	}
+
+	/**
+	 * Handles URL: /plants/trash
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\ViewHandler
+	 */
+	public function view_trash($request)
+	{
+		return parent::view(['content', 'trash'], [
+			'trashed_plants' => PlantsModel::getTrash()
+		]);
+	}
+
+	/**
+	 * Handles URL: /plants/trash/restore
+	 *
+	 * Any signed-in user may restore a plant - undoing a delete is safe,
+	 * unlike the permanent-purge actions below which are admin-only.
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function restore_plant($request)
+	{
+		try {
+			PlantsModel::restorePlant($request->params()->query('plant', null));
+
+			FlashMessage::setMsg('success', __('app.plant_restored'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/trash');
+	}
+
+	/**
+	 * Handles URL: /plants/trash/purge
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function purge_plant($request)
+	{
+		try {
+			if (!UserModel::isCurrentlyAdmin()) {
+				throw new \Exception('Not allowed to permanently delete a plant');
+			}
+
+			PlantsModel::purgePlant($request->params()->query('plant', null));
+
+			FlashMessage::setMsg('success', __('app.plant_purged'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/trash');
+	}
+
+	/**
+	 * Handles URL: /plants/trash/empty
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function empty_trash($request)
+	{
+		try {
+			if (!UserModel::isCurrentlyAdmin()) {
+				throw new \Exception('Not allowed to empty the recycle bin');
+			}
+
+			PlantsModel::emptyTrash();
+
+			FlashMessage::setMsg('success', __('app.trash_emptied'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/trash');
 	}
 
     /**

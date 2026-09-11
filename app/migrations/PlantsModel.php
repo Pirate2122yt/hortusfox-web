@@ -56,6 +56,7 @@ class PlantsModel_Migration {
         $this->database->add('water_interval_days INT NULL');
         $this->database->add('fertilise_interval_days INT NULL');
         $this->database->add('repot_interval_days INT NULL');
+        $this->database->add('deleted_at TIMESTAMP NULL');
         $this->database->add('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
         $this->database->create();
     }

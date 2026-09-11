@@ -225,7 +225,7 @@ class PlantsModel extends \Asatru\Database\Model {
             static::validateSorting($sorting);
             static::validateDirection($direction);
 
-            return static::raw('SELECT * FROM `@THIS` WHERE location = ? AND history = 0 ORDER BY ' . $sorting . ' ' . $direction, [$location]);
+            return static::raw('SELECT * FROM `@THIS` WHERE location = ? AND history = 0 AND deleted_at IS NULL ORDER BY ' . $sorting . ' ' . $direction, [$location]);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -255,7 +255,7 @@ class PlantsModel extends \Asatru\Database\Model {
             static::validateSorting($sorting);
             static::validateDirection($direction);
 
-            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 ORDER BY ' . $sorting . ' ' . $direction);
+            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL ORDER BY ' . $sorting . ' ' . $direction);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -270,9 +270,9 @@ class PlantsModel extends \Asatru\Database\Model {
     {
         try {
             if ($limit == 0) {
-                return static::raw('SELECT * FROM `@THIS` WHERE last_edited_user = ? ORDER BY last_edited_date DESC', [$userId]);
+                return static::raw('SELECT * FROM `@THIS` WHERE last_edited_user = ? AND deleted_at IS NULL ORDER BY last_edited_date DESC', [$userId]);
             } else {
-                return static::raw('SELECT * FROM `@THIS` WHERE last_edited_user = ? ORDER BY last_edited_date DESC LIMIT ' . $limit, [$userId]);
+                return static::raw('SELECT * FROM `@THIS` WHERE last_edited_user = ? AND deleted_at IS NULL ORDER BY last_edited_date DESC LIMIT ' . $limit, [$userId]);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -286,7 +286,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getLastAddedPlants()
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 ORDER BY id DESC LIMIT ' . strval(self::PLANT_LAST_UPDATED_AUTHORED_COUNT));
+            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL ORDER BY id DESC LIMIT ' . strval(self::PLANT_LAST_UPDATED_AUTHORED_COUNT));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -299,7 +299,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getLastAuthoredPlants()
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND last_edited_user IS NOT NULL ORDER BY last_edited_date DESC LIMIT ' . strval(self::PLANT_LAST_UPDATED_AUTHORED_COUNT));
+            return static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL AND last_edited_user IS NOT NULL ORDER BY last_edited_date DESC LIMIT ' . strval(self::PLANT_LAST_UPDATED_AUTHORED_COUNT));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -330,7 +330,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getPublicPlants()
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE is_public = 1 AND history = 0 ORDER BY name ASC');
+            return static::raw('SELECT * FROM `@THIS` WHERE is_public = 1 AND history = 0 AND deleted_at IS NULL ORDER BY name ASC');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -358,7 +358,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getWarningPlants()
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE health_state <> \'in_good_standing\' AND history = 0 ORDER BY last_edited_date DESC');
+            return static::raw('SELECT * FROM `@THIS` WHERE health_state <> \'in_good_standing\' AND history = 0 AND deleted_at IS NULL ORDER BY last_edited_date DESC');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -381,7 +381,7 @@ class PlantsModel extends \Asatru\Database\Model {
             $due = [];
 
             foreach (static::$care_actions as $action => $cols) {
-                $rows = static::raw('SELECT *, COALESCE(' . $cols['last'] . ', created_at) AS care_basis_date FROM `@THIS` WHERE history = 0 AND ' . $cols['interval'] . ' IS NOT NULL AND ' . $cols['interval'] . ' > 0 AND DATE_ADD(COALESCE(' . $cols['last'] . ', created_at), INTERVAL ' . $cols['interval'] . ' DAY) <= NOW()');
+                $rows = static::raw('SELECT *, COALESCE(' . $cols['last'] . ', created_at) AS care_basis_date FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL AND ' . $cols['interval'] . ' IS NOT NULL AND ' . $cols['interval'] . ' > 0 AND DATE_ADD(COALESCE(' . $cols['last'] . ', created_at), INTERVAL ' . $cols['interval'] . ' DAY) <= NOW()');
 
                 foreach ($rows as $row) {
                     $due[] = [
@@ -435,7 +435,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function exportAllAsCsv()
     {
         try {
-            $plants = static::raw('SELECT * FROM `@THIS` WHERE history = 0 ORDER BY name ASC');
+            $plants = static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL ORDER BY name ASC');
 
             $stream = fopen('php://temp', 'r+');
 
@@ -607,7 +607,7 @@ class PlantsModel extends \Asatru\Database\Model {
                 $values = static::sanitizeCsvRow($data);
 
                 $plant_id = ((isset($data['id'])) && (is_numeric($data['id'])) && ((int)$data['id'] > 0)) ? (int)$data['id'] : null;
-                $existing = ($plant_id) ? static::raw('SELECT * FROM `@THIS` WHERE id = ? AND history = 0', [$plant_id])->first() : null;
+                $existing = ($plant_id) ? static::raw('SELECT * FROM `@THIS` WHERE id = ? AND history = 0 AND deleted_at IS NULL', [$plant_id])->first() : null;
 
                 if ($existing) {
                     foreach ($values as $column => $value) {
@@ -674,9 +674,9 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if ($year !== null) {
-                return static::raw('SELECT * FROM `@THIS` WHERE YEAR(history_date) = ? AND history = 1 ORDER BY ' . $sorting . ' ' . $direction . $strlimit, [$year]);
+                return static::raw('SELECT * FROM `@THIS` WHERE YEAR(history_date) = ? AND history = 1 AND deleted_at IS NULL ORDER BY ' . $sorting . ' ' . $direction . $strlimit, [$year]);
             } else {
-                return static::raw('SELECT * FROM `@THIS` WHERE history = 1 ORDER BY ' . $sorting . ' ' . $direction . $strlimit);
+                return static::raw('SELECT * FROM `@THIS` WHERE history = 1 AND deleted_at IS NULL ORDER BY ' . $sorting . ' ' . $direction . $strlimit);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -690,7 +690,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getHistoryYears()
     {
         try {
-            return static::raw('SELECT DISTINCT YEAR(history_date) AS history_year FROM `@THIS` WHERE history = 1 AND history_date IS NOT NULL ORDER BY YEAR(history_date) DESC');
+            return static::raw('SELECT DISTINCT YEAR(history_date) AS history_year FROM `@THIS` WHERE history = 1 AND deleted_at IS NULL AND history_date IS NOT NULL ORDER BY YEAR(history_date) DESC');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1019,7 +1019,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getCount()
     {
         try {
-            return static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE history = 0')->first()->get('count');
+            return static::raw('SELECT COUNT(*) as count FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL')->first()->get('count');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1039,63 +1039,48 @@ class PlantsModel extends \Asatru\Database\Model {
         try {
             $text = trim(strtolower($text));
 
-            $query = 'SELECT * FROM `@THIS` ';
-            $hasAny = false;
-
+            // Every branch below is AND-ed with "not in the recycle bin" -
+            // the OR'd name/scientific_name/tags/notes conditions are
+            // grouped in parens so that AND doesn't only bind to the first
+            // of them (operator precedence would otherwise let a trashed
+            // plant slip back in through the second/third/fourth OR arm).
+            $query = 'SELECT * FROM `@THIS` WHERE deleted_at IS NULL';
             $args = [];
 
             if (substr($text, 0, 1) === '#') {
                 $text = ltrim(substr($text, 1), '0');
 
-                return static::raw('SELECT * FROM `@THIS` WHERE id = ? LIMIT 1', [$text]);
+                return static::raw('SELECT * FROM `@THIS` WHERE deleted_at IS NULL AND id = ? LIMIT 1', [$text]);
             }
 
-            if ($search_name) {
-                if ($hasAny) {
-                    $query .= ' OR LOWER(name) LIKE ? ';
-                } else {
-                    $query .= ' WHERE LOWER(name) LIKE ? ';
-                }
+            $conditions = [];
 
+            if ($search_name) {
+                $conditions[] = 'LOWER(name) LIKE ?';
                 $args[] = '%' . $text . '%';
-                $hasAny = true;
             }
 
             if ($search_scientific_name) {
-                if ($hasAny) {
-                    $query .= ' OR LOWER(scientific_name) LIKE ? ';
-                } else {
-                    $query .= ' WHERE LOWER(scientific_name) LIKE ? ';
-                }
-
+                $conditions[] = 'LOWER(scientific_name) LIKE ?';
                 $args[] = '%' . $text . '%';
-                $hasAny = true;
             }
 
             if ($search_tags) {
-                if ($hasAny) {
-                    $query .= ' OR LOWER(tags) LIKE ? ';
-                } else {
-                    $query .= ' WHERE LOWER(tags) LIKE ? ';
-                }
-
+                $conditions[] = 'LOWER(tags) LIKE ?';
                 $args[] = '%' . $text . '%';
-                $hasAny = true;
             }
 
             if ($search_notes) {
-                if ($hasAny) {
-                    $query .= ' OR LOWER(notes) LIKE ? ';
-                } else {
-                    $query .= ' WHERE LOWER(notes) LIKE ? ';
-                }
-
+                $conditions[] = 'LOWER(notes) LIKE ?';
                 $args[] = '%' . $text . '%';
-                $hasAny = true;
+            }
+
+            if (count($conditions) > 0) {
+                $query .= ' AND (' . implode(' OR ', $conditions) . ')';
             }
 
             $query .= ' ORDER BY last_edited_date DESC';
-            
+
             return static::raw($query, $args);
         } catch (\Exception $e) {
             throw $e;
@@ -1110,7 +1095,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function updateLastWatered($location)
     {
         try {
-            static::raw('UPDATE `@THIS` SET last_watered = CURRENT_TIMESTAMP WHERE location = ?', [$location]);
+            static::raw('UPDATE `@THIS` SET last_watered = CURRENT_TIMESTAMP WHERE location = ? AND deleted_at IS NULL', [$location]);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1124,7 +1109,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function updateLastRepotted($location)
     {
         try {
-            static::raw('UPDATE `@THIS` SET last_repotted = CURRENT_TIMESTAMP WHERE location = ?', [$location]);
+            static::raw('UPDATE `@THIS` SET last_repotted = CURRENT_TIMESTAMP WHERE location = ? AND deleted_at IS NULL', [$location]);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1138,7 +1123,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function updateLastFertilised($location)
     {
         try {
-            static::raw('UPDATE `@THIS` SET last_fertilised = CURRENT_TIMESTAMP WHERE location = ?', [$location]);
+            static::raw('UPDATE `@THIS` SET last_fertilised = CURRENT_TIMESTAMP WHERE location = ? AND deleted_at IS NULL', [$location]);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1201,6 +1186,11 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Moves a plant to the recycle bin rather than deleting it outright -
+     * photos, attachments and the row itself are all left in place so
+     * restorePlant() can bring it back exactly as it was. Actual removal
+     * only happens via purgePlant(), once someone empties the bin.
+     *
      * @param $plantId
      * @return void
      * @throws \Exception
@@ -1214,6 +1204,74 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             $plant = PlantsModel::getDetails($plantId);
+            if (!$plant) {
+                throw new \Exception('Plant with ID not found: ' . $plantId);
+            }
+
+            static::raw('UPDATE `@THIS` SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?', [$plantId]);
+
+            LogModel::addLog($user->get('id'), $plant->get('name'), 'trash_plant', '');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Takes a plant back out of the recycle bin.
+     *
+     * @param $plantId
+     * @return void
+     * @throws \Exception
+     */
+    public static function restorePlant($plantId)
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $plant = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$plantId])->first();
+            if (!$plant) {
+                throw new \Exception('Plant with ID not found: ' . $plantId);
+            }
+
+            static::raw('UPDATE `@THIS` SET deleted_at = NULL WHERE id = ?', [$plantId]);
+
+            LogModel::addLog($user->get('id'), $plant->get('name'), 'restore_plant', '');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Permanently deletes a plant that's already in the recycle bin - this
+     * is the old removePlant() body: photo files, gallery photos and
+     * attachments are all actually erased here, since there's no going
+     * back from this one. Only ever call this on a plant whose
+     * deleted_at is already set - purging straight out of the active
+     * list would skip the "are you sure" step the recycle bin exists for.
+     *
+     * @param $plantId
+     * @return void
+     * @throws \Exception
+     */
+    public static function purgePlant($plantId)
+    {
+        try {
+            $user = UserModel::getAuthUser();
+            if (!$user) {
+                throw new \Exception('Invalid user');
+            }
+
+            $plant = static::raw('SELECT * FROM `@THIS` WHERE id = ?', [$plantId])->first();
+            if (!$plant) {
+                throw new \Exception('Plant with ID not found: ' . $plantId);
+            }
+
+            if (!$plant->get('deleted_at')) {
+                throw new \Exception('Plant is not in the recycle bin: ' . $plantId);
+            }
 
             if ($plant->get('photo') !== self::PLANT_PLACEHOLDER_FILE) {
                 if (file_exists(public_path('/img/' . $plant->get('photo')))) {
@@ -1234,6 +1292,43 @@ class PlantsModel extends \Asatru\Database\Model {
 
             LogModel::addLog($user->get('id'), $plant->get('name'), 'remove_plant', '');
             TextBlockModule::deletePlant($plant->get('name'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Every plant currently sitting in the recycle bin, most recently
+     * deleted first.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getTrash()
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC');
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Permanently deletes everything currently in the recycle bin.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public static function emptyTrash()
+    {
+        try {
+            $trashed = static::getTrash();
+
+            if (is_countable($trashed)) {
+                foreach ($trashed as $plant) {
+                    static::purgePlant($plant->get('id'));
+                }
+            }
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1285,7 +1380,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getPlantCount($id)
     {
         try {
-            return static::raw('SELECT COUNT(*) AS count FROM `@THIS` WHERE location = ? AND history = 0', [$id])->first()->get('count');
+            return static::raw('SELECT COUNT(*) AS count FROM `@THIS` WHERE location = ? AND history = 0 AND deleted_at IS NULL', [$id])->first()->get('count');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1299,7 +1394,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getDangerCount($id)
     {
         try {
-            return static::raw('SELECT COUNT(*) AS count FROM `@THIS` WHERE location = ? AND health_state <> ? AND history = 0', [
+            return static::raw('SELECT COUNT(*) AS count FROM `@THIS` WHERE location = ? AND health_state <> ? AND history = 0 AND deleted_at IS NULL', [
                 $id, 'in_good_standing'
             ])->first()->get('count');
         } catch (\Exception $e) {
@@ -1377,7 +1472,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function findOffspring($id)
     {
         try {
-            return static::raw('SELECT * FROM `@THIS` WHERE clone_origin = ?', [$id]);
+            return static::raw('SELECT * FROM `@THIS` WHERE clone_origin = ? AND deleted_at IS NULL', [$id]);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1391,7 +1486,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function offspringCount($id)
     {
         try {
-            return (int)static::raw('SELECT COUNT(*) AS `count` FROM `@THIS` WHERE clone_origin = ?', [$id])?->first()?->get('count');
+            return (int)static::raw('SELECT COUNT(*) AS `count` FROM `@THIS` WHERE clone_origin = ? AND deleted_at IS NULL', [$id])?->first()?->get('count');
         } catch (\Exception $e) {
             throw $e;
         }
@@ -1469,9 +1564,9 @@ class PlantsModel extends \Asatru\Database\Model {
             }
 
             if (($from !== null) && (is_numeric($from))) {
-                return static::raw('SELECT * FROM `@THIS` WHERE location = ? AND id > ?' . $sort . $limit, [$location, $from]);
+                return static::raw('SELECT * FROM `@THIS` WHERE location = ? AND id > ? AND deleted_at IS NULL' . $sort . $limit, [$location, $from]);
             } else {
-                return static::raw('SELECT * FROM `@THIS` WHERE location = ?' . $sort . $limit, [$location]);
+                return static::raw('SELECT * FROM `@THIS` WHERE location = ? AND deleted_at IS NULL' . $sort . $limit, [$location]);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -1487,7 +1582,7 @@ class PlantsModel extends \Asatru\Database\Model {
     public static function getSpecificInfo($location, $include = 'id')
     {
         try {
-            return static::raw('SELECT ' . $include . ' FROM `@THIS` WHERE location = ? AND history = 0', [$location]);
+            return static::raw('SELECT ' . $include . ' FROM `@THIS` WHERE location = ? AND history = 0 AND deleted_at IS NULL', [$location]);
         } catch (\Exception $e) {
             throw $e;
         }

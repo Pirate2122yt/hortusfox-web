@@ -75,7 +75,14 @@ class SearchController extends BaseController {
 					} else {
 						$plant_info = PlantsModel::getDetails($cust_plant['plant'])?->asArray();
 
-						if ($plant_info) {
+						// getDetails() is a plain by-ID lookup that doesn't
+						// filter out trashed plants (restorePlant/purgePlant
+						// need it to still find them) - so a match on a
+						// trashed plant's custom attribute has to be
+						// filtered out here instead, or it would resurface
+						// a plant that's supposed to be out of the way in
+						// the recycle bin.
+						if (($plant_info) && (!$plant_info['deleted_at'])) {
 							$plant_info[$cust_plant['label']] = $cust_plant['content'];
 
 							$search_result[] = $plant_info;

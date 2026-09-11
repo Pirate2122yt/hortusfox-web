@@ -9,6 +9,7 @@
 			<input type="file" name="csv" accept=".csv" required>
 			<button type="submit" class="button">{{ __('app.import_csv') }}</button>
 		</form>
+		<div class="is-inline-block is-action-button-margin"><a class="button" href="{{ url('/plants/trash') }}"><i class="fas fa-trash-restore"></i>&nbsp;{{ __('app.recycle_bin') }}</a></div>
 		<div class="is-inline-block is-action-button-margin"><a class="is-default-link is-fixed-button-link is-fixed-margin-left-mobile" href="{{ url('/') }}">{{ __('app.back_to_dashboard') }}</a></div>
 	</div>
 </div>
