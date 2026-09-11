@@ -112,6 +112,9 @@ return [
     /** Feature Requests Controller */
     array('/feature-requests', 'GET', 'featurerequests@view_feature_requests'),
     array('/feature-requests/changelog', 'GET', 'featurerequests@view_changelog'),
+    array('/feature-requests/changelog/add', 'POST', 'featurerequests@add_changelog_entry'),
+    array('/feature-requests/changelog/edit', 'POST', 'featurerequests@edit_changelog_entry'),
+    array('/feature-requests/changelog/remove', 'ANY', 'featurerequests@remove_changelog_entry'),
     array('/feature-requests/add', 'POST', 'featurerequests@add_feature_request'),
     array('/feature-requests/edit', 'POST', 'featurerequests@edit_feature_request'),
     array('/feature-requests/remove', 'ANY', 'featurerequests@remove_feature_request'),

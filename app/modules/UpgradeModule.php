@@ -7,6 +7,69 @@
  */
 class UpgradeModule {
     /**
+     * Adds the Changelog feature: a new ChangelogModel table for a
+     * short, admin-curated history of notable changes (separate from
+     * FeatureRequestModel so an entry here has no requester/votes and
+     * isn't part of the community board), seeded with the significant
+     * changes shipped so far so the page isn't empty on first visit.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot40()
+    {
+        ChangelogModel::raw('CREATE TABLE IF NOT EXISTS ChangelogModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            description TEXT NULL,
+            entry_date DATE NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        $already_seeded = ChangelogModel::raw('SELECT COUNT(*) as count FROM `@THIS`')->first()->get('count') > 0;
+        if ($already_seeded) {
+            return;
+        }
+
+        $entries = [
+            ['2026-09-06', 'Month-view calendar, and Plant.id as a fallback ID provider', 'The calendar was rebuilt as a proper month view, and Plant.id was added as a fallback plant identification provider.'],
+            ['2026-09-07', 'Plant journal', 'Added a plant journal for photos, tags and notes on log entries, including a settable entry date for backdating old events.'],
+            ['2026-09-07', 'Journal photo syncing and a rewritten Location Log', 'Journal photos now sync automatically into the gallery, care dates get marked straight from matching journal entries, uploaded photos have their metadata stripped, and the Location Log was rewritten.'],
+            ['2026-09-08', 'Feature Request board', 'Added a Feature Request board where anyone can suggest new features and upvote the ones they want most.'],
+            ['2026-09-08', 'Places', 'Added Places to group Locations together (e.g. a house containing rooms).'],
+            ['2026-09-08', 'Per-Location inventory pages', 'Inventory now has its own page per Location.'],
+            ['2026-09-08', 'Public plant catalogue', 'Added a shareable, no-login public catalogue of your plants, with visitor comments, a rate-limited and CAPTCHA-protected public plant identifier, and an admin kill switch to turn it off entirely.'],
+            ['2026-09-08', 'iCal and RSS feeds', 'Added an iCal (.ics) calendar feed and an RSS activity feed for tools like Homarr and other feed readers.'],
+            ['2026-09-08', 'Chat and update-check polish', 'Added a toggle to hide system messages in chat, and the app now checks your own GitHub repo (instead of upstream) for available updates.'],
+            ['2026-09-09', 'All-plants page', 'Added an all-plants page, and the dashboard now shows Places before Locations.'],
+            ['2026-09-09', 'Photos for Places', 'You can now upload a photo for a Place (house), mirroring Location photos.'],
+            ['2026-09-09', 'Default weather location', 'Added a default weather location with admin-set coordinates.'],
+            ['2026-09-09', 'Color schemes (Appearance)', 'Added selectable color schemes under Appearance, with several built-in themes to choose from.'],
+            ['2026-09-10', 'More color schemes', 'Added three more color schemes: Ember, Abyss, and Amber.'],
+            ['2026-09-10', 'Care interval reminders', 'Added per-plant, per-action care interval reminders.'],
+            ['2026-09-10', 'Plant health-state history', "Each plant's health-state changes are now tracked and shown as a timeline."],
+            ['2026-09-10', 'CSV import/export', 'Added CSV import/export for plants, and CSV import for inventory.'],
+            ['2026-09-10', 'Web push notifications', 'Added web push notifications - subscribe/unsubscribe and a test push - wired into task, calendar and chat reminders.'],
+            ['2026-09-10', 'Chat message editing and deletion', "Admins can now delete chat messages, and users can edit their own."],
+            ['2026-09-10', 'Weather based on Places', 'Weather is now based on a Place rather than an individual Location.'],
+            ['2026-09-10', 'Location-based notification filtering', 'Added location-based filtering for task and plant-care push notifications.'],
+            ['2026-09-10', 'Per-location calendar events', 'Added per-location calendar events, and scoped the homepage to them.'],
+            ['2026-09-10', 'Reorganized Settings', 'Settings were reorganized into labeled sections for easier navigation.'],
+            ['2026-09-10', 'Comment notification emails', "Visitors commenting on a shared plant now emails the admins, and admins can choose exactly which admin accounts receive that notification."],
+            ['2026-09-10', 'Feature request notification emails', 'New feature request submissions can now email a chosen admin via SMTP.'],
+            ['2026-09-10', 'Plant Wishlist', 'Added the plant Wishlist feature: a per-user wishlist, a per-house wishlist, and an overall wishlist, with a shareable public gift-registry link.'],
+            ['2026-09-11', 'Separated the three Wishlist views', "The House Wishlist view now has you pick a specific house first, so Everyone's, House, and My wishlist are genuinely separate views."],
+            ['2026-09-11', 'This changelog', 'Added this changelog, linked from the Feature Request board.']
+        ];
+
+        foreach ($entries as $entry) {
+            ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+                $entry[1], $entry[2], $entry[0]
+            ]);
+        }
+    }
+
+    /**
      * WishlistModel.price started out as DECIMAL(10, 2), which only
      * allows 8 digits before the decimal point (max 99,999,999.99) -
      * plenty in theory, but MySQL rejects the insert outright rather

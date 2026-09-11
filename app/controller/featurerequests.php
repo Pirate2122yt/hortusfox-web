@@ -58,9 +58,9 @@ class FeatureRequestsController extends BaseController {
 	/**
 	 * Handles URL: /feature-requests/changelog
 	 *
-	 * A read-only history of every feature request that has actually
-	 * shipped, for people who just want to see what's new rather than
-	 * browse the whole board.
+	 * A short, admin-curated history of notable changes - separate from
+	 * the feature request board itself, for people who just want to see
+	 * what's new rather than browse the whole board.
 	 *
 	 * @param Asatru\Controller\ControllerArg $request
 	 * @return Asatru\View\ViewHandler
@@ -69,23 +69,76 @@ class FeatureRequestsController extends BaseController {
 	{
 		$user = UserModel::getAuthUser();
 
-		$entries = FeatureRequestModel::getChangelog();
-
-		$requesters = [];
-		if (is_countable($entries)) {
-			foreach ($entries as $entry) {
-				if (!isset($requesters[$entry->get('user')])) {
-					$requester = UserModel::getUserById($entry->get('user'));
-					$requesters[$entry->get('user')] = $requester ? $requester->get('name') : null;
-				}
-			}
-		}
-
 		return parent::view(['content', 'changelog'], [
 			'user' => $user,
-			'entries' => $entries,
-			'requesters' => $requesters
+			'entries' => ChangelogModel::getAll()
 		]);
+	}
+
+	/**
+	 * Handles URL: /feature-requests/changelog/add
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function add_changelog_entry($request)
+	{
+		try {
+			ChangelogModel::addEntry(
+				$request->params()->query('title'),
+				$request->params()->query('description', ''),
+				$request->params()->query('entry_date', null)
+			);
+
+			FlashMessage::setMsg('success', __('app.changelog_entry_added'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/feature-requests/changelog');
+	}
+
+	/**
+	 * Handles URL: /feature-requests/changelog/edit
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function edit_changelog_entry($request)
+	{
+		try {
+			ChangelogModel::editEntry(
+				$request->params()->query('item'),
+				$request->params()->query('title'),
+				$request->params()->query('description', ''),
+				$request->params()->query('entry_date', null)
+			);
+
+			FlashMessage::setMsg('success', __('app.changelog_entry_saved'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/feature-requests/changelog');
+	}
+
+	/**
+	 * Handles URL: /feature-requests/changelog/remove
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function remove_changelog_entry($request)
+	{
+		try {
+			ChangelogModel::removeEntry($request->params()->query('item'));
+
+			FlashMessage::setMsg('success', __('app.changelog_entry_removed'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/feature-requests/changelog');
 	}
 
 	/**
