@@ -590,6 +590,103 @@ a.navbar-burger:hover {
     opacity: 0.8;
 }
 
+// Insights dashboard: stat tiles, horizontal breakdown bars, and a
+// small vertical bar chart for month-over-month growth - all plain CSS
+// (no charting library), following the same two-tone convention as
+// the plant details page's health-history timeline.
+.insights-stat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.insights-stat-tile {
+    flex: 1 1 160px;
+    padding: 18px 16px;
+    border-radius: 8px;
+    background-color: var(--hf-bg-surface);
+    border: 1px solid rgba(128, 128, 128, 0.18);
+    text-align: center;
+}
+
+.insights-stat-value {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--hf-text-primary);
+}
+
+.insights-stat-label {
+    margin-top: 4px;
+    font-size: 0.85em;
+    color: var(--hf-text-primary);
+    opacity: 0.75;
+}
+
+.insights-bar-row {
+    margin-bottom: 12px;
+}
+
+.insights-bar-row:last-child {
+    margin-bottom: 0;
+}
+
+.insights-bar-label {
+    margin-bottom: 4px;
+    font-size: 0.9em;
+    color: var(--hf-text-primary);
+}
+
+.insights-bar-track {
+    width: 100%;
+    height: 14px;
+    border-radius: 7px;
+    background-color: rgba(128, 128, 128, 0.18);
+    overflow: hidden;
+}
+
+.insights-bar-fill {
+    height: 100%;
+    border-radius: 7px;
+    min-width: 2px;
+}
+
+.insights-growth-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 140px;
+}
+
+.insights-growth-column {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.insights-growth-bar-track {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.insights-growth-bar {
+    width: 100%;
+    min-height: 2px;
+    border-radius: 3px 3px 0 0;
+    background-color: rgb(94, 145, 243);
+}
+
+.insights-growth-label {
+    margin-top: 6px;
+    font-size: 0.75em;
+    color: var(--hf-text-primary);
+    opacity: 0.75;
+}
+
 // A lighter-weight divider for a subgroup within a .settings-section
 // (e.g. "Tasks" / "Calendar" / "Plant care" within Notifications).
 .settings-subsection-label {

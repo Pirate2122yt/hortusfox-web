@@ -1514,6 +1514,62 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * How many active plants currently sit in each health_state, keyed
+     * by state (only states with at least one plant are present). Used
+     * by the Insights dashboard's health breakdown.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public static function getHealthStateBreakdown()
+    {
+        try {
+            $counts = [];
+            foreach (static::raw('SELECT health_state, COUNT(*) AS `count` FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL GROUP BY health_state') as $row) {
+                $counts[$row->get('health_state')] = (int)$row->get('count');
+            }
+
+            return $counts;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * How many (non-trashed) plants were added per calendar month, over
+     * the last $months months - every month in the range is present
+     * (zero-filled), so the Insights dashboard's growth chart has a
+     * continuous run of months instead of gaps.
+     *
+     * @param $months
+     * @return array a list of ['month' => 'YYYY-MM', 'count' => int]
+     * @throws \Exception
+     */
+    public static function getGrowthByMonth($months = 12)
+    {
+        try {
+            $counts = [];
+            foreach (static::raw('SELECT DATE_FORMAT(created_at, \'%Y-%m\') AS `month`, COUNT(*) AS `count` FROM `@THIS` WHERE deleted_at IS NULL AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH) GROUP BY month ORDER BY month ASC', [$months]) as $row) {
+                $counts[$row->get('month')] = (int)$row->get('count');
+            }
+
+            $result = [];
+            for ($i = $months - 1; $i >= 0; $i--) {
+                $month = date('Y-m', strtotime('-' . $i . ' months'));
+
+                $result[] = [
+                    'month' => $month,
+                    'count' => $counts[$month] ?? 0
+                ];
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * @param $name
      * @return int
      * @throws \Exception

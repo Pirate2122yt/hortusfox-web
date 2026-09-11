@@ -34,6 +34,11 @@
 		<div class="stats-item-label">{{ __('app.locations') }}</div>
 	</div>
 
+	<div class="stats-item is-pointer" onclick="location.href = '{{ url('/insights') }}';">
+		<div class="stats-item-count"><i class="fas fa-chart-bar"></i></div>
+		<div class="stats-item-label">{{ __('app.insights') }}</div>
+	</div>
+
 	@if (app('tasks_enable'))
 	<div class="stats-item is-pointer" onclick="location.href = '{{ url('/tasks') }}';">
 		<div class="stats-item-count">{{ $stats['tasks'] }}</div>

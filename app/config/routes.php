@@ -95,6 +95,9 @@ return [
     array('/search', 'GET', 'search@view_search'),
     array('/search/perform', 'POST', 'search@perform_search'),
 
+    /** Insights Controller */
+    array('/insights', 'GET', 'insights@view_insights'),
+
     /** Tasks Controller */
     array('/tasks', 'GET', 'tasks@view_tasks'),
     array('/tasks/create', 'POST', 'tasks@create_task'),
