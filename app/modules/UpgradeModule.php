@@ -7,6 +7,34 @@
  */
 class UpgradeModule {
     /**
+     * Adds changelog entries for the batch of features that shipped
+     * alongside/after the harvest tracker (recycle bin theming, 2FA,
+     * parent plant, cross-location bulk label printing, the Insights
+     * dashboard, favorites, and the harvest tracker itself), so the
+     * changelog stays current without needing a manual admin visit.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot46()
+    {
+        $entries = [
+            ['2026-09-11', 'Recycle Bin theming fix', 'Fixed the Recycle Bin (and Journal, Changelog, Feature Request, and Wishlist cards) to follow the selected color scheme instead of a fixed dark background.'],
+            ['2026-09-11', 'Two-factor authentication', 'Added optional two-factor authentication (TOTP) with QR-code setup and one-time recovery codes, manageable from your profile.'],
+            ['2026-09-11', 'Parent plant', 'Added a Parent Plant field, separate from Clone Plant, so a plant can be linked to the specific plant it was propagated from.'],
+            ['2026-09-11', 'Bulk QR label printing everywhere', 'Bulk QR label printing is now available from the all-plants view too, not just per-location.'],
+            ['2026-09-11', 'Insights dashboard', 'Added an Insights dashboard: plant and location counts, health breakdown, plants by location, and a 12-month growth chart.'],
+            ['2026-09-11', 'Favorites', 'Added favorites for plants, with a dedicated view and a section on the dashboard.'],
+            ['2026-09-11', 'Harvest tracker', "Added a harvest tracker: log a harvest's date, quantity/unit, and notes on a plant's details page, with a running per-unit total."]
+        ];
+
+        foreach ($entries as $entry) {
+            ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+                $entry[1], $entry[2], $entry[0]
+            ]);
+        }
+    }
+
+    /**
      * Adds a real harvest log (date, quantity/unit, notes) per plant,
      * separate from the calendar's "Harvest" event category which has
      * no logging behind it.
