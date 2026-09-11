@@ -2106,7 +2106,11 @@ fieldset .field {
     position: relative;
     display: flex;
     flex-direction: column;
-    background-color: rgba(73, 79, 83);
+    /* Follows the selected color scheme (Appearance settings) instead of
+       a fixed dark gray, so the card reads correctly against light
+       themes like Sandstone too - see the --hf-* custom properties
+       defined at the top of this file. */
+    background-color: var(--hf-bg-surface);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     overflow: hidden;
@@ -2152,7 +2156,7 @@ fieldset .field {
 .plant-journal-entry-title {
     font-size: 1.1em;
     font-weight: 600;
-    color: rgb(230, 230, 230);
+    color: var(--hf-text-primary);
     word-wrap: break-word;
 }
 
@@ -2168,7 +2172,7 @@ fieldset .field {
 }
 
 .plant-journal-entry-content {
-    color: rgb(220, 220, 220);
+    color: var(--hf-text-primary);
     white-space: pre-wrap;
     word-wrap: break-word;
     margin-bottom: 10px;
@@ -2184,7 +2188,7 @@ fieldset .field {
     margin-right: 6px;
     margin-bottom: 6px;
     background-color: rgba(123, 123, 123, 0.3);
-    color: rgb(190, 190, 190);
+    color: var(--hf-text-primary);
     border-radius: 10px;
     font-size: 0.85em;
 }
@@ -2195,7 +2199,7 @@ fieldset .field {
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    color: rgb(190, 190, 190);
+    color: var(--hf-text-primary);
     font-size: 0.9em;
 }
 
@@ -2205,7 +2209,7 @@ fieldset .field {
 }
 
 .plant-journal-entry-actions a:hover {
-    color: rgb(220, 220, 220);
+    opacity: 0.7;
 }
 
 .plant-journal-entry-comments {
@@ -2223,7 +2227,7 @@ fieldset .field {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgb(220, 220, 220);
+    color: var(--hf-text-primary);
 }
 
 .plant-journal-entry-comment-header a {
@@ -2232,17 +2236,18 @@ fieldset .field {
 }
 
 .plant-journal-entry-comment-header a:hover {
-    color: rgb(220, 220, 220);
+    opacity: 0.7;
 }
 
 .plant-journal-entry-comment-date {
-    color: rgb(180, 180, 180);
+    color: var(--hf-text-primary);
+    opacity: 0.75;
     font-size: 0.85em;
 }
 
 .plant-journal-entry-comment-text {
     margin-top: 2px;
-    color: rgb(210, 210, 210);
+    color: var(--hf-text-primary);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
