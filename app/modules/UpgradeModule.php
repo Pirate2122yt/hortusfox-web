@@ -7,6 +7,26 @@
  */
 class UpgradeModule {
     /**
+     * Adds changelog entries for the dashboard Favorites theming fix
+     * and the new bulk QR print layouts.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot48()
+    {
+        $entries = [
+            ['2026-09-11', 'Favorites follows the color scheme', 'Fixed the dashboard Favorites section to follow the selected color scheme instead of a fixed dark background.'],
+            ['2026-09-11', 'QR print layouts', 'Bulk QR code printing now offers a choice of layout: the original simple list, a Plant Label card (name, scientific name, location), or a compact Label Sheet grid.']
+        ];
+
+        foreach ($entries as $entry) {
+            ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+                $entry[1], $entry[2], $entry[0]
+            ]);
+        }
+    }
+
+    /**
      * Makes harvest tracking opt-in per plant (default off), so the
      * Harvests section doesn't show up on every plant's details page
      * unless it's specifically turned on.
