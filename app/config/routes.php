@@ -75,6 +75,8 @@ return [
     array('/plants/log/remove', 'POST', 'plants@remove_plant_log_entry'),
     array('/plants/log/comment/remove', 'POST', 'plants@remove_plant_log_comment'),
     array('/plants/log/fetch', 'ANY', 'plants@fetch_plant_log_entries'),
+    array('/plants/harvest/add', 'POST', 'plants@add_harvest_entry'),
+    array('/plants/harvest/remove', 'POST', 'plants@remove_harvest_entry'),
     array('/plants/location/log/add', 'POST', 'plants@add_location_log_entry'),
     array('/plants/location/log/edit', 'POST', 'plants@edit_location_log_entry'),
     array('/plants/location/log/remove', 'POST', 'plants@remove_location_log_entry'),

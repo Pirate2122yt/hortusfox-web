@@ -65,6 +65,62 @@
 	@endif
 </div>
 
+<div class="log">
+	<a name="plant-harvest-anchor"></a>
+	<h3>{{ __('app.harvest_log') }}</h3>
+
+	@if (strlen($harvest_totals_summary) > 0)
+		<div class="is-default-text-color margin-vertical"><strong>{{ __('app.harvest_totals') }}:</strong> {{ $harvest_totals_summary }}</div>
+	@endif
+
+	<form id="frmAddHarvestEntry-{{ $plant->get('id') }}" method="POST" action="{{ url('/plants/harvest/add') }}" class="margin-vertical">
+		@csrf
+		<input type="hidden" name="plant" value="{{ $plant->get('id') }}"/>
+
+		<div class="field is-grouped is-grouped-multiline">
+			<div class="control">
+				<input type="date" class="input" name="harvest_date" value="{{ date('Y-m-d') }}" required/>
+			</div>
+			<div class="control">
+				<input type="number" step="0.01" min="0" class="input" name="quantity" placeholder="{{ __('app.harvest_quantity') }}" style="width: 110px;"/>
+			</div>
+			<div class="control">
+				<input type="text" class="input" name="unit" placeholder="{{ __('app.harvest_unit') }}" style="width: 90px;"/>
+			</div>
+			<div class="control is-expanded">
+				<input type="text" class="input" name="notes" placeholder="{{ __('app.notes') }}"/>
+			</div>
+			<div class="control">
+				<button type="submit" class="button is-success">{{ __('app.harvest_log_entry') }}</button>
+			</div>
+		</div>
+	</form>
+
+	@if ((is_countable($harvest_entries)) && (count($harvest_entries) > 0))
+		<div class="log-content">
+			@foreach ($harvest_entries as $harvest_entry)
+				<div class="log-item">
+					<strong>{{ date('Y-m-d', strtotime($harvest_entry->get('harvest_date'))) }}</strong>
+					@if ($harvest_entry->get('quantity') !== null)
+						&bull; {{ rtrim(rtrim(number_format($harvest_entry->get('quantity'), 2), '0'), '.') }}{{ ($harvest_entry->get('unit')) ? ' ' . $harvest_entry->get('unit') : '' }}
+					@endif
+					@if (strlen((string)$harvest_entry->get('notes')) > 0)
+						&bull; {{ $harvest_entry->get('notes') }}
+					@endif
+
+					<form id="frmRemoveHarvestEntry-{{ $harvest_entry->get('id') }}" method="POST" action="{{ url('/plants/harvest/remove') }}" class="is-inline-block float-right" onsubmit="return confirm(window.HARVEST_REMOVE_CONFIRM);">
+						@csrf
+						<input type="hidden" name="item" value="{{ $harvest_entry->get('id') }}"/>
+						<button type="submit" class="button is-small">{{ __('app.remove') }}</button>
+					</form>
+				</div>
+			@endforeach
+		</div>
+	@else
+		<div class="is-not-available">{{ __('app.no_harvest_entries') }}</div>
+	@endif
+</div>
+
 <div class="columns plant-column">
 	<div class="column is-two-third">
 		@if (app('plantrec_enable'))
@@ -743,4 +799,10 @@
 			row.classList.toggle('is-hidden');
 		}
 	};
+
+	// json_encode (not a plain double-curly interpolation) so an
+	// apostrophe in the translated text can't break out of the
+	// single-quoted JS string it's used in below. Same reasoning as
+	// chat.php's CHAT_DELETE_CONFIRM.
+	window.HARVEST_REMOVE_CONFIRM = {!! json_encode(__('app.confirm_remove_harvest_entry')) !!};
 </script>

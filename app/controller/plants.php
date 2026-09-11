@@ -391,6 +391,13 @@ class PlantsController extends BaseController {
 
 		$health_segments = PlantHealthLogModel::getSegmentsForPlant($plant_id);
 
+		$harvest_entries = HarvestLogModel::getForPlant($plant_id);
+		$harvest_totals = HarvestLogModel::getTotalsForPlant($plant_id);
+
+		$harvest_totals_summary = implode(', ', array_map(function ($total) {
+			return rtrim(rtrim(number_format($total['total'], 2), '0'), '.') . (($total['unit']) ? ' ' . $total['unit'] : '');
+		}, $harvest_totals));
+
 		return parent::view(['content', 'details'], [
 			'user' => $user,
 			'plant' => $plant_data,
@@ -410,7 +417,10 @@ class PlantsController extends BaseController {
 			'offspring' => $offspring,
 			'edit_user_name' => $edit_user_name,
 			'edit_user_when' => $edit_user_when,
-			'health_segments' => $health_segments
+			'health_segments' => $health_segments,
+			'harvest_entries' => $harvest_entries,
+			'harvest_totals' => $harvest_totals,
+			'harvest_totals_summary' => $harvest_totals_summary
 		]);
 	}
 
@@ -1501,6 +1511,54 @@ class PlantsController extends BaseController {
 				'msg' => $e->getMessage()
 			]);
 		}
+	}
+
+	/**
+	 * Handles URL: /plants/harvest/add
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function add_harvest_entry($request)
+	{
+		$plant = $request->params()->query('plant');
+
+		try {
+			$harvest_date = $request->params()->query('harvest_date', date('Y-m-d'));
+			$quantity = $request->params()->query('quantity', null);
+			$unit = $request->params()->query('unit', null);
+			$notes = $request->params()->query('notes', '');
+
+			HarvestLogModel::addEntry($plant, $harvest_date, $quantity, $unit, $notes);
+
+			FlashMessage::setMsg('success', __('app.harvest_logged_successfully'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/details/' . $plant . '#plant-harvest-anchor');
+	}
+
+	/**
+	 * Handles URL: /plants/harvest/remove
+	 *
+	 * @param Asatru\Controller\ControllerArg $request
+	 * @return Asatru\View\RedirectHandler
+	 */
+	public function remove_harvest_entry($request)
+	{
+		$item = $request->params()->query('item');
+		$plant = HarvestLogModel::getPlantIdForEntry($item);
+
+		try {
+			HarvestLogModel::removeEntry($item);
+
+			FlashMessage::setMsg('success', __('app.harvest_entry_removed'));
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+		}
+
+		return redirect('/plants/details/' . $plant . '#plant-harvest-anchor');
 	}
 
 	/**

@@ -7,6 +7,26 @@
  */
 class UpgradeModule {
     /**
+     * Adds a real harvest log (date, quantity/unit, notes) per plant,
+     * separate from the calendar's "Harvest" event category which has
+     * no logging behind it.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot45()
+    {
+        HarvestLogModel::raw('CREATE TABLE IF NOT EXISTS HarvestLogModel (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            plant INT NOT NULL,
+            harvest_date DATE NOT NULL,
+            quantity DECIMAL(10,2) NULL,
+            unit VARCHAR(32) NULL,
+            notes TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    /**
      * Adds a favorite flag for plants, so a handful of plants can be
      * pinned and surfaced without digging through every location.
      *
