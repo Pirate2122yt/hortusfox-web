@@ -3221,6 +3221,12 @@ fieldset .field {
     filter: brightness(1.1);
 }
 
+.calendar-event-chip.is-care-event {
+    /* Auto-populated from a plant's water/fertilise/repot interval,
+       not a manually created event - dashed to tell the two apart. */
+    border-style: dashed;
+}
+
 .calendar-legend {
     position: relative;
     display: flex;

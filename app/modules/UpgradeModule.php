@@ -7,6 +7,27 @@
  */
 class UpgradeModule {
     /**
+     * Adds changelog entries for the calendar auto-populating
+     * water/fertilise/repot due dates and switching to a Sunday-first
+     * week.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot50()
+    {
+        $entries = [
+            ['2026-09-14', 'Calendar auto-populates care due dates', "The calendar now shows a plant's watering, fertilising and repot due dates automatically, based on its own care interval - no need to add them by hand."],
+            ['2026-09-14', 'Calendar week now starts on Sunday', 'The month calendar now starts each week on Sunday instead of Monday.']
+        ];
+
+        foreach ($entries as $entry) {
+            ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+                $entry[1], $entry[2], $entry[0]
+            ]);
+        }
+    }
+
+    /**
      * Removes two-factor login (TOTP), which was pulled shortly after
      * being added. Drops the totp_* columns if they're present (an
      * install that ran upgradeTo5dot42() before this had a chance to

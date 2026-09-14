@@ -2217,7 +2217,7 @@ window.createVueInstance = function(element) {
                 };
 
                 const firstOfMonth = new Date(year, month, 1);
-                const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday = 0 .. Sunday = 6
+                const firstWeekday = firstOfMonth.getDay(); // Sunday = 0 .. Saturday = 6 - the week starts on Sunday
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
 
@@ -2278,7 +2278,7 @@ window.createVueInstance = function(element) {
                         d.setDate(gridStart.getDate() + i);
 
                         let headerCell = document.createElement('div');
-                        headerCell.className = 'calendar-weekday-header' + ((i >= 5) ? ' is-weekend' : '');
+                        headerCell.className = 'calendar-weekday-header' + (((i === 0) || (i === 6)) ? ' is-weekend' : '');
                         headerCell.textContent = weekdayFormatter.format(d);
                         headerFragment.appendChild(headerCell);
                     }
@@ -2321,7 +2321,7 @@ window.createVueInstance = function(element) {
 
                             if ((cellDateStr >= itemFrom) && (cellDateStr <= itemTill)) {
                                 let chip = document.createElement('div');
-                                chip.className = 'calendar-event-chip';
+                                chip.className = 'calendar-event-chip' + (item.is_care_event ? ' is-care-event' : '');
                                 chip.style.backgroundColor = item.color_background;
                                 chip.style.borderColor = item.color_border;
                                 chip.title = item.name + ' (' + item.class_name + ')';
@@ -2329,7 +2329,15 @@ window.createVueInstance = function(element) {
 
                                 chip.addEventListener('click', function(ev) {
                                     ev.stopPropagation();
-                                    window.vue.editCalendarItemFromData(item);
+
+                                    // Auto-populated care due-dates aren't
+                                    // real calendar rows - there's nothing
+                                    // to edit, so go to the plant instead.
+                                    if (item.is_care_event) {
+                                        window.location.href = window.location.origin + '/plants/details/' + item.plant_id;
+                                    } else {
+                                        window.vue.editCalendarItemFromData(item);
+                                    }
                                 });
 
                                 eventsElem.appendChild(chip);

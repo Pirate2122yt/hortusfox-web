@@ -431,6 +431,83 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * Computes recurring care-due "events" (water/fertilise/repot) for
+     * every active plant that has that interval set, for auto-
+     * populating the calendar. These aren't stored rows - each one is
+     * derived fresh from the plant's last-care date (or created_at, if
+     * that action was never logged) plus its interval, stepped forward
+     * to cover the requested date range. Because nothing is persisted,
+     * they always reflect the plant's current state (logging care or
+     * changing an interval shifts them immediately) without needing a
+     * separate sync/cleanup job.
+     *
+     * @param $date_from string Y-m-d
+     * @param $date_till string Y-m-d
+     * @return array a list of ['plant' => PlantsModel row, 'action' => string, 'due_date' => string Y-m-d]
+     * @throws \Exception
+     */
+    public static function getCareCalendarEvents($date_from, $date_till)
+    {
+        try {
+            $events = [];
+
+            $rangeStart = strtotime($date_from . ' 00:00:00');
+            $rangeEnd = strtotime($date_till . ' 23:59:59');
+
+            if (($rangeStart === false) || ($rangeEnd === false) || ($rangeEnd < $rangeStart)) {
+                return $events;
+            }
+
+            foreach (static::$care_actions as $action => $cols) {
+                $rows = static::raw('SELECT *, COALESCE(' . $cols['last'] . ', created_at) AS care_basis_date FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL AND ' . $cols['interval'] . ' IS NOT NULL AND ' . $cols['interval'] . ' > 0');
+
+                foreach ($rows as $row) {
+                    $interval_days = (int)$row->get($cols['interval']);
+                    if ($interval_days <= 0) {
+                        continue;
+                    }
+
+                    $anchor = strtotime($row->get('care_basis_date'));
+                    if ($anchor === false) {
+                        continue;
+                    }
+
+                    $interval_seconds = $interval_days * 86400;
+
+                    // Jump straight to (at or before) the range start
+                    // instead of stepping one interval at a time from
+                    // the anchor, which could be years back for an old
+                    // plant with a short interval.
+                    if ($anchor < $rangeStart) {
+                        $cycles = (int)floor(($rangeStart - $anchor) / $interval_seconds);
+                        $due = $anchor + ($cycles * $interval_seconds);
+                    } else {
+                        $due = $anchor;
+                    }
+
+                    while ($due < $rangeStart) {
+                        $due += $interval_seconds;
+                    }
+
+                    while ($due <= $rangeEnd) {
+                        $events[] = [
+                            'plant' => $row,
+                            'action' => $action,
+                            'due_date' => date('Y-m-d', $due)
+                        ];
+
+                        $due += $interval_seconds;
+                    }
+                }
+            }
+
+            return $events;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Cronjob endpoint: emails every opted-in user about plants that
      * are currently due for watering, fertilising or repotting.
      *

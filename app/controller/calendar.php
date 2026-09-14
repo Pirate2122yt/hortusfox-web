@@ -71,6 +71,35 @@ class CalendarController extends BaseController {
                     }
                 }
             }
+            unset($value);
+
+            // Auto-populate water/fertilise/repot due dates from each
+            // plant's own interval - these aren't real CalendarModel
+            // rows, just computed on the fly, so they're always in
+            // sync with the plant's last-care date and interval.
+            $care_class_cache = [];
+            foreach (PlantsModel::getCareCalendarEvents($date_from, $date_till) as $care_event) {
+                $action = $care_event['action'];
+
+                if (!array_key_exists($action, $care_class_cache)) {
+                    $care_class_cache[$action] = CalendarClassModel::findClass($action);
+                }
+                $calendar_class_item = $care_class_cache[$action];
+
+                $items[] = [
+                    'id' => null,
+                    'name' => $care_event['plant']->get('name'),
+                    'date_from' => $care_event['due_date'] . ' 00:00:00',
+                    'date_till' => $care_event['due_date'] . ' 00:00:00',
+                    'class_descriptor' => $action,
+                    'class_name' => ($calendar_class_item) ? __($calendar_class_item->get('name')) : __('app.unknown_calendar_class'),
+                    'color_background' => ($calendar_class_item) ? $calendar_class_item->get('color_background') : 'rgb(150, 150, 150)',
+                    'color_border' => ($calendar_class_item) ? $calendar_class_item->get('color_border') : 'rgb(200, 200, 200)',
+                    'location' => $care_event['plant']->get('location'),
+                    'is_care_event' => true,
+                    'plant_id' => $care_event['plant']->get('id')
+                ];
+            }
 
             return json([
                 'code' => 200,
