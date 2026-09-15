@@ -884,6 +884,10 @@ class PlantsModel extends \Asatru\Database\Model {
 
             static::validateAttribute($attribute);
 
+            if (($attribute === 'parent_plant') && ($value !== '#null') && ($value !== null) && (strlen((string)$value) > 0)) {
+                static::guardAgainstParentPlantCycle($plantId, $value);
+            }
+
             $previous_health_state = null;
             if ($attribute === 'health_state') {
                 $current_plant = static::raw('SELECT health_state FROM `@THIS` WHERE id = ?', [$plantId])->first();
@@ -905,6 +909,43 @@ class PlantsModel extends \Asatru\Database\Model {
             }
         } catch (\Exception $e) {
             throw $e;
+        }
+    }
+
+    /**
+     * Guards against setting a plant's parent_plant to itself, or to a
+     * value that would create a cycle in the parent/child chain (e.g.
+     * setting a plant's parent to one of its own descendants - which is
+     * exactly what happens when a user, while on the MOTHER plant's own
+     * details page, mistakenly sets her "Parent plant" field to her BABY
+     * instead of going to the baby's page to set its parent to her).
+     *
+     * @param $plantId the plant being edited
+     * @param $value the proposed new parent_plant id
+     * @return void
+     * @throws \Exception
+     */
+    private static function guardAgainstParentPlantCycle($plantId, $value)
+    {
+        if ((int)$value === (int)$plantId) {
+            throw new \Exception(__('app.parent_plant_self_error'));
+        }
+
+        $ancestor_id = $value;
+        $visited = [];
+
+        while ($ancestor_id) {
+            if ((int)$ancestor_id === (int)$plantId) {
+                throw new \Exception(__('app.parent_plant_cycle_error'));
+            }
+
+            if (in_array($ancestor_id, $visited)) {
+                break;
+            }
+            $visited[] = $ancestor_id;
+
+            $ancestor = static::raw('SELECT parent_plant FROM `@THIS` WHERE id = ?', [$ancestor_id])->first();
+            $ancestor_id = ($ancestor) ? $ancestor->get('parent_plant') : null;
         }
     }
 

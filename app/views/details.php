@@ -205,6 +205,8 @@
 							<input type="hidden" name="attribute" value="parent_plant"/>
 							<input type="hidden" name="anchor" value="plant-parent-attribute-anchor"/>
 
+							<p class="help">{{ __('app.parent_plant_edit_hint') }}</p>
+
 							<div class="field has-addons">
 								<div class="control is-expanded">
 									<select class="input" name="value">

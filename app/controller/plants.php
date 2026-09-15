@@ -515,8 +515,13 @@ class PlantsController extends BaseController {
 		$attribute = $request->params()->query('attribute', null);
 		$value = $request->params()->query('value', false);
 		$anchor = $request->params()->query('anchor', '');
-		
-		PlantsModel::editPlantAttribute($plant, $attribute, $value);
+
+		try {
+			PlantsModel::editPlantAttribute($plant, $attribute, $value);
+		} catch (\Exception $e) {
+			FlashMessage::setMsg('error', $e->getMessage());
+			return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
+		}
 
 		return redirect('/plants/details/' . $plant . ((strlen($anchor) > 0) ? '#' . $anchor : ''));
 	}
