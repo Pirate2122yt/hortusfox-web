@@ -1658,6 +1658,47 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * All of a plant's descendants (children, grandchildren, ...) via the
+     * parent_plant chain, as a flat array of ids. Used to keep a plant's
+     * own propagated offspring out of its "Parent plant" dropdown - since
+     * picking one of them would just be undone by
+     * guardAgainstParentPlantCycle() anyway, it's clearer to never offer
+     * it as a choice in the first place.
+     *
+     * @param $id
+     * @return array
+     * @throws \Exception
+     */
+    public static function getAllDescendantIds($id)
+    {
+        try {
+            $descendant_ids = [];
+            $queue = [$id];
+            $visited = [];
+
+            while (count($queue) > 0) {
+                $current_id = array_shift($queue);
+
+                if (in_array($current_id, $visited)) {
+                    continue;
+                }
+                $visited[] = $current_id;
+
+                $children = static::raw('SELECT id FROM `@THIS` WHERE parent_plant = ? AND history = 0 AND deleted_at IS NULL', [$current_id]);
+                foreach ($children as $child) {
+                    $child_id = $child->get('id');
+                    $descendant_ids[] = $child_id;
+                    $queue[] = $child_id;
+                }
+            }
+
+            return $descendant_ids;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * How many active plants currently sit in each health_state, keyed
      * by state (only states with at least one plant are present). Used
      * by the Insights dashboard's health breakdown.

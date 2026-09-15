@@ -332,10 +332,16 @@ class PlantsController extends BaseController {
 
 		$propagated_children = PlantsModel::getPropagatedChildren($plant_id);
 
+		$parent_plant_disallowed_ids = PlantsModel::getAllDescendantIds($plant_id);
+		$parent_plant_disallowed_ids[] = (int)$plant_id;
+
 		$parent_plant_options = [];
 		foreach (PlantsModel::getAllPlants('name', 'asc') as $selectable_plant) {
-			if ((int)$selectable_plant->get('id') === (int)$plant_id) {
-				// Can't be its own parent.
+			if (in_array((int)$selectable_plant->get('id'), $parent_plant_disallowed_ids)) {
+				// Can't be its own parent, and picking one of its own
+				// descendants (e.g. a clone/offspring propagated from it)
+				// would create a cycle - guardAgainstParentPlantCycle()
+				// would reject it anyway, so don't offer it here.
 				continue;
 			}
 
