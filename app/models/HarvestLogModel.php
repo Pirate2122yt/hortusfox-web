@@ -3,10 +3,11 @@
 /**
  * Class HarvestLogModel
  *
- * A real harvest log per plant - date, quantity/unit, and notes -
- * separate from the calendar's "Harvest" event category, which has no
- * logging behind it (it's just a label for a reminder). Rows here are
- * added by hand from the plant details page.
+ * A real harvest log per plant - date, quantity/unit, and notes. Rows
+ * here are added by hand from the plant details page, and also feed
+ * the calendar's "Harvest" event category automatically (see
+ * getEntriesInRange()) so a logged harvest shows up on the day it
+ * actually happened, however far in the past that is.
  */
 class HarvestLogModel extends \Asatru\Database\Model {
     /**
@@ -58,6 +59,25 @@ class HarvestLogModel extends \Asatru\Database\Model {
     {
         try {
             return static::raw('SELECT * FROM `@THIS` WHERE plant = ? ORDER BY harvest_date DESC, id DESC', [$plantId]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Every harvest log entry (any plant) whose harvest_date falls
+     * within the given range, inclusive. Used to auto-populate the
+     * calendar with real historical harvest dates.
+     *
+     * @param $date_from a Y-m-d date string
+     * @param $date_till a Y-m-d date string
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getEntriesInRange($date_from, $date_till)
+    {
+        try {
+            return static::raw('SELECT * FROM `@THIS` WHERE harvest_date >= ? AND harvest_date <= ? ORDER BY harvest_date ASC', [$date_from, $date_till]);
         } catch (\Exception $e) {
             throw $e;
         }

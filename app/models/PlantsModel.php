@@ -508,6 +508,52 @@ class PlantsModel extends \Asatru\Database\Model {
     }
 
     /**
+     * A plant's one-off dated milestones that belong on the calendar -
+     * currently just its purchase date. Unlike getCareCalendarEvents(),
+     * these are single fixed points in time rather than a recurring
+     * schedule, so they show up on the calendar whenever the queried
+     * range covers that exact date - including arbitrarily far in the
+     * past, which is exactly where a purchase date usually falls.
+     *
+     * @param $date_from a Y-m-d date string
+     * @param $date_till a Y-m-d date string
+     * @return array a list of ['plant' => row, 'action' => string, 'due_date' => 'Y-m-d'] - same shape as getCareCalendarEvents()
+     * @throws \Exception
+     */
+    public static function getMilestoneCalendarEvents($date_from, $date_till)
+    {
+        try {
+            $events = [];
+
+            $rangeStart = strtotime($date_from . ' 00:00:00');
+            $rangeEnd = strtotime($date_till . ' 23:59:59');
+
+            if (($rangeStart === false) || ($rangeEnd === false) || ($rangeEnd < $rangeStart)) {
+                return $events;
+            }
+
+            $rows = static::raw('SELECT * FROM `@THIS` WHERE history = 0 AND deleted_at IS NULL AND date_of_purchase IS NOT NULL');
+
+            foreach ($rows as $row) {
+                $purchase_date = strtotime($row->get('date_of_purchase'));
+                if (($purchase_date === false) || ($purchase_date < $rangeStart) || ($purchase_date > $rangeEnd)) {
+                    continue;
+                }
+
+                $events[] = [
+                    'plant' => $row,
+                    'action' => 'purchase',
+                    'due_date' => date('Y-m-d', $purchase_date)
+                ];
+            }
+
+            return $events;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Cronjob endpoint: emails every opted-in user about plants that
      * are currently due for watering, fertilising or repotting.
      *

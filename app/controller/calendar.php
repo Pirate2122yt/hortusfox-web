@@ -73,12 +73,18 @@ class CalendarController extends BaseController {
             }
             unset($value);
 
-            // Auto-populate water/fertilise/repot due dates from each
-            // plant's own interval - these aren't real CalendarModel
-            // rows, just computed on the fly, so they're always in
-            // sync with the plant's last-care date and interval.
+            // Auto-populate water/fertilise/repot due dates and one-off
+            // milestones (currently: purchase date) from each plant's
+            // own data - these aren't real CalendarModel rows, just
+            // computed on the fly, so they're always in sync and show
+            // up for however far in the past the queried range reaches.
             $care_class_cache = [];
-            foreach (PlantsModel::getCareCalendarEvents($date_from, $date_till) as $care_event) {
+            $auto_events = array_merge(
+                PlantsModel::getCareCalendarEvents($date_from, $date_till),
+                PlantsModel::getMilestoneCalendarEvents($date_from, $date_till)
+            );
+
+            foreach ($auto_events as $care_event) {
                 $action = $care_event['action'];
 
                 if (!array_key_exists($action, $care_class_cache)) {
@@ -98,6 +104,36 @@ class CalendarController extends BaseController {
                     'location' => $care_event['plant']->get('location'),
                     'is_care_event' => true,
                     'plant_id' => $care_event['plant']->get('id')
+                ];
+            }
+
+            // Auto-populate real logged harvest dates too - these are
+            // actual past events (HarvestLogModel), not a projection,
+            // so they show up on the exact day they were logged for,
+            // however far back that is.
+            foreach (HarvestLogModel::getEntriesInRange($date_from, $date_till) as $harvest_entry) {
+                $harvest_plant = PlantsModel::getDetails($harvest_entry->get('plant'));
+                if ((!$harvest_plant) || ($harvest_plant->get('history')) || ($harvest_plant->get('deleted_at'))) {
+                    continue;
+                }
+
+                if (!array_key_exists('harvest', $care_class_cache)) {
+                    $care_class_cache['harvest'] = CalendarClassModel::findClass('harvest');
+                }
+                $calendar_class_item = $care_class_cache['harvest'];
+
+                $items[] = [
+                    'id' => null,
+                    'name' => $harvest_plant->get('name'),
+                    'date_from' => $harvest_entry->get('harvest_date') . ' 00:00:00',
+                    'date_till' => $harvest_entry->get('harvest_date') . ' 00:00:00',
+                    'class_descriptor' => 'harvest',
+                    'class_name' => ($calendar_class_item) ? __($calendar_class_item->get('name')) : __('app.unknown_calendar_class'),
+                    'color_background' => ($calendar_class_item) ? $calendar_class_item->get('color_background') : 'rgb(150, 150, 150)',
+                    'color_border' => ($calendar_class_item) ? $calendar_class_item->get('color_border') : 'rgb(200, 200, 200)',
+                    'location' => $harvest_plant->get('location'),
+                    'is_care_event' => true,
+                    'plant_id' => $harvest_plant->get('id')
                 ];
             }
 

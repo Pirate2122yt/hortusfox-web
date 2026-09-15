@@ -7,6 +7,34 @@
  */
 class UpgradeModule {
     /**
+     * Makes sure the "Purchase" and "Harvest" calendar classes exist,
+     * since the calendar now auto-populates events using them (see
+     * PlantsModel::getMilestoneCalendarEvents() and
+     * HarvestLogModel::getEntriesInRange()). Both idents have been in
+     * CalendarClsCommand's seed table for a while, but that command
+     * only seeds on a completely empty table - an install that already
+     * had calendar classes (e.g. from water/fertilise/repot) never
+     * picked these two up. Only inserts a class that's missing by
+     * ident, so any admin customization of the existing ones is left
+     * alone.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot51()
+    {
+        $classes_to_ensure = [
+            'purchase' => ['app.calendar_class_purchase', 'rgb(230, 220, 90)', 'rgb(255, 250, 185)'],
+            'harvest' => ['app.calendar_class_harvest', 'rgb(72, 243, 65)', 'rgb(180, 250, 155)']
+        ];
+
+        foreach ($classes_to_ensure as $ident => $info) {
+            if (!CalendarClassModel::findClass($ident)) {
+                CalendarClassModel::addClass($ident, $info[0], $info[1], $info[2]);
+            }
+        }
+    }
+
+    /**
      * Adds changelog entries for the calendar auto-populating
      * water/fertilise/repot due dates and switching to a Sunday-first
      * week.
