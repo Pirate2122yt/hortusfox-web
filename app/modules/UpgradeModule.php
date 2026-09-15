@@ -7,6 +7,21 @@
  */
 class UpgradeModule {
     /**
+     * Adds a changelog entry for the calendar auto-populating purchase
+     * dates and logged harvests.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot52()
+    {
+        ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+            'Calendar shows purchase dates and harvests',
+            "The calendar now automatically shows each plant's purchase date and every logged harvest, on the actual day they happened - including old, past dates, not just upcoming ones.",
+            date('Y-m-d')
+        ]);
+    }
+
+    /**
      * Makes sure the "Purchase" and "Harvest" calendar classes exist,
      * since the calendar now auto-populates events using them (see
      * PlantsModel::getMilestoneCalendarEvents() and
