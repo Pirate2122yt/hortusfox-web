@@ -116,7 +116,7 @@
 				<tbody>
 					<tr>
 						<td><img src="{{ asset('logo.png') }}"/>&nbsp;&nbsp;</td>
-						<td><a href="{{ url('/') }}">{{ app('workspace') }}</a></td>
+						<td><a href="{{ workspace_url('/') }}">{{ app('workspace') }}</a></td>
 					</tr>
 				</tbody>
 			</table>
@@ -128,7 +128,7 @@
 		
 		<div class="footer">
             <p>
-                <small><a href="{{ url('/') }}">{{ app('workspace') }}</a> &#x25CF; Powered by {{ env('APP_NAME') }}</small>
+                <small><a href="{{ workspace_url('/') }}">{{ app('workspace') }}</a> &#x25CF; Powered by {{ env('APP_NAME') }}</small>
             </p>
 
             <p>

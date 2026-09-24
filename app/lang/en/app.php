@@ -586,6 +586,7 @@ return [
 	'operationSucceeded' => 'Operation succeeded',
 	'admin_support' => 'Support',
 	'mail_rp_address' => 'Reverse Proxy',
+	'mail_rp_address_hint' => 'The public web address people should use to reach this workspace (e.g. https://plants.example.com, no trailing slash). Every link in emails and push notifications - including the "plant needing care" link - uses this instead of the server\'s local address when it\'s set. Leave blank to fall back to whatever address the app itself sees, which for scheduled emails (sent outside of a browser request) is often the server\'s local IP.',
 	'photo_edit_specify_url' => 'Specify URL to external resource',
 	'photo_edit_specify_file' => 'Select a file to upload',
 	'photo_edit_url_placeholder' => 'Enter URL...',

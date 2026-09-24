@@ -6,7 +6,7 @@
 
 @if (is_object($plant))
 <p>
-    <a href="{{ url('/plants/details/' . $plant->get('id')) }}">{{ $plant->get('name') }}</a>
+    <a href="{{ workspace_url('/plants/details/' . $plant->get('id')) }}">{{ $plant->get('name') }}</a>
 </p>
 
 <p>

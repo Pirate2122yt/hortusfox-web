@@ -979,6 +979,7 @@
             <div class="control">
                 <input type="text" class="input" name="mail_rp_address" value="{{ app('mail_rp_address') ?? '' }}">
             </div>
+            <p class="help">{{ __('app.mail_rp_address_hint') }}</p>
         </div>
 
         <div class="field">
