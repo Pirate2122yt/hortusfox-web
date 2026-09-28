@@ -20,12 +20,26 @@
     <div class="tasks">
         @if (count($tasks) > 0)
             @foreach ($tasks as $task)
-                <?php $task_category_item = CalendarClassModel::findClass($task->get('category')); ?>
+                <?php
+                    // Built as a plain PHP string, not a template
+                    // conditional directive - those must start their own
+                    // line in this template engine (mixing one into the
+                    // title line below silently broke it). Also kept
+                    // OUTSIDE the #task-item-title-X element below, since
+                    // its exact text content is scraped by editTask() in
+                    // app.js and nothing extra should join it.
+                    $task_category_item = CalendarClassModel::findClass($task->get('category'));
+                    $task_category_badge = '';
+                    if ($task_category_item) {
+                        $task_category_badge = '<span class="task-category-badge" style="background-color: ' . htmlspecialchars($task_category_item->get('color_background'), ENT_QUOTES) . '; border-color: ' . htmlspecialchars($task_category_item->get('color_border'), ENT_QUOTES) . ';">' . htmlspecialchars(__($task_category_item->get('name'))) . '</span>';
+                    }
+                ?>
                 <div class="task" id="task-item-{{ $task->get('id') }}" data-category="{{ $task->get('category') }}">
                     <a name="task-anchor-{{ $task->get('id') }}"></a>
 
                     <div class="task-header">
-                        <div class="task-header-title" id="task-item-title-{{ $task->get('id') }}"><span>#{{ sprintf('%03d', $task->get('id')) }}</span> {{ $task->get('title') }} @if ($task_category_item)<span class="task-category-badge" style="background-color: {{ $task_category_item->get('color_background') }}; border-color: {{ $task_category_item->get('color_border') }};">{{ __($task_category_item->get('name')) }}</span>@endif</div>
+                        <div class="task-header-title" id="task-item-title-{{ $task->get('id') }}"><span>#{{ sprintf('%03d', $task->get('id')) }}</span> {{ $task->get('title') }}</div>
+                        {!! $task_category_badge !!}
                         <div class="task-header-action">
                             <span><a href="javascript:void(0);" onclick="window.vue.editTask({{ $task->get('id') }});"><i class="fas fa-edit"></i></a></span>
                             <span><a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_task') }}')) { window.vue.removeTask({{ $task->get('id') }}); }"><i class="fas fa-trash-alt"></i></a></span>
