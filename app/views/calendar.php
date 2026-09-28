@@ -46,14 +46,15 @@
 
     // The compiled bundle's renderCalendarMonth() (app.js) starts the
     // week on Monday and doesn't know about the auto-populated
-    // water/fertilise/repot due-date chips (is_care_event/plant_id) -
-    // rather than requiring a frontend rebuild for this, it's replaced
-    // wholesale here with the corrected version (Sunday-first, and
-    // routing a care-event chip click to the plant instead of the
-    // (nonexistent) calendar-item edit form). Once app.js is rebuilt
-    // from the current app/resources/js/app.js source - which already
-    // has this same corrected logic - this override is redundant and
-    // can be deleted.
+    // water/fertilise/repot due-date chips (is_care_event/plant_id) or
+    // task chips (is_task_event/task_id) - rather than requiring a
+    // frontend rebuild for this, it's replaced wholesale here with the
+    // corrected version (Sunday-first, and routing a care-event chip
+    // click to the plant and a task chip click to the task instead of
+    // the (nonexistent) calendar-item edit form). Once app.js is
+    // rebuilt from the current app/resources/js/app.js source - which
+    // already has this same corrected logic - this override is
+    // redundant and can be deleted.
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof window.vue === 'undefined') {
             return;
@@ -187,7 +188,7 @@
 
                         if ((cellDateStr >= itemFrom) && (cellDateStr <= itemTill)) {
                             let chip = document.createElement('div');
-                            chip.className = 'calendar-event-chip' + (item.is_care_event ? ' is-care-event' : '');
+                            chip.className = 'calendar-event-chip' + (item.is_care_event ? ' is-care-event' : '') + (item.is_task_event ? ' is-task-event' : '');
                             chip.style.backgroundColor = item.color_background;
                             chip.style.borderColor = item.color_border;
                             chip.title = item.name + ' (' + item.class_name + ')';
@@ -196,11 +197,14 @@
                             chip.addEventListener('click', function(ev) {
                                 ev.stopPropagation();
 
-                                // Auto-populated care due-dates aren't
-                                // real calendar rows - there's nothing
-                                // to edit, so go to the plant instead.
+                                // Auto-populated care due-dates and tasks
+                                // aren't real calendar rows - there's
+                                // nothing to edit here, so go to the
+                                // plant/task instead.
                                 if (item.is_care_event) {
                                     window.location.href = window.location.origin + '/plants/details/' + item.plant_id;
+                                } else if (item.is_task_event) {
+                                    window.location.href = window.location.origin + '/tasks#task-anchor-' + item.task_id;
                                 } else {
                                     window.vue.editCalendarItemFromData(item);
                                 }

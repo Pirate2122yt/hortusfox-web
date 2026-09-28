@@ -73,6 +73,7 @@ class TasksController extends BaseController {
 		$recurring_time = (int)$request->params()->query('recurring_time', 0);
 		$timescope = $request->params()->query('timescope', TasksModel::DEFAULT_SCOPE);
 		$plant_id = (int)$request->params()->query('plant_id', 0);
+		$category = $request->params()->query('category', 'other');
 
 		if (strlen($due_date) === 0) {
 			$due_date = null;
@@ -82,7 +83,7 @@ class TasksController extends BaseController {
 			$recurring_time = null;
 		}
 
-		$task_id = TasksModel::addTask($title, $description, $due_date, $recurring_time, $timescope);
+		$task_id = TasksModel::addTask($title, $description, $due_date, $recurring_time, $timescope, false, $category);
 
 		$redirect_url = '/tasks';
 
@@ -129,12 +130,13 @@ class TasksController extends BaseController {
 		$recurring = (bool)$request->params()->query('recurring', false);
 		$recurring_time = (int)$request->params()->query('recurring_time', 0);
 		$timescope = $request->params()->query('timescope', TasksModel::DEFAULT_SCOPE);
+		$category = $request->params()->query('category', null);
 
 		if ((!$due_date) || (!$recurring)) {
 			$recurring_time = null;
 		}
 
-		TasksModel::editTask($task, $title, $description, $due_date, $recurring_time, $timescope);
+		TasksModel::editTask($task, $title, $description, $due_date, $recurring_time, $timescope, null, false, $category);
 
 		FlashMessage::setMsg('success', __('app.task_edited_successfully'));
 

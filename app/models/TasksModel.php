@@ -22,10 +22,14 @@ class TasksModel extends \Asatru\Database\Model {
      * @param $recurring_time
      * @param $recurring_scope
      * @param $api
+     * @param $category a CalendarClassModel ident (e.g. 'treat' for a pest
+     *                  treatment task) the task shows under when it's
+     *                  auto-populated onto the calendar. Falls back to
+     *                  'other' if empty or not a known class.
      * @return int
      * @throws \Exception
      */
-    public static function addTask($title, $description = '', $due_date = null, $recurring_time = null, $recurring_scope = self::DEFAULT_SCOPE, $api = false)
+    public static function addTask($title, $description = '', $due_date = null, $recurring_time = null, $recurring_scope = self::DEFAULT_SCOPE, $api = false, $category = 'other')
     {
         try {
             $user = UserModel::getAuthUser();
@@ -36,8 +40,10 @@ class TasksModel extends \Asatru\Database\Model {
             if (($recurring_time !== null) && (is_numeric($recurring_time))) {
                 $recurring_time = static::calcScope($recurring_time, $recurring_scope);
             }
-            
-            static::raw('INSERT INTO `@THIS` (title, description, due_date, recurring_time, recurring_scope) VALUES(?, ?, ?, ?, ?)', [$title, $description, $due_date, $recurring_time, $recurring_scope]);
+
+            $category = static::normalizeCategory($category);
+
+            static::raw('INSERT INTO `@THIS` (title, description, due_date, recurring_time, recurring_scope, category) VALUES(?, ?, ?, ?, ?, ?)', [$title, $description, $due_date, $recurring_time, $recurring_scope, $category]);
 
             if (!$api) {
                 LogModel::addLog($user->get('id'), 'tasks', 'add_task', $title, url('/tasks'));
@@ -64,10 +70,12 @@ class TasksModel extends \Asatru\Database\Model {
      * @param $recurring_scope
      * @param $done
      * @param $api
+     * @param $category a CalendarClassModel ident, or null to leave the
+     *                  task's existing category unchanged
      * @return void
      * @throws \Exception
      */
-    public static function editTask($taskId, $title, $description, $due_date, $recurring_time, $recurring_scope = self::DEFAULT_SCOPE, $done = null, $api = false)
+    public static function editTask($taskId, $title, $description, $due_date, $recurring_time, $recurring_scope = self::DEFAULT_SCOPE, $done = null, $api = false, $category = null)
     {
         try {
             $user = UserModel::getAuthUser();
@@ -91,15 +99,20 @@ class TasksModel extends \Asatru\Database\Model {
                 $due_date = null;
             }
 
-            if ($done === null) {                
+            if ($done === null) {
                 $done = $item->get('done');
             }
+
+            if ($category === null) {
+                $category = $item->get('category');
+            }
+            $category = static::normalizeCategory($category);
 
             if (($recurring_time !== null) && (is_numeric($recurring_time))) {
                 $recurring_time = static::calcScope($recurring_time, $recurring_scope);
             }
 
-            static::raw('UPDATE `@THIS` SET title = ?, description = ?, due_date = ?, recurring_time = ?, recurring_scope = ?, done = ? WHERE id = ?', [$title, $description, $due_date, $recurring_time, $recurring_scope, $done, $taskId]);
+            static::raw('UPDATE `@THIS` SET title = ?, description = ?, due_date = ?, recurring_time = ?, recurring_scope = ?, done = ?, category = ? WHERE id = ?', [$title, $description, $due_date, $recurring_time, $recurring_scope, $done, $category, $taskId]);
 
             if (!$api) {
                 LogModel::addLog($user->get('id'), 'tasks', 'edit_task', $title, url('/tasks#task-anchor-' . $taskId));
@@ -351,6 +364,29 @@ class TasksModel extends \Asatru\Database\Model {
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Falls back to 'other' for an empty value or one that isn't a
+     * known CalendarClassModel ident, so a task's category always maps
+     * to a real, styled calendar class instead of showing up as an
+     * "Unknown calendar class" chip.
+     *
+     * @param $category
+     * @return string
+     * @throws \Exception
+     */
+    private static function normalizeCategory($category)
+    {
+        if ((!is_string($category)) || (strlen(trim($category)) === 0)) {
+            return 'other';
+        }
+
+        if (!CalendarClassModel::findClass($category)) {
+            return 'other';
+        }
+
+        return $category;
     }
 
     /**

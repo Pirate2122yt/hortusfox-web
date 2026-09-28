@@ -7,6 +7,21 @@
  */
 class UpgradeModule {
     /**
+     * Adds a `category` column to tasks (defaulting existing rows to
+     * 'other') so a task can be tagged with a calendar class ident -
+     * e.g. 'treat' for a pest treatment task - and auto-populate the
+     * calendar under that category, same as plant care/purchase/harvest
+     * events already do. See TasksModel::addTask()/editTask() and
+     * CalendarController::query_items().
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot53()
+    {
+        TasksModel::raw('ALTER TABLE `@THIS` ADD COLUMN IF NOT EXISTS category VARCHAR(64) NOT NULL DEFAULT \'other\'');
+    }
+
+    /**
      * Adds a changelog entry for the calendar auto-populating purchase
      * dates and logged harvests.
      *

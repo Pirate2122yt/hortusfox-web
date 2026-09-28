@@ -1265,6 +1265,12 @@ window.createVueInstance = function(element) {
                 document.getElementById('inpEditTaskTitle').value = document.getElementById('task-item-title-' + id).childNodes[1].textContent;
                 document.getElementById('inpEditTaskDescription').value = document.getElementById('task-item-description-' + id).innerText;
 
+                let taskElem = document.getElementById('task-item-' + id);
+                let categorySelect = document.getElementById('inpEditTaskCategory');
+                if ((taskElem) && (categorySelect)) {
+                    categorySelect.value = taskElem.dataset.category || 'other';
+                }
+
                 let dueDate = document.getElementById('task-item-due-' + id);
                 if ((dueDate) && (dueDate.childNodes.length > 0)) {
                     document.getElementById('inpEditTaskDueDate').value = dueDate.childNodes[0].innerText;
@@ -2321,7 +2327,7 @@ window.createVueInstance = function(element) {
 
                             if ((cellDateStr >= itemFrom) && (cellDateStr <= itemTill)) {
                                 let chip = document.createElement('div');
-                                chip.className = 'calendar-event-chip' + (item.is_care_event ? ' is-care-event' : '');
+                                chip.className = 'calendar-event-chip' + (item.is_care_event ? ' is-care-event' : '') + (item.is_task_event ? ' is-task-event' : '');
                                 chip.style.backgroundColor = item.color_background;
                                 chip.style.borderColor = item.color_border;
                                 chip.title = item.name + ' (' + item.class_name + ')';
@@ -2330,11 +2336,14 @@ window.createVueInstance = function(element) {
                                 chip.addEventListener('click', function(ev) {
                                     ev.stopPropagation();
 
-                                    // Auto-populated care due-dates aren't
-                                    // real calendar rows - there's nothing
-                                    // to edit, so go to the plant instead.
+                                    // Auto-populated care due-dates and
+                                    // tasks aren't real calendar rows -
+                                    // there's nothing to edit here, so go
+                                    // to the plant/task instead.
                                     if (item.is_care_event) {
                                         window.location.href = window.location.origin + '/plants/details/' + item.plant_id;
+                                    } else if (item.is_task_event) {
+                                        window.location.href = window.location.origin + '/tasks#task-anchor-' + item.task_id;
                                     } else {
                                         window.vue.editCalendarItemFromData(item);
                                     }

@@ -784,12 +784,13 @@ class ApiController extends BaseController {
             $recurring_time = (int)$request->params()->query('recurring_time', 0);
             $recurring_scope = $request->params()->query('recurring_scope', TasksModel::DEFAULT_SCOPE);
             $plant_id = (int)$request->params()->query('plant', 0);
+            $category = $request->params()->query('category', 'other');
 
             if ((!$due_date) || (!$recurring_time)) {
                 $recurring_time = null;
             }
-			
-			$itemid = TasksModel::addTask($title, $description, $due_date, $recurring_time, $recurring_scope, true);
+
+			$itemid = TasksModel::addTask($title, $description, $due_date, $recurring_time, $recurring_scope, true, $category);
 
             if ($plant_id) {
 			    PlantTasksRefModel::addReference($plant_id, $itemid);
@@ -823,8 +824,9 @@ class ApiController extends BaseController {
             $recurring_time = $request->params()->query('recurring_time', null);
             $recurring_scope = $request->params()->query('recurring_scope', TasksModel::DEFAULT_SCOPE);
             $done = $request->params()->query('done', null);
-			
-			TasksModel::editTask($taskid, $title, $description, $due_date, $recurring_time, $recurring_scope, $done, true);
+            $category = $request->params()->query('category', null);
+
+			TasksModel::editTask($taskid, $title, $description, $due_date, $recurring_time, $recurring_scope, $done, true, $category);
 
             return json([
                 'code' => 200

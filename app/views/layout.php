@@ -482,6 +482,18 @@
 							</div>
 
 							<div class="field">
+								<label class="label">{{ __('app.task_category') }}</label>
+								<div class="control">
+									<select name="category" class="input">
+										@foreach (CalendarClassModel::getAll() as $class_item)
+											<option value="{{ $class_item->get('ident') }}" {{ (($class_item->get('ident') === 'other') ? 'selected' : '') }}>{{ __($class_item->get('name')) }}</option>
+										@endforeach
+									</select>
+								</div>
+								<p class="help">{{ __('app.task_category_hint') }}</p>
+							</div>
+
+							<div class="field">
 								<label class="label">{{ __('app.due') }}</label>
 								<div class="control">
 									<input type="date" class="input" name="due_date" onchange="if (this.value.length > 0) { document.getElementById('recurring-flag').classList.remove('is-hidden'); } else { document.getElementById('recurring-flag').classList.add('is-hidden'); }">
@@ -543,6 +555,18 @@
 								<div class="control">
 									<textarea name="description" class="textarea" id="inpEditTaskDescription"></textarea>
 								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">{{ __('app.task_category') }}</label>
+								<div class="control">
+									<select name="category" class="input" id="inpEditTaskCategory">
+										@foreach (CalendarClassModel::getAll() as $class_item)
+											<option value="{{ $class_item->get('ident') }}">{{ __($class_item->get('name')) }}</option>
+										@endforeach
+									</select>
+								</div>
+								<p class="help">{{ __('app.task_category_hint') }}</p>
 							</div>
 
 							<div class="field">

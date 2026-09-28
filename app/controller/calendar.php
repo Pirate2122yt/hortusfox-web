@@ -137,6 +137,46 @@ class CalendarController extends BaseController {
                 ];
             }
 
+            // Auto-populate open tasks with a due date too, under
+            // whichever calendar category each task is tagged with
+            // (defaulting to 'other') - e.g. a task tagged 'treat' for
+            // a pest treatment shows up as a Treatment chip.
+            foreach (TasksModel::getTasksInRange($date_from, $date_till) as $task) {
+                $task_category = $task->get('category') ?: 'other';
+
+                if (!array_key_exists($task_category, $care_class_cache)) {
+                    $care_class_cache[$task_category] = CalendarClassModel::findClass($task_category);
+                }
+                $calendar_class_item = $care_class_cache[$task_category];
+
+                $task_location = null;
+                if (PlantTasksRefModel::hasPlantReference($task->get('id'))) {
+                    $task_reference = PlantTasksRefModel::getForTask($task->get('id'));
+                    if ($task_reference) {
+                        $task_plant = PlantsModel::getDetails($task_reference->get('plant_id'));
+                        if ($task_plant) {
+                            $task_location = $task_plant->get('location');
+                        }
+                    }
+                }
+
+                $task_due_date = date('Y-m-d', strtotime($task->get('due_date')));
+
+                $items[] = [
+                    'id' => null,
+                    'name' => $task->get('title'),
+                    'date_from' => $task_due_date . ' 00:00:00',
+                    'date_till' => $task_due_date . ' 00:00:00',
+                    'class_descriptor' => $task_category,
+                    'class_name' => ($calendar_class_item) ? __($calendar_class_item->get('name')) : __('app.unknown_calendar_class'),
+                    'color_background' => ($calendar_class_item) ? $calendar_class_item->get('color_background') : 'rgb(150, 150, 150)',
+                    'color_border' => ($calendar_class_item) ? $calendar_class_item->get('color_border') : 'rgb(200, 200, 200)',
+                    'location' => $task_location,
+                    'is_task_event' => true,
+                    'task_id' => $task->get('id')
+                ];
+            }
+
             return json([
                 'code' => 200,
                 'data' => $items,

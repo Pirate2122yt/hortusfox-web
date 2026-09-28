@@ -2746,6 +2746,17 @@ fieldset .field {
     float: left;
 }
 
+.task-category-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid;
+    font-size: 0.7em;
+    vertical-align: middle;
+    color: rgb(30, 30, 30);
+}
+
 .task-header-action {
     position: relative;
     display: inline-block;
@@ -3225,6 +3236,13 @@ fieldset .field {
     /* Auto-populated from a plant's water/fertilise/repot interval,
        not a manually created event - dashed to tell the two apart. */
     border-style: dashed;
+}
+
+.calendar-event-chip.is-task-event {
+    /* Auto-populated from a Task's own due date - dotted to tell it
+       apart from a manually created calendar event and from a
+       recurring care due-date. */
+    border-style: dotted;
 }
 
 .calendar-legend {

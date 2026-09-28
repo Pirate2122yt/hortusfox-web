@@ -20,11 +20,12 @@
     <div class="tasks">
         @if (count($tasks) > 0)
             @foreach ($tasks as $task)
-                <div class="task" id="task-item-{{ $task->get('id') }}">
+                <?php $task_category_item = CalendarClassModel::findClass($task->get('category')); ?>
+                <div class="task" id="task-item-{{ $task->get('id') }}" data-category="{{ $task->get('category') }}">
                     <a name="task-anchor-{{ $task->get('id') }}"></a>
 
                     <div class="task-header">
-                        <div class="task-header-title" id="task-item-title-{{ $task->get('id') }}"><span>#{{ sprintf('%03d', $task->get('id')) }}</span> {{ $task->get('title') }}</div>
+                        <div class="task-header-title" id="task-item-title-{{ $task->get('id') }}"><span>#{{ sprintf('%03d', $task->get('id')) }}</span> {{ $task->get('title') }} @if ($task_category_item)<span class="task-category-badge" style="background-color: {{ $task_category_item->get('color_background') }}; border-color: {{ $task_category_item->get('color_border') }};">{{ __($task_category_item->get('name')) }}</span>@endif</div>
                         <div class="task-header-action">
                             <span><a href="javascript:void(0);" onclick="window.vue.editTask({{ $task->get('id') }});"><i class="fas fa-edit"></i></a></span>
                             <span><a href="javascript:void(0);" onclick="if (confirm('{{ __('app.confirm_remove_task') }}')) { window.vue.removeTask({{ $task->get('id') }}); }"><i class="fas fa-trash-alt"></i></a></span>
@@ -75,3 +76,31 @@
         @endif
     </div>
 @endif
+
+<script>
+    // The Category field is new and the compiled bundle's editTask()
+    // (app.js) doesn't know to populate it, so wrap it here rather than
+    // requiring a frontend rebuild for this. If the bundle's editTask()
+    // ever changes shape, the category select just doesn't get
+    // pre-filled - it never breaks opening the edit form. Once app.js
+    // is rebuilt from the current app/resources/js/app.js source -
+    // which already populates this field - this override is redundant
+    // and can be deleted.
+    document.addEventListener('DOMContentLoaded', function() {
+        if ((typeof window.vue === 'undefined') || (typeof window.vue.editTask !== 'function')) {
+            return;
+        }
+
+        let originalEditTask = window.vue.editTask;
+
+        window.vue.editTask = function(id) {
+            originalEditTask(id);
+
+            let taskElem = document.getElementById('task-item-' + id);
+            let categorySelect = document.getElementById('inpEditTaskCategory');
+            if ((taskElem) && (categorySelect)) {
+                categorySelect.value = taskElem.dataset.category || 'other';
+            }
+        };
+    });
+</script>

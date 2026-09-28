@@ -165,6 +165,8 @@ return [
 	'done' => 'Done',
 	'edit_task' => 'Edit task',
 	'task_edited_successfully' => 'Task was successfully edited',
+	'task_category' => 'Category',
+	'task_category_hint' => 'A task with a due date automatically shows up on the calendar under this category - e.g. pick "Treatment" for a pest treatment task.',
 	'scientific_name' => 'Scientific name',
 	'text' => 'Text',
 	'link' => 'Link',
