@@ -7,6 +7,21 @@
  */
 class UpgradeModule {
     /**
+     * Adds a changelog entry for tasks auto-populating onto the
+     * calendar under a chosen category.
+     *
+     * @return void
+     */
+    private static function upgradeTo5dot54()
+    {
+        ChangelogModel::raw('INSERT INTO `@THIS` (title, description, entry_date) VALUES(?, ?, ?)', [
+            'Tasks now show up on the calendar',
+            'A task with a due date now automatically appears on the calendar, under a category you choose when creating or editing it (e.g. pick "Treatment" for a pest treatment task).',
+            date('Y-m-d')
+        ]);
+    }
+
+    /**
      * Adds a `category` column to tasks (defaulting existing rows to
      * 'other') so a task can be tagged with a calendar class ident -
      * e.g. 'treat' for a pest treatment task - and auto-populate the
