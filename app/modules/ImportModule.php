@@ -164,6 +164,7 @@ class ImportModule {
             }
 
             $plants = json_decode(file_get_contents($path . '/data.json'));
+            $plants = static::filterSafeFiles($plants, ['photo']);
             if ($plants) {
                 foreach ($plants as $plant) {
                     PlantsModel::raw('INSERT IGNORE INTO `@THIS` (id, name, scientific_name, knowledge_link, tags, location, photo, last_watered, last_repotted, lifespan, hardy, cutting_month, date_of_purchase, humidity, light_level, health_state, notes, history, history_date, last_edited_user, last_edited_date, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
@@ -299,6 +300,7 @@ class ImportModule {
             }
 
             $attachments = json_decode(file_get_contents($path . '/data.json'));
+            $attachments = static::filterSafeFiles($attachments, ['file']);
             if ($attachments) {
                 foreach ($attachments as $attachment) {
                     PlantAttachmentModel::raw('INSERT IGNORE INTO `@THIS` (label, file, plant, author, updated_at, created_at) VALUES(?, ?, ?, ?, ?, ?)', [
@@ -361,6 +363,7 @@ class ImportModule {
             }
 
             $gallery_items = json_decode(file_get_contents($path . '/data.json'));
+            $gallery_items = static::filterSafeFiles($gallery_items, ['thumb', 'original']);
             if ($gallery_items) {
                 foreach ($gallery_items as $gallery_item) {
                     PlantPhotoModel::raw('INSERT IGNORE INTO `@THIS` (plant, author, thumb, original, label, created_at) VALUES(?, ?, ?, ?, ?, ?)', [
@@ -456,6 +459,7 @@ class ImportModule {
             }
 
             $inventory_items = json_decode(file_get_contents($path . '/data.json'));
+            $inventory_items = static::filterSafeFiles($inventory_items, ['photo']);
             if ($inventory_items) {
                 foreach ($inventory_items as $inventory_item) {
                     InventoryModel::raw('INSERT IGNORE INTO `@THIS` (name, group_ident, description, photo, amount, last_edited_user, last_edited_date, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)', [
@@ -539,5 +543,78 @@ class ImportModule {
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Drops imported records whose file name fields are unsafe, so a crafted backup
+     * archive cannot write outside the target directory or plant scripts
+     *
+     * @param $items
+     * @param array $fields
+     * @return array|null
+     */
+    private static function filterSafeFiles($items, $fields)
+    {
+        if (is_object($items)) {
+            $items = (array)$items;
+        }
+
+        if (!is_array($items)) {
+            return null;
+        }
+
+        $result = [];
+
+        foreach ($items as $item) {
+            if (!is_object($item)) {
+                continue;
+            }
+
+            $safe = true;
+
+            foreach ($fields as $field) {
+                if (!static::isSafeFileName($item->$field ?? null)) {
+                    $safe = false;
+                    break;
+                }
+            }
+
+            if ($safe) {
+                $result[] = $item;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Accepts only bare file names: no directories, no hidden files and no
+     * script-like or browser-executable extension anywhere in the name
+     *
+     * @param $name
+     * @return bool
+     */
+    private static function isSafeFileName($name)
+    {
+        if (($name === null) || ($name === '')) {
+            return true;
+        }
+
+        if ((!is_string($name)) || ($name !== basename($name)) || (strpbrk($name, "/\\\0") !== false) || ($name[0] === '.')) {
+            return false;
+        }
+
+        $blocked = ['php', 'php3', 'php4', 'php5', 'php7', 'php8', 'pht', 'phtml', 'phar', 'phps', 'pgif', 'inc', 'shtml', 'html', 'htm', 'xhtml', 'svg', 'svgz', 'xml', 'js', 'mjs', 'cgi', 'pl', 'py', 'sh', 'jsp', 'asp', 'aspx', 'htaccess'];
+
+        $parts = explode('.', strtolower($name));
+        array_shift($parts);
+
+        foreach ($parts as $part) {
+            if (in_array($part, $blocked, true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
