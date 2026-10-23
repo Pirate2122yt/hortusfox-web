@@ -413,7 +413,7 @@ class UtilsModule {
         try {
             $pd = new \Parsedown();
             
-            return $pd->text($text);
+            return $pd->setSafeMode(true)->text($text);
         } catch (\Exception $e) {
             throw $e;
         }
